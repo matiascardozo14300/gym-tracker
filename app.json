@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "gym-tracker",
+    "name": "Gym Tracker",
     "slug": "gym-tracker",
     "version": "1.0.0",
+    "sdkVersion": "53.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,6 +17,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.tudominio.gymtracker",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -26,6 +29,11 @@
     },
     "plugins": [
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b99c42df-f182-4777-82ba-13faecf71dd3"
+      }
+    }
   }
 }
