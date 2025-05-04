@@ -1,16 +1,23 @@
 export type WorkoutType = "Pull" | "Push" | "Legs" | "FullBody";
-export type GymLocation = "Elcano" | "Castelli" | "Olazabal" | "Otro";
+export type MuscleGroup =
+  | "Chest"
+  | "Shoulders"
+  | "Triceps"
+  | "Back"
+  | "Biceps"
+  | "Forearms"
+  | "Cuadriceps"
+  | "Hamstrings"
+  | "Gluts"
+  | "Calves"
+  | "Abductors"
+  | "Abs";
 
-export interface SetRecord {
+export interface Exercise {
 	id: string;
-	weight: number;
-	reps: number;
-}
-
-export interface ExerciseRecord {
-	id: string;
-	exerciseName: string;
-	sets: SetRecord[];
+	name: string;
+	muscleGroup: MuscleGroup;
+	workoutTypes: WorkoutType[];
 }
 
 export interface Workout {
@@ -18,14 +25,21 @@ export interface Workout {
 	startDate: string;
 	finishDate: string;
 	workoutType: WorkoutType;
-	gymLocation: GymLocation;
-	exercises: ExerciseRecord[];
 }
 
-export interface Exercise {
+// Exercise done in a workout. Related to Exercise
+export interface ExerciseRecord {
 	id: string;
-	name: string;
-	muscleGroup: string;
+	workoutId: string;
+	exerciseId: string;
+}
+
+// Sets done in an exercise. Related to ExerciseRecord
+export interface SetRecord {
+	id: string;
+	exerciseRecordId: string;
+	weight: number;
+	reps: number;
 }
 
 export interface UserSettings {

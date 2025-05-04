@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import { initDatabase, getAllWorkouts } from './services/database';
 import type { Workout } from './models/types';
 import CalendarSection from './components/screens/CalendarSelection';
@@ -18,6 +18,7 @@ const Header: React.FC = () => (
 
 const WorkoutTypeSelector: React.FC = () => {
 	const types = ['Pull', 'Push', 'Legs', 'FullBody'];
+
 	return (
 		<View style={ styles.section }>
 			<Text style={ styles.sectionTitle }>Choose Workout Type</Text>
@@ -35,13 +36,14 @@ const WorkoutTypeSelector: React.FC = () => {
 const WorkoutCard: React.FC = () => (
 	<TouchableOpacity style={styles.card}>
 	  <Text style={styles.cardTitle}>Monday, April 22</Text>
-	  <Text style={styles.cardSubtitle}>FullBody · Castelli · 1h 10m</Text>
+	  <Text style={styles.cardSubtitle}>FullBody · 1h 10m</Text>
 	</TouchableOpacity>
   );
 
 const LatestWorkouts: React.FC = () => (
 <View style={styles.section}>
 	<Text style={styles.sectionTitle}>Latest Workouts</Text>
+	<WorkoutCard />
 	<WorkoutCard />
 </View>
 );
