@@ -3,7 +3,7 @@ import type {
 	SQLiteDatabase,
 	SQLiteRunResult
   } from 'expo-sqlite';
-import { Exercise, ExerciseRecord, Workout } from '../models/types';
+import { Exercise, ExerciseRecord, NewExerciseRecord, NewSetRecord, NewWorkout, Workout } from '../models/types';
 
 const DB_NAME = 'gymtracker.db';
 let db: SQLiteDatabase;
@@ -15,30 +15,30 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
 	// 2. Creo todas las tablas en un solo batch
 	await db.execAsync(`
 		CREATE TABLE IF NOT EXISTS exercises (
-			id TEXT PRIMARY KEY NOT NULL,
+			id INTEGER PRIMARY KEY NOT NULL,
 			name TEXT NOT NULL,
 			muscleGroup TEXT NOT NULL,
 			workoutTypes TEXT NOT NULL -- JSON string: '["Push","Pull","Legs""FullBody"]'
 		);
 
 		CREATE TABLE IF NOT EXISTS workouts (
-			id TEXT PRIMARY KEY NOT NULL,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			startDate TEXT NOT NULL,
 			finishDate TEXT NOT NULL,
 			workoutType TEXT NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS exercise_records (
-			id TEXT PRIMARY KEY NOT NULL,
-			workoutId TEXT NOT NULL,
-			exerciseId TEXT NOT NULL,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			workoutId INTEGER NOT NULL,
+			exerciseId INTEGER NOT NULL,
 			FOREIGN KEY(workoutId) REFERENCES workouts(id),
 			FOREIGN KEY(exerciseId) REFERENCES exercises(id)
 		);
 
 		CREATE TABLE IF NOT EXISTS sets (
-			id TEXT PRIMARY KEY NOT NULL,
-			exerciseRecordId TEXT NOT NULL,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			exerciseRecordId INTEGER NOT NULL,
 			weight REAL NOT NULL,
 			reps INTEGER NOT NULL,
 			FOREIGN KEY(exerciseRecordId) REFERENCES exercise_records(id)
@@ -57,19 +57,139 @@ return db;
 }
 
 // Inserta un nuevo Entrenamiento
-export async function insertWorkout(w: Workout): Promise<SQLiteRunResult> {
-	return getDB().runAsync(
-		`INSERT INTO workouts
-		(id, startDate, finishDate, workoutType, gymLocation)
-		VALUES (?, ?, ?, ?, ?);`,
-		w.id,
-		w.startDate,
-		w.finishDate,
-		w.workoutType
+export async function insertNewWorkout( workout: NewWorkout ): Promise<number> {
+	const db = getDB();
+	const result = await db.runAsync(
+		`INSERT INTO workouts (startDate, finishDate, workoutType)
+		VALUES (?, ?, ?);`,
+		workout.startDate,
+		workout.finishDate,
+		workout.workoutType
 	);
+	return result.lastInsertRowId!;
+}
+
+// Inserta un nuevo ExcerciseRecord
+export async function insertExerciseRecord( record: NewExerciseRecord ): Promise<number> {
+	const db = getDB();
+	const result: SQLiteRunResult = await db.runAsync(
+		`INSERT INTO exercise_records (workoutId, exerciseId)
+		VALUES (?, ?);`,
+		record.workoutId,
+		record.exerciseId
+	);
+	return result.lastInsertRowId!;
+}
+
+// Inserta un nuevo SetRecord
+export async function insertSetRecord( record: NewSetRecord ): Promise<number> {
+	const db = getDB();
+	const result: SQLiteRunResult = await db.runAsync(
+		`INSERT INTO sets (exerciseRecordId, weight, reps)
+		VALUES (?, ?, ?);`,
+		record.exerciseRecordId,
+		record.weight,
+		record.reps
+	);
+	return result.lastInsertRowId!;
 }
 
 // Obtiene un listado de todos los Entrenamientos
 export async function getAllWorkouts(): Promise<Workout[]> {
 	return getDB().getAllAsync<Workout>(`SELECT * FROM workouts;`);
 }
+
+// Obtiene ejercicios por tipo de entrenamiento
+export async function getExerciseByWorkoutType( workoutType: string ): Promise<Exercise[]> {
+	const rows = await getDB().getAllAsync<Exercise>(
+		`SELECT * FROM exercises
+		WHERE workoutTypes LIKE ?;`,
+		[`%\"${workoutType}\"%`]
+	);
+
+	return rows.map((r) => ({
+		id: r.id,
+		name: r.name,
+		muscleGroup: r.muscleGroup,
+		workoutTypes: JSON.parse(r.workoutTypes),
+	}));
+}
+
+// Actualiza la fecha de finalización de un Entrenamiento
+export async function updateWorkoutFinishDate( workoutId: number, finishDate: string ): Promise<SQLiteRunResult> {
+	const db = getDB();
+	return db.runAsync(
+		`UPDATE workouts
+		SET finishDate = ?
+		WHERE id = ?;`,
+		finishDate,
+		workoutId
+	);
+}
+
+export async function getLast3Workouts(): Promise<{
+	startDate: string;
+	workoutType: string;
+	duration: string;
+}[]> {
+	const db = getDB();
+	const rows = await db.getAllAsync<{
+		startDate: string;
+		finishDate: string;
+		workoutType: string;
+	}>(
+		`SELECT startDate, finishDate, workoutType
+		FROM workouts
+		ORDER BY startDate DESC
+		LIMIT 3;`
+	);
+
+	// Mappear a formato con duración
+	return rows.map(({ startDate, finishDate, workoutType }) => {
+		const start = new Date(startDate);
+		const end = new Date(finishDate);
+		const diffMs = end.getTime() - start.getTime();
+		const diffMin = Math.round(diffMs / 60000);
+		const hours = Math.floor(diffMin / 60);
+		const minutes = diffMin % 60;
+		const duration = `${hours}h ${minutes}m`;
+
+		return { startDate, workoutType, duration };
+	  });
+}
+
+/* export async function updateExercise(): Promise<SQLiteRunResult> {
+	const db = getDB();
+	return db.runAsync(
+		`DELETE FROM exercises
+		WHERE id = ?;`,
+		33
+	);
+} */
+
+// Crea todos los ejercicios en la base de datos
+/* export async function insertExerciseBatch(
+	exercises: Exercise[]
+  ): Promise<SQLiteRunResult[]> {
+	const db = getDB();
+
+	const promises = exercises.map(ex => {
+	  // convierto el array a string JSON
+	  const workoutTypesJson = JSON.stringify(ex.workoutTypes);
+
+	  return db.runAsync(
+		`INSERT INTO exercises (
+		   id,
+		   name,
+		   muscleGroup,
+		   workoutTypes
+		 ) VALUES (?, ?, ?, ?);`,
+		ex.id,
+		ex.name,
+		ex.muscleGroup,
+		workoutTypesJson
+	  );
+	});
+
+	return Promise.all(promises);
+  } */
