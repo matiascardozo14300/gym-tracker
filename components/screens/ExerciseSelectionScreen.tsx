@@ -13,9 +13,45 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../App';
 import type { Exercise, ExerciseRecord, NewExerciseRecord, NewSetRecord, NewWorkout, Workout } from '../../models/types';
-import { exerciseImages } from '../../assets/exercises/index';
 import { getExerciseByWorkoutType, insertExerciseRecord, insertNewWorkout, insertSetRecord, updateWorkoutFinishDate } from '../../services/database';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+const exerciseImageUrls: Record<string, string> = {
+	'1': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'2': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'3': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'4': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'5': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'6': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'7': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'8': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'9': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'10': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'11': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'12': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'13': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'14': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'15': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'16': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'17': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'18': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'19': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'20': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'21': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'22': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'23': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'24': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'25': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'26': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'27': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'28': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'29': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'30': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'31': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'32': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'34': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+	'35': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F02131101.png&w=640&q=80',
+  };
 
 type ExerciseSelectionRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>
@@ -100,17 +136,14 @@ export default function ExerciseSelectionScreen() {
 	};
 
 	const renderItem = ({ item }: { item: Exercise }) => (
-		<TouchableOpacity
-			style={styles.card}
-			onPress={ () => handleCardPress( item ) }
-		>
+		<TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
 		  <Image
-			source={exerciseImages[item.id.toString()]}
+			source={{ uri: exerciseImageUrls[item.id.toString()] }}
 			style={styles.image}
 		  />
 		  <Text style={styles.cardText}>{item.name}</Text>
 		</TouchableOpacity>
-	);
+	  );
 
 	return (
 		<View style={styles.container}>
