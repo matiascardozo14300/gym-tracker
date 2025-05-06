@@ -168,14 +168,12 @@ export async function getLast3Workouts(): Promise<{
 } */
 
 // Crea todos los ejercicios en la base de datos
-/* export async function insertExerciseBatch(
-	exercises: Exercise[]
-  ): Promise<SQLiteRunResult[]> {
+export async function insertExerciseBatch( exercises: Exercise[] ): Promise<SQLiteRunResult[]> {
 	const db = getDB();
 
-	const promises = exercises.map(ex => {
+	const promises = exercises.map( ex => {
 	  // convierto el array a string JSON
-	  const workoutTypesJson = JSON.stringify(ex.workoutTypes);
+	  const workoutTypesJson = JSON.stringify( ex.workoutTypes );
 
 	  return db.runAsync(
 		`INSERT INTO exercises (
@@ -191,5 +189,11 @@ export async function getLast3Workouts(): Promise<{
 	  );
 	});
 
-	return Promise.all(promises);
-  } */
+	return Promise.all( promises );
+}
+
+// Obtiene todos los ejercicios de la base de datos
+export async function getAllExercises(): Promise<Exercise[]> {
+	const db = getDB();
+	return await db.getAllAsync<Exercise>(`SELECT * FROM exercises;`);
+}

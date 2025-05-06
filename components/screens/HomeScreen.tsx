@@ -8,15 +8,21 @@ import type { LastWorkout, Workout } from '../../models/types';
 import CalendarSection from './CalendarSelection';
 import styles from '../styles/HomeScreen.styles';
 
-type HomeNavProp = NativeStackNavigationProp<
-	RootStackParamList,
-	'Home'
->;
+// Define la navegación de tipo "Home"
+type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 type TabItemProps = {
 	icon: string;
 	label: string;
+	onPress?: () => void;
 };
+
+const TabItem: React.FC<TabItemProps> = ({ icon, label, onPress }) => (
+	<TouchableOpacity style={ styles.tabItem } onPress={onPress}>
+		<Text style={ styles.tabIcon }>{ icon }</Text>
+		<Text style={ styles.tabLabel }>{ label }</Text>
+	</TouchableOpacity>
+);
 
 const Header: React.FC = () => (
 	<View style={ styles.header }>
@@ -76,16 +82,9 @@ const LatestWorkouts: React.FC<{ workouts: LastWorkout[] }> = ({ workouts }) => 
 	</View>
 );
 
-const TabItem: React.FC<TabItemProps> = ({ icon, label }) => (
-	<TouchableOpacity style={styles.tabItem}>
-	  <Text style={styles.tabIcon}>{icon}</Text>
-	  <Text style={styles.tabLabel}>{label}</Text>
-	</TouchableOpacity>
-);
-
 export default function HomeScreen() {
-	const [ workouts, setWorkouts ] = useState<Workout[]>([]);
 	const [ lastWorkouts, setLastWorkouts ] = useState<LastWorkout[]>([]);
+	const navigation = useNavigation<HomeNavProp>();
 
 	// ejemplo de días marcados (puedes generarlo dinámicamente)
 	const [ markedDates, setMarkedDates ] = useState({
@@ -98,21 +97,37 @@ export default function HomeScreen() {
 	}, []);
 
 	return (
-		<SafeAreaView style={styles.container}>
-		<ScrollView contentContainerStyle={styles.scrollContent}>
-		<Header />
-		<WorkoutTypeSelector />
-		<CalendarSection markedDates={markedDates} onDayPress={ day => {
-			console.log('Día seleccionado:', day);
-		}} />
-		<LatestWorkouts workouts={lastWorkouts} />
-		</ScrollView>
-		<View style={styles.tabBar}>
-		<TabItem icon="🏠" label="Home" />
-		<TabItem icon="🕒" label="History" />
-		<TabItem icon="📊" label="Statistics" />
-		<TabItem icon="⚙️" label="Settings" />
-		</View>
+		<SafeAreaView style={ styles.container }>
+			<ScrollView contentContainerStyle={ styles.scrollContent }>
+				<Header />
+				<WorkoutTypeSelector />
+				<CalendarSection markedDates={ markedDates } onDayPress={ day => {
+					console.log( 'Día seleccionado:', day );
+				}} />
+				<LatestWorkouts workouts={ lastWorkouts } />
+			</ScrollView>
+			<View style={ styles.tabBar }>
+				<TabItem
+					icon="🏠"
+					label="Home"
+					onPress={ () => navigation.navigate( 'Home' ) }
+				/>
+				<TabItem
+					icon="🕒"
+					label="History"
+					onPress={() => {/* Implementar navegación a History */} }
+				/>
+				<TabItem
+					icon="📊"
+					label="Statistics"
+					onPress={() => {/* Implementar navegación a Statistics */} }
+				/>
+				<TabItem
+					icon="⚙️"
+					label="Settings"
+					onPress={ () => navigation.navigate( 'Settings' ) }
+				/>
+			</View>
 		</SafeAreaView>
 	);
 }
