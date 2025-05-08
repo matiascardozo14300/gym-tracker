@@ -147,7 +147,7 @@ export default function ExerciseSelectionScreen() {
 
 	return (
 		<View style={styles.container}>
-		  <Text style={styles.title}>Select Exercise</Text>
+		  <Text style={styles.title}>Select Next Exercise</Text>
 		  <FlatList
 			data={exercises}
 			keyExtractor={(item) => item.id.toString()}

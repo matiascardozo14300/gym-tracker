@@ -13,7 +13,7 @@ export default ({ config }) => ({
 		// Definimos sdkVersion solo en producción
 		...( isProd && { sdkVersion: '53.0.7' } ),
 		orientation: "portrait",
-		icon: "./assets/icon.png",
+		icon: "./assets/app-logo.png",
 		userInterfaceStyle: "light",
 		newArchEnabled: true,
 		splash: {
