@@ -1,74 +1,44 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 
-type MarkedDates = {
-	[ date: string ]: {
-		selected?: boolean;
-		selectedColor?: string;
-		marked?: boolean;
-		dotColor?: string;
-	};
+export type CustomMarkedDates = Record<string,{ customStyles: {
+	container: ViewStyle;
+	text: TextStyle;
+};}>;
+
+export type CalendarSectionProps = {
+	markedDates: CustomMarkedDates;
+	onDayPress: ( date: DateData ) => void;
 };
 
-type CalendarSectionProps = {
-	/** Objeto con las fechas a marcar */
-	markedDates: MarkedDates;
-	/** Callback opcional al presionar un día */
-	onDayPress?: (day: DateData) => void;
-};
-
-const CalendarSection: React.FC<CalendarSectionProps> = ({
-	markedDates,
-	onDayPress,
-  }) => {
-	const today = new Date().toISOString().split('T')[0];
-
-	// Aseguramos que hoy esté marcado especialmente si no viene en markedDates
-	const mergedMarked: MarkedDates = {
-	  [today]: {
-		selected: true,
-		selectedColor: '#007AFF',
-		...markedDates[today],
-	  },
-	  ...markedDates,
-	};
-
+const CalendarSection: React.FC<CalendarSectionProps> = ({ markedDates, onDayPress }) => {
 	return (
-	  <View style={styles.container}>
+		<View style={ styles.container }>
 		<Calendar
-		  // mes que se muestra al inicio
-		  current={today}
-		  // flechas para navegar
-		  enableSwipeMonths={true}
-		  // función al presionar una fecha
-		  onDayPress={onDayPress}
-		  // marcas de días
-		  markedDates={mergedMarked}
-		  // estilos básicos para el calendario
-		  theme={{
-			selectedDayTextColor: '#fff',
-			todayTextColor: '#007AFF',
-			arrowColor: '#007AFF',
-			monthTextColor: '#333',
-			textDayFontWeight: '500',
-			textMonthFontWeight: '600',
-		  }}
-		  style={styles.calendar}
+			markingType="custom"
+			markedDates={ markedDates }
+			onDayPress={ onDayPress }
+			style={styles.calendar}
+			// Ajustes de tema básicos
+			theme={{
+			// Color del texto de hoy si no está marcado
+			todayTextColor: '#3339ff'
+			}}
 		/>
-	  </View>
+		</View>
 	);
-  };
+};
 
-  export default CalendarSection;
+export default CalendarSection;
 
-  const styles = StyleSheet.create({
+const styles = StyleSheet.create({
 	container: {
-	  marginBottom: 24,
-	  borderRadius: 12,
-	  overflow: 'hidden',
+		marginBottom: 24,
+		borderRadius: 12,
+		overflow: 'hidden',
 	},
 	calendar: {
-	  borderRadius: 12,
+		borderRadius: 12,
 	},
-  });
+});

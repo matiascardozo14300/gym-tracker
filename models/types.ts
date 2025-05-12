@@ -17,7 +17,7 @@ export interface Exercise {
 	id: number;
 	name: string;
 	muscleGroup: MuscleGroup;
-	workoutTypes: string;
+	workoutTypes: string[];
 }
 
 export interface Workout {

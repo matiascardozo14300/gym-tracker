@@ -5,10 +5,12 @@ import HomeScreen from './components/screens/HomeScreen';
 import ExerciseSelectionScreen from './components/screens/ExerciseSelectionScreen';
 import { initDatabase } from './services/database';
 import { ActivityIndicator, View } from 'react-native';
+import SettingsScreen from './components/screens/SettingsScreen';
 
 export type RootStackParamList = {
 	Home: undefined;
 	ExerciseSelection: { workoutType: string };
+	Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -42,6 +44,7 @@ export default function App() {
 			<Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
 				<Stack.Screen name="Home" component={ HomeScreen } />
 				<Stack.Screen name="ExerciseSelection" component={ ExerciseSelectionScreen }/>
+				<Stack.Screen name="Settings" component={ SettingsScreen } />
 			</Stack.Navigator>
 		</NavigationContainer>
 	);

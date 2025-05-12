@@ -18,7 +18,7 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
 			id INTEGER PRIMARY KEY NOT NULL,
 			name TEXT NOT NULL,
 			muscleGroup TEXT NOT NULL,
-			workoutTypes TEXT NOT NULL -- JSON string: '["Push","Pull","Legs""FullBody"]'
+			workoutTypes TEXT NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS workouts (
@@ -99,19 +99,24 @@ export async function getAllWorkouts(): Promise<Workout[]> {
 	return getDB().getAllAsync<Workout>(`SELECT * FROM workouts;`);
 }
 
-// Obtiene ejercicios por tipo de entrenamiento
+/**
+ * Recupera todos los ejercicios cuyo CSV workoutTypes contenga workoutType.
+ * Reconstruye el array con split(',').
+ */
 export async function getExerciseByWorkoutType( workoutType: string ): Promise<Exercise[]> {
-	const rows = await getDB().getAllAsync<Exercise>(
-		`SELECT * FROM exercises
+	const db = getDB();
+	const rows = await db.getAllAsync<{ id: number; name: string; muscleGroup: string; workoutTypes: string; }>(
+		`SELECT id, name, muscleGroup, workoutTypes
+		FROM exercises
 		WHERE workoutTypes LIKE ?;`,
-		[`%\"${workoutType}\"%`]
+		[`%${workoutType}%`]
 	);
 
-	return rows.map((r) => ({
+	return rows.map( r => ({
 		id: r.id,
 		name: r.name,
-		muscleGroup: r.muscleGroup,
-		workoutTypes: JSON.parse(r.workoutTypes),
+		muscleGroup: r.muscleGroup as any,
+		workoutTypes: r.workoutTypes.split( ',' )
 	}));
 }
 
@@ -167,29 +172,89 @@ export async function getLast3Workouts(): Promise<{
 	);
 } */
 
-// Crea todos los ejercicios en la base de datos
-/* export async function insertExerciseBatch(
-	exercises: Exercise[]
-  ): Promise<SQLiteRunResult[]> {
+/**
+ * Inserta o reemplaza un lote de ejercicios.
+ * Convierte el array workoutTypes a CSV antes de guardarlo.
+ */
+export async function insertExerciseBatch( exercises: Exercise[] ): Promise<SQLiteRunResult[]> {
 	const db = getDB();
 
-	const promises = exercises.map(ex => {
-	  // convierto el array a string JSON
-	  const workoutTypesJson = JSON.stringify(ex.workoutTypes);
+	const stm = `
+		INSERT OR REPLACE INTO exercises
+		(id, name, muscleGroup, workoutTypes)
+		VALUES (?, ?, ?, ?);
+	`;
+	return Promise.all(
+		exercises.map( ex =>
+			db.runAsync(
+				stm,
+				ex.id,
+				ex.name,
+				ex.muscleGroup,
+				ex.workoutTypes.join(',')
+			)
+		)
+	);
+}
 
-	  return db.runAsync(
-		`INSERT INTO exercises (
-		   id,
-		   name,
-		   muscleGroup,
-		   workoutTypes
-		 ) VALUES (?, ?, ?, ?);`,
-		ex.id,
-		ex.name,
-		ex.muscleGroup,
-		workoutTypesJson
-	  );
-	});
+// Obtiene todos los ejercicios de la base de datos
+export async function getAllExercises(): Promise<Exercise[]> {
+	const db = getDB();
+	return await db.getAllAsync<Exercise>(`SELECT * FROM exercises;`);
+}
 
-	return Promise.all(promises);
-  } */
+/**
+ * Elimina **todos** los registros de la tabla `exercises`.
+ * @returns Resultado de la operación (SQLiteRunResult.changes = número de filas eliminadas).
+ */
+export async function deleteAllExercises(): Promise<SQLiteRunResult> {
+	const db = getDB();
+	return db.runAsync(
+		`DELETE FROM exercises;`
+	);
+}
+
+/**
+ * Devuelve un listado de fechas y tipos de workout para un mes dado
+ */
+export async function getWorkoutDatesForMonth(
+	year: number,
+	month: number
+  ): Promise<{ date: string; workoutType: string }[]> {
+	const db = getDB();
+
+	const monthStr = String(month).padStart(2, '0');
+	const from = `${year}-${monthStr}-01`;
+	const nextMonth = month === 12 ? 1 : month + 1;
+	const nextYear = month === 12 ? year + 1 : year;
+	const nextMonthStr = String(nextMonth).padStart(2, '0');
+	const to = `${nextYear}-${nextMonthStr}-01`;
+
+	// 1) Subconsulta ordenada DESC para que al agrupar por fecha nos quedemos con el más reciente
+	const rows = await db.getAllAsync<{
+	  startDate: string;
+	  workoutType: string;
+	  date: string;
+	}>(
+	  `
+	  SELECT
+		substr(startDate,1,10) as date,
+		workoutType
+	  FROM (
+		SELECT startDate, workoutType
+		FROM workouts
+		WHERE startDate >= ? AND startDate < ?
+		ORDER BY startDate DESC  -- más recientes primero
+	  )
+	  GROUP BY date;             -- toma el primero (el más reciente) de cada grupo
+	  `,
+	  from,
+	  to
+	);
+
+	// 2) Retornamos directamente date + workoutType
+	return rows.map(r => ({
+	  date: r.date,
+	  workoutType: r.workoutType
+	}));
+  }
