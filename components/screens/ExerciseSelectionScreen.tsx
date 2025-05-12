@@ -1,18 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import {
-	View,
-	Text,
-	FlatList,
-	TouchableOpacity,
-	Image,
-	StyleSheet,
-	Modal,
-	TextInput
-} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, TextInput } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../App';
-import type { Exercise, ExerciseRecord, NewExerciseRecord, NewSetRecord, NewWorkout, Workout } from '../../models/types';
+import type { Exercise, NewExerciseRecord, NewSetRecord, NewWorkout } from '../../models/types';
 import { getExerciseByWorkoutType, insertExerciseRecord, insertNewWorkout, insertSetRecord, updateWorkoutFinishDate } from '../../services/database';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -54,7 +45,20 @@ const exerciseImageUrls: Record<string, string> = {
   };
 
 type ExerciseSelectionRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>;
+
+// TimerDisplay component reused inside and outside modal
+const TimerDisplay: React.FC<{ seconds: number }> = ({ seconds }) => {
+	const minutes = Math.floor( seconds / 60 );
+	const secs = seconds % 60;
+	const mm = minutes < 10 ? `0${minutes}` : minutes;
+	const ss = secs < 10 ? `0${secs}` : secs;
+	return (
+		<View style={ styles.timerContainer }>
+			<Text style={ styles.timerText }>{`${mm}:${ss}`}</Text>
+		</View>
+	);
+};
 
 export default function ExerciseSelectionScreen() {
 	const navigation = useNavigation<NavigationProp>();
@@ -64,6 +68,11 @@ export default function ExerciseSelectionScreen() {
 	// Nuevo workout en DB
 	const [ workoutId, setWorkoutId ] = useState<number | null>(null);
 
+	// Timer state
+	const [seconds, setSeconds] = useState(0);
+	const startTimeRef = useRef<number>(Date.now());
+	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
 	// Estados para modal e inputs
 	const [ modalVisible, setModalVisible] = useState(false);
 	const [ selectedExercise, setSelectedExercise ] = useState<Exercise | null>(null);
@@ -72,7 +81,7 @@ export default function ExerciseSelectionScreen() {
 	const [ reps2, setReps2 ] = useState('');
 	const [ reps3, setReps3 ] = useState('');
 
-	// Crear workout al entrar
+	// Create workout, start timer, load exercises
 	useEffect( () => {
 		( async () => {
 			const now = new Date().toISOString();
@@ -82,12 +91,22 @@ export default function ExerciseSelectionScreen() {
 				workoutType
 			} as NewWorkout );
 			setWorkoutId( id );
+
+			startTimeRef.current = Date.now();
+			intervalRef.current = setInterval(() => {
+				const diff = Date.now() - startTimeRef.current;
+				setSeconds( Math.floor( diff / 1000 ) );
+			}, 1000 );
 		})();
 
 		// Cargar ejercicios disponibles
 		getExerciseByWorkoutType( workoutType )
 			.then(setExercises)
 			.catch(console.error);
+
+		return () => {
+			if( intervalRef.current ) clearInterval( intervalRef.current );
+		};
 	}, [ workoutType ] );
 
 	// Maneja selección de ejercicio: abre modal
@@ -128,7 +147,8 @@ export default function ExerciseSelectionScreen() {
 
 	// Finalizar workout y volver al Home
 	const handleFinish = async () => {
-		if (workoutId != null) {
+		if( intervalRef.current ) clearInterval( intervalRef.current );
+		if( workoutId != null ) {
 			const now = new Date().toISOString();
 			await updateWorkoutFinishDate( workoutId, now );
 		}
@@ -147,64 +167,42 @@ export default function ExerciseSelectionScreen() {
 
 	return (
 		<View style={styles.container}>
-		  <Text style={styles.title}>Select Next Exercise</Text>
-		  <FlatList
+			<Text style={styles.title}>Select Next Exercise</Text>
+			<FlatList
 			data={exercises}
 			keyExtractor={(item) => item.id.toString()}
 			numColumns={2}
 			renderItem={renderItem}
 			columnWrapperStyle={styles.row}
 			contentContainerStyle={styles.list}
-		  />
+			/>
 
-		{/* Botón finalizar al final */}
-		<TouchableOpacity style={styles.finishButton} onPress={handleFinish}>
-			<Text style={styles.finishButtonText}>Finish Workout</Text>
-		</TouchableOpacity>
+			{/* Cronómetro y botón Finish */}
+			<View style={ styles.footer} >
+				<TimerDisplay seconds={ seconds } />
+				<TouchableOpacity style={ styles.finishButton } onPress={ handleFinish }>
+					<Text style={ styles.finishButtonText }>Finish Workout</Text>
+				</TouchableOpacity>
+			</View>
 
-		  {/* Modal para ingresar peso y repeticiones */}
-		  <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>
-              {selectedExercise ? selectedExercise.name : 'Agregar series'}
-            </Text>
+			{/* Modal con cronómetro dentro */}
+			<Modal visible={modalVisible} transparent animationType="slide">
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContainer}>
+						<TimerDisplay seconds={seconds} />
+						<Text style={styles.modalTitle}>{selectedExercise?.name || 'Agregar series'}</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Peso (kg)"
-              keyboardType="numeric"
-              value={weight}
-              onChangeText={setWeight}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Reps set 1"
-              keyboardType="numeric"
-              value={reps1}
-              onChangeText={setReps1}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Reps set 2"
-              keyboardType="numeric"
-              value={reps2}
-              onChangeText={setReps2}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Reps set 3"
-              keyboardType="numeric"
-              value={reps3}
-              onChangeText={setReps3}
-            />
+						<TextInput style={styles.input} placeholder="Peso (kg)" keyboardType="numeric" value={weight} onChangeText={setWeight} />
+						<TextInput style={styles.input} placeholder="Reps set 1" keyboardType="numeric" value={reps1} onChangeText={setReps1} />
+						<TextInput style={styles.input} placeholder="Reps set 2" keyboardType="numeric" value={reps2} onChangeText={setReps2} />
+						<TextInput style={styles.input} placeholder="Reps set 3" keyboardType="numeric" value={reps3} onChangeText={setReps3} />
 
-            <TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
-              <Text style={styles.modalButtonText}>Listo</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+						<TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
+							<Text style={styles.modalButtonText}>Listo</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 }
@@ -212,74 +210,42 @@ export default function ExerciseSelectionScreen() {
 const styles = StyleSheet.create({
 	container: { flex: 1, padding: 16, backgroundColor: '#fff' },
 	title: {
-	  marginTop: 16,
-	  fontSize: 24,
-	  fontWeight: 'bold',
-	  marginBottom: 16,
-	  textAlign: 'center'
+		marginTop: 16,
+		fontSize: 24,
+		fontWeight: 'bold',
+		marginBottom: 16,
+		textAlign: 'center',
 	},
 	list: { paddingBottom: 16 },
 	row: { justifyContent: 'space-between', marginBottom: 16 },
 	card: {
-	  width: '48%',
-	  backgroundColor: '#fff',
-	  borderRadius: 12,
-	  borderColor: '#ccc',
-	  borderWidth: 1,
-	  padding: 12,
-	  alignItems: 'center',
-	  shadowColor: '#000',
-	  shadowOpacity: 0.1,
-	  shadowRadius: 4,
-	  elevation: 2
+		width: '48%',
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		borderColor: '#ccc',
+		borderWidth: 1,
+		padding: 12,
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 2,
 	},
 	image: { width: 100, height: 100, marginBottom: 8, resizeMode: 'contain' },
 	cardText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
 
-	finishButton: {
-	  backgroundColor: '#28a745',
-	  paddingVertical: 12,
-	  borderRadius: 8,
-	  alignItems: 'center',
-	  marginTop: 16
-	},
+	// Footer con cronómetro y botón
+	footer: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
+	timerContainer: { flex: 0.3, alignItems: 'center' },
+	timerText: { fontSize: 18, fontWeight: '600' },
+	finishButton: { flex: 0.7, backgroundColor: '#28a745', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
 	finishButtonText: { color: '#fff', fontWeight: '600' },
 
-	// Estilos del modal
-	modalOverlay: {
-	  flex: 1,
-	  backgroundColor: 'rgba(0,0,0,0.4)',
-	  justifyContent: 'center',
-	  alignItems: 'center'
-	},
-	modalContainer: {
-	  width: '80%',
-	  backgroundColor: '#fff',
-	  borderRadius: 12,
-	  padding: 20
-	},
-	modalTitle: {
-	  fontSize: 18,
-	  fontWeight: '600',
-	  marginBottom: 12,
-	  textAlign: 'center'
-	},
-	input: {
-	  borderWidth: 1,
-	  borderColor: '#ccc',
-	  borderRadius: 8,
-	  paddingHorizontal: 12,
-	  paddingVertical: 8,
-	  marginBottom: 12
-	},
-	modalButton: {
-	  backgroundColor: '#007AFF',
-	  paddingVertical: 12,
-	  borderRadius: 8,
-	  alignItems: 'center'
-	},
-	modalButtonText: {
-	  color: '#fff',
-	  fontWeight: '600'
-	}
-  });
+	// Modal styles
+	modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
+	modalContainer: { width: '80%', backgroundColor: '#fff', borderRadius: 12, padding: 20 },
+	modalTitle: { fontSize: 18, fontWeight: '600', marginVertical: 12, textAlign: 'center' },
+	input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
+	modalButton: { backgroundColor: '#007AFF', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+	modalButtonText: { color: '#fff', fontWeight: '600' }
+});

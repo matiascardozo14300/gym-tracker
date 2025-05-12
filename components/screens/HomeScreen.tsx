@@ -3,10 +3,11 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../App';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
-import { getLast3Workouts } from '../../services/database';
-import type { LastWorkout, Workout } from '../../models/types';
-import CalendarSection from './CalendarSelection';
+import { getLast3Workouts, getWorkoutDatesForMonth } from '../../services/database';
+import type { LastWorkout } from '../../models/types';
+import CalendarSection, { CustomMarkedDates } from './CalendarSelection';
 import styles from '../styles/HomeScreen.styles';
+import { workoutTypeColors } from '../styles/colorMap';
 
 // Define la navegación de tipo "Home"
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -41,8 +42,11 @@ const WorkoutTypeSelector: React.FC = () => {
 				{ types.map( ( type ) => (
 					<TouchableOpacity
 						key={ type }
-						style={ styles.typeButton }
 						onPress={ () => navigation.navigate( 'ExerciseSelection', { workoutType: type } ) }
+						style={[
+							styles.typeButton,
+							{ borderColor: workoutTypeColors[ type ] || '#ccc' }
+						]}
 					>
 						<Text style={ styles.typeButtonText }>{ type }</Text>
 					</TouchableOpacity>
@@ -86,14 +90,34 @@ export default function HomeScreen() {
 	const [ lastWorkouts, setLastWorkouts ] = useState<LastWorkout[]>([]);
 	const navigation = useNavigation<HomeNavProp>();
 
-	// ejemplo de días marcados (puedes generarlo dinámicamente)
-	const [ markedDates, setMarkedDates ] = useState({
-		'2025-05-01': { marked: true, dotColor: '#50cebb' },
-		'2025-05-02': { marked: true, dotColor: '#50cebb' },
-	});
+	const [markedDates, setMarkedDates] = useState<CustomMarkedDates>({});
 
 	useEffect(() => {
 		getLast3Workouts().then( setLastWorkouts ).catch( console.error );
+
+		(async () => {
+			const today = new Date();
+			const year = today.getFullYear();
+			const month = today.getMonth() + 1;
+			const items = await getWorkoutDatesForMonth( year, month );
+
+			const marks: CustomMarkedDates = {};
+			for (const { date, workoutType } of items) {
+				marks[date] = {
+				  customStyles: {
+					container: {
+					  backgroundColor: workoutTypeColors[ workoutType ] || 'grey',
+					  borderRadius: 20
+					},
+					text: {
+					  color: 'black',
+					  fontWeight: '600'
+					}
+				  }
+				};
+			  }
+			setMarkedDates( marks );
+		})();
 	}, []);
 
 	return (
