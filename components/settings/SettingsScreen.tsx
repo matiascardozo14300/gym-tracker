@@ -2,9 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, SafeAreaView, ScrollView } from 'react-native';
 import { insertExerciseBatch, getAllExercises, deleteAllExercises, exportDatabaseAsJson, importDatabaseFromJson } from '../../services/database';
 import type { Exercise } from '../../models/types';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
-import { useNavigation } from '@react-navigation/native';
+import Header from '../header/Header';
 
 // Lista completa de ejercicios a insertar
 const lista: Exercise[] = [
@@ -44,10 +42,7 @@ const lista: Exercise[] = [
 	{ id: 35, name: 'Seated Calf Raise',             muscleGroup: 'Calves',     workoutTypes: ['Legs', 'FullBody'] },
 ];
 
-type SettingsNavProp = NativeStackNavigationProp<RootStackParamList, 'Settings'>;
-
 export default function SettingsScreen() {
-	const navigation = useNavigation<SettingsNavProp>();
 
 	const handleChooseAvatar = () => {}
 
@@ -124,7 +119,7 @@ export default function SettingsScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
-				<Text style={styles.title}>Settings</Text>
+				<Header title='Settings' />
 
 				<Text style={styles.sectionTitle}>Datos personales</Text>
 				<View style={styles.personalSection}>
@@ -230,5 +225,19 @@ const styles = StyleSheet.create({
   devButtonText: {
     fontSize: 16,
     fontWeight: '600'
-  }
+  },
+  	tabBar: {
+		position: 'absolute',
+		bottom: 0,
+		left: 0,
+		right: 0,
+		height: 64,
+		flexDirection: 'row',
+		borderTopWidth: 1,
+		borderColor: '#ddd',
+		backgroundColor: '#fff',
+	},
+	tabItem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+	tabIcon: { fontSize: 20 },
+	tabLabel: { fontSize: 12, marginTop: 2 },
 });

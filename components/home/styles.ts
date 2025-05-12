@@ -3,8 +3,6 @@ import { StyleSheet } from "react-native";
 export default StyleSheet.create({
 	container: { flex: 1, backgroundColor: '#fff' },
 	scrollContent: { padding: 16, paddingBottom: 80 },
-	header: { marginBottom: 24, marginTop: 24 },
-	headerTitle: { fontSize: 32, fontWeight: 'bold' },
 
 	section: { marginBottom: 24 },
 	sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },

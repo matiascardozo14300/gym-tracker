@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, TextInput } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import type { RouteProp } from '@react-navigation/native';
-import type { RootStackParamList } from '../../App';
+import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
+import type { RootStackParamList, RootTabParamList } from '../../App';
 import type { Exercise, NewExerciseRecord, NewSetRecord, NewWorkout } from '../../models/types';
 import { getExerciseByWorkoutType, insertExerciseRecord, insertNewWorkout, insertSetRecord, updateWorkoutFinishDate } from '../../services/database';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 const exerciseImageUrls: Record<string, string> = {
 	'1': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F26161101-Cable-Lateral-Pulldown-with-V-bar_Back_small.png&w=640&q=100',
@@ -44,8 +45,11 @@ const exerciseImageUrls: Record<string, string> = {
 	'35': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05941101-Lever-Seated-Calf-Raise-(plate-loaded)_Calf_small.png&w=640&q=100',
   };
 
-type ExerciseSelectionRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>;
+type ExSelRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
+type ExSelNavProp = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>,
+  BottomTabNavigationProp<RootTabParamList>
+>;
 
 // TimerDisplay component reused inside and outside modal
 const TimerDisplay: React.FC<{ seconds: number }> = ({ seconds }) => {
@@ -61,8 +65,10 @@ const TimerDisplay: React.FC<{ seconds: number }> = ({ seconds }) => {
 };
 
 export default function ExerciseSelectionScreen() {
-	const navigation = useNavigation<NavigationProp>();
-	const { workoutType } = useRoute<ExerciseSelectionRouteProp>().params;
+	const navigation = useNavigation<ExSelNavProp>();
+	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
+	const route = useRoute<ExSelRouteProp>();
+  	const { workoutType } = route.params;
 	const [ exercises, setExercises ] = useState<Exercise[]>([]);
 
 	// Nuevo workout en DB
@@ -152,7 +158,8 @@ export default function ExerciseSelectionScreen() {
 			const now = new Date().toISOString();
 			await updateWorkoutFinishDate( workoutId, now );
 		}
-		navigation.navigate('Home');
+		tabNav?.navigate('Home');
+		navigation.navigate('Tabs', { screen: 'Home' });
 	};
 
 	const renderItem = ({ item }: { item: Exercise }) => (
@@ -167,7 +174,6 @@ export default function ExerciseSelectionScreen() {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Select Next Exercise</Text>
 			<FlatList
 			data={exercises}
 			keyExtractor={(item) => item.id.toString()}

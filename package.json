@@ -15,6 +15,9 @@
     "@react-navigation/native-stack": "^7.3.11",
     "dotenv": "^16.5.0",
     "expo": "~53.0.7",
+    "expo-document-picker": "~13.1.5",
+    "expo-file-system": "~18.1.9",
+    "expo-sharing": "~13.1.5",
     "expo-sqlite": "~15.2.9",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
@@ -22,16 +25,15 @@
     "react-native-calendars": "^1.1312.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
-    "undefined": ".",
-    "expo-file-system": "~18.1.9",
-    "expo-document-picker": "~13.1.5",
-    "expo-sharing": "~13.1.5"
+    "react-native-svg": "15.11.2",
+    "undefined": "."
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
     "@types/uuid": "^10.0.0",
     "cross-env": "^7.0.3",
+    "react-native-svg-transformer": "^1.5.1",
     "typescript": "^5.3.3"
   },
   "private": true
