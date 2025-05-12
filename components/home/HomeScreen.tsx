@@ -1,39 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../App';
+import type { RootStackParamList, RootTabParamList } from '../../App';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
-import { getLast3Workouts, getWorkoutDatesForMonth } from '../../services/database';
-import type { LastWorkout } from '../../models/types';
-import CalendarSection, { CustomMarkedDates } from './CalendarSelection';
-import styles from '../styles/HomeScreen.styles';
-import { workoutTypeColors } from '../styles/colorMap';
-
-// Define la navegación de tipo "Home"
-type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
-
-type TabItemProps = {
-	icon: string;
-	label: string;
-	onPress?: () => void;
-};
-
-const TabItem: React.FC<TabItemProps> = ({ icon, label, onPress }) => (
-	<TouchableOpacity style={ styles.tabItem } onPress={onPress}>
-		<Text style={ styles.tabIcon }>{ icon }</Text>
-		<Text style={ styles.tabLabel }>{ label }</Text>
-	</TouchableOpacity>
-);
-
-const Header: React.FC = () => (
-	<View style={ styles.header }>
-		<Text style={ styles.headerTitle }>Home</Text>
-	</View>
-);
+import { getLast3Workouts, getWorkoutDatesForMonth, LastWorkout } from '../../services/database/';
+import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelection';
+import styles from './styles';
+import { workoutTypeColors } from '../common/colorMap';
+import Header from '../header/Header';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 const WorkoutTypeSelector: React.FC = () => {
 	const types = ['Pull', 'Push', 'Legs', 'FullBody'];
-	const navigation = useNavigation<HomeNavProp>();
+	const tabNav = useNavigation<BottomTabNavigationProp<RootTabParamList, 'Home'>>();
+	const stackNav = tabNav.getParent<NativeStackNavigationProp<RootStackParamList>>();
 
 	return (
 		<View style={ styles.section }>
@@ -42,7 +22,7 @@ const WorkoutTypeSelector: React.FC = () => {
 				{ types.map( ( type ) => (
 					<TouchableOpacity
 						key={ type }
-						onPress={ () => navigation.navigate( 'ExerciseSelection', { workoutType: type } ) }
+						onPress={ () => stackNav?.navigate('ExerciseSelection', { workoutType: type }) }
 						style={[
 							styles.typeButton,
 							{ borderColor: workoutTypeColors[ type ] || '#ccc' }
@@ -88,8 +68,6 @@ const LatestWorkouts: React.FC<{ workouts: LastWorkout[] }> = ({ workouts }) => 
 
 export default function HomeScreen() {
 	const [ lastWorkouts, setLastWorkouts ] = useState<LastWorkout[]>([]);
-	const navigation = useNavigation<HomeNavProp>();
-
 	const [markedDates, setMarkedDates] = useState<CustomMarkedDates>({});
 
 	useEffect(() => {
@@ -123,35 +101,13 @@ export default function HomeScreen() {
 	return (
 		<SafeAreaView style={ styles.container }>
 			<ScrollView contentContainerStyle={ styles.scrollContent }>
-				<Header />
+				<Header title='Home' />
 				<WorkoutTypeSelector />
 				<CalendarSection markedDates={ markedDates } onDayPress={ day => {
 					console.log( 'Día seleccionado:', day );
 				}} />
 				<LatestWorkouts workouts={ lastWorkouts } />
 			</ScrollView>
-			<View style={ styles.tabBar }>
-				<TabItem
-					icon="🏠"
-					label="Home"
-					onPress={ () => navigation.navigate( 'Home' ) }
-				/>
-				<TabItem
-					icon="🕒"
-					label="History"
-					onPress={() => {/* Implementar navegación a History */} }
-				/>
-				<TabItem
-					icon="📊"
-					label="Statistics"
-					onPress={() => {/* Implementar navegación a Statistics */} }
-				/>
-				<TabItem
-					icon="⚙️"
-					label="Settings"
-					onPress={ () => navigation.navigate( 'Settings' ) }
-				/>
-			</View>
 		</SafeAreaView>
 	);
 }
