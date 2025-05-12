@@ -213,3 +213,48 @@ export async function deleteAllExercises(): Promise<SQLiteRunResult> {
 		`DELETE FROM exercises;`
 	);
 }
+
+/**
+ * Devuelve un listado de fechas y tipos de workout para un mes dado
+ */
+export async function getWorkoutDatesForMonth(
+	year: number,
+	month: number
+  ): Promise<{ date: string; workoutType: string }[]> {
+	const db = getDB();
+
+	const monthStr = String(month).padStart(2, '0');
+	const from = `${year}-${monthStr}-01`;
+	const nextMonth = month === 12 ? 1 : month + 1;
+	const nextYear = month === 12 ? year + 1 : year;
+	const nextMonthStr = String(nextMonth).padStart(2, '0');
+	const to = `${nextYear}-${nextMonthStr}-01`;
+
+	// 1) Subconsulta ordenada DESC para que al agrupar por fecha nos quedemos con el más reciente
+	const rows = await db.getAllAsync<{
+	  startDate: string;
+	  workoutType: string;
+	  date: string;
+	}>(
+	  `
+	  SELECT
+		substr(startDate,1,10) as date,
+		workoutType
+	  FROM (
+		SELECT startDate, workoutType
+		FROM workouts
+		WHERE startDate >= ? AND startDate < ?
+		ORDER BY startDate DESC  -- más recientes primero
+	  )
+	  GROUP BY date;             -- toma el primero (el más reciente) de cada grupo
+	  `,
+	  from,
+	  to
+	);
+
+	// 2) Retornamos directamente date + workoutType
+	return rows.map(r => ({
+	  date: r.date,
+	  workoutType: r.workoutType
+	}));
+  }

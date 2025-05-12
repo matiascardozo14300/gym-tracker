@@ -35,9 +35,8 @@ const lista: Exercise[] = [
 	{ id: 28, name: 'Lying Leg Curl',                muscleGroup: 'Hamstrings', workoutTypes: ['Legs', 'FullBody'] },
 	{ id: 29, name: 'Leg Press',                     muscleGroup: 'Cuadriceps', workoutTypes: ['Legs', 'FullBody'] },
 	{ id: 30, name: 'Leg Extension',                 muscleGroup: 'Cuadriceps', workoutTypes: ['Legs', 'FullBody'] },
-	{ id: 31, name: 'Leg Press',                     muscleGroup: 'Cuadriceps', workoutTypes: ['Legs', 'FullBody'] },
+	{ id: 31, name: 'Machine Leg Press',             muscleGroup: 'Cuadriceps', workoutTypes: ['Legs', 'FullBody'] },
 	{ id: 32, name: 'Hip Adduction',                 muscleGroup: 'Abductors',  workoutTypes: ['Legs', 'FullBody'] },
-	{ id: 33, name: 'Leg Press',                     muscleGroup: 'Cuadriceps', workoutTypes: ['Legs', 'FullBody'] },
 	{ id: 34, name: 'Standing Calf Raise',           muscleGroup: 'Calves',     workoutTypes: ['Legs', 'FullBody'] },
 	{ id: 35, name: 'Seated Calf Raise',             muscleGroup: 'Calves',     workoutTypes: ['Legs', 'FullBody'] },
 ];
