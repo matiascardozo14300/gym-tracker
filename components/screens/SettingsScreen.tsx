@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { insertExerciseBatch, getAllExercises, deleteAllExercises } from '../../services/database';
+import { insertExerciseBatch, getAllExercises, deleteAllExercises, exportDatabaseAsJson } from '../../services/database';
 import type { Exercise } from '../../models/types';
 
 // Lista completa de ejercicios a insertar
@@ -76,6 +76,15 @@ export default function SettingsScreen() {
 		}
 	}
 
+	const handleExportDatabase = async () => {
+		try {
+			await exportDatabaseAsJson();
+		} catch( error ) {
+			console.error(error);
+			Alert.alert( 'Error', 'No se pudo exportar la base de datos' );
+		}
+	}
+
 	return (
 		<View style={ styles.container }>
 			<TouchableOpacity style={ styles.button } onPress={ handleCreateAllExercises }>
@@ -83,6 +92,9 @@ export default function SettingsScreen() {
 			</TouchableOpacity>
 			<TouchableOpacity style={ styles.button } onPress={ handleDeleteAllExercises }>
 				<Text style={ styles.buttonText }>ELIMINAR todos los ejercicios</Text>
+			</TouchableOpacity>
+			<TouchableOpacity style={ styles.button } onPress={ handleExportDatabase }>
+				<Text style={styles.buttonText}>Exportar Backup</Text>
 			</TouchableOpacity>
 		</View>
 	);
