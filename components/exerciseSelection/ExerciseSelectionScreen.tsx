@@ -191,24 +191,67 @@ export default function ExerciseSelectionScreen() {
 				</TouchableOpacity>
 			</View>
 
-			{/* Modal con cronómetro dentro */}
 			<Modal visible={modalVisible} transparent animationType="slide">
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContainer}>
-						<TimerDisplay seconds={seconds} />
-						<Text style={styles.modalTitle}>{selectedExercise?.name || 'Agregar series'}</Text>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      <Text style={styles.modalTitle}>
+        {selectedExercise?.name || 'Agregar series'}
+      </Text>
 
-						<TextInput style={styles.input} placeholder="Peso (kg)" keyboardType="numeric" value={weight} onChangeText={setWeight} />
-						<TextInput style={styles.input} placeholder="Reps set 1" keyboardType="numeric" value={reps1} onChangeText={setReps1} />
-						<TextInput style={styles.input} placeholder="Reps set 2" keyboardType="numeric" value={reps2} onChangeText={setReps2} />
-						<TextInput style={styles.input} placeholder="Reps set 3" keyboardType="numeric" value={reps3} onChangeText={setReps3} />
+      {/* Peso */}
+      <View style={styles.fieldRow}>
+        <Text style={styles.fieldLabel}>kg</Text>
+        <TextInput
+          style={styles.fieldInput}
+          placeholder="Peso"
+          keyboardType="numeric"
+          value={weight}
+          onChangeText={setWeight}
+        />
+      </View>
 
-						<TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
-							<Text style={styles.modalButtonText}>Listo</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</Modal>
+      {/* Reps Set 1 */}
+      <View style={styles.fieldRow}>
+        <Text style={styles.fieldLabel}>1</Text>
+        <TextInput
+          style={styles.fieldInput}
+          placeholder="Reps set 1"
+          keyboardType="numeric"
+          value={reps1}
+          onChangeText={setReps1}
+        />
+      </View>
+
+      {/* Reps Set 2 */}
+      <View style={styles.fieldRow}>
+        <Text style={styles.fieldLabel}>2</Text>
+        <TextInput
+          style={styles.fieldInput}
+          placeholder="Reps set 2"
+          keyboardType="numeric"
+          value={reps2}
+          onChangeText={setReps2}
+        />
+      </View>
+
+      {/* Reps Set 3 */}
+      <View style={styles.fieldRow}>
+        <Text style={styles.fieldLabel}>3</Text>
+        <TextInput
+          style={styles.fieldInput}
+          placeholder="Reps set 3"
+          keyboardType="numeric"
+          value={reps3}
+          onChangeText={setReps3}
+        />
+      </View>
+
+      <TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
+        <Text style={styles.modalButtonText}>Listo</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
 		</View>
 	);
 }

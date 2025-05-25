@@ -13,6 +13,7 @@ import {
 import HomeScreen from './components/home/HomeScreen';
 import ExerciseSelectionScreen from './components/exerciseSelection/ExerciseSelectionScreen';
 import SettingsScreen from './components/settings/SettingsScreen';
+import StatisticsScreen from './components/statistics/StatisticsScreen'
 import { initDatabase } from './services/database';
 
 import HomeIcon from './assets/icons/home.svg';
@@ -61,7 +62,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="History" component={HomeScreen} />
-      <Tab.Screen name="Statistics" component={HomeScreen} />
+      <Tab.Screen name="Statistics" component={StatisticsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
 	);

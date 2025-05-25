@@ -23,3 +23,8 @@ export interface NewSetRecord {
 	weight: number;
 	reps: number;
 }
+
+export interface WeightPoint {
+	date: string;
+	weight: number;
+}
