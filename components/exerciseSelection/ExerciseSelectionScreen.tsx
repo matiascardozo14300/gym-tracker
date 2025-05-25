@@ -3,7 +3,7 @@ import {View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, TextIn
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
-import { Exercise, getExerciseByWorkoutType, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, updateWorkoutFinishDate } from '../../services/database/';
+import { Exercise, ExerciseMaxHistory, getExerciseByWorkoutType, getExerciseMaxHistory, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, updateWorkoutFinishDate } from '../../services/database/';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import styles from './styles';
@@ -69,9 +69,8 @@ export default function ExerciseSelectionScreen() {
 	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
 	const route = useRoute<ExSelRouteProp>();
   	const { workoutType } = route.params;
-	const [ exercises, setExercises ] = useState<Exercise[]>([]);
 
-	// Nuevo workout en DB
+	const [ exercises, setExercises ] = useState<Exercise[]>([]);
 	const [ workoutId, setWorkoutId ] = useState<number | null>(null);
 
 	// Timer state
@@ -86,6 +85,7 @@ export default function ExerciseSelectionScreen() {
 	const [ reps1, setReps1 ] = useState('');
 	const [ reps2, setReps2 ] = useState('');
 	const [ reps3, setReps3 ] = useState('');
+	const [ recordHistory, setRecordHistory ] = useState<ExerciseMaxHistory | null>(null);
 
 	// Create workout, start timer, load exercises
 	useEffect( () => {
@@ -115,11 +115,38 @@ export default function ExerciseSelectionScreen() {
 		};
 	}, [ workoutType ] );
 
+	// Se abre el modal
+	useEffect( () => {
+		if( modalVisible && selectedExercise ) {
+			( async () => {
+				try {
+					const hist = await getExerciseMaxHistory( selectedExercise.id );
+					setRecordHistory( hist );
+				} catch( error ) {
+					console.error( 'Error al obtener el máximo para el ejercicio: ', error );
+					setRecordHistory( null );
+				}
+			})();
+		} else {
+			setRecordHistory( null );
+		}
+	}, [ modalVisible, selectedExercise ]);
+
 	// Maneja selección de ejercicio: abre modal
 	const handleCardPress = ( item: Exercise ) => {
 		setSelectedExercise( item );
 		setModalVisible( true );
 	};
+
+	const getRecordDate = ( date: string | undefined ) => {
+		if( !date ) return 'No record';
+		const d = new Date( date );
+		return d.toLocaleDateString( undefined, {
+			weekday: 'long',
+			month: 'long',
+			day: 'numeric'
+		});
+	}
 
 	// Maneja envío y cierre del modal
 	const handleSubmit = async () => {
@@ -149,6 +176,17 @@ export default function ExerciseSelectionScreen() {
 		setReps1( '' );
 		setReps2( '' );
 		setReps3( '' );
+		setRecordHistory( null );
+	}
+
+	const handleCancel = () => {
+		setModalVisible( false );
+		setSelectedExercise( null );
+		setWeight( '' );
+		setReps1( '' );
+		setReps2( '' );
+		setReps3( '' );
+		setRecordHistory( null );
 	}
 
 	// Finalizar workout y volver al Home
@@ -192,66 +230,72 @@ export default function ExerciseSelectionScreen() {
 			</View>
 
 			<Modal visible={modalVisible} transparent animationType="slide">
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContainer}>
-      <Text style={styles.modalTitle}>
-        {selectedExercise?.name || 'Agregar series'}
-      </Text>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContainer}>
+						<Text style={styles.modalTitle}>
+							{selectedExercise?.name || 'Agregar series'}
+						</Text>
 
-      {/* Peso */}
-      <View style={styles.fieldRow}>
-        <Text style={styles.fieldLabel}>kg</Text>
-        <TextInput
-          style={styles.fieldInput}
-          placeholder="Peso"
-          keyboardType="numeric"
-          value={weight}
-          onChangeText={setWeight}
-        />
-      </View>
+						{/* Peso */}
+						<View style={styles.fieldRow}>
+							<Text style={styles.fieldLabel}>kg</Text>
+							<TextInput
+								style={styles.fieldInput}
+								placeholder="Peso"
+								keyboardType="numeric"
+								value={weight}
+								onChangeText={setWeight}
+							/>
+						</View>
 
-      {/* Reps Set 1 */}
-      <View style={styles.fieldRow}>
-        <Text style={styles.fieldLabel}>1</Text>
-        <TextInput
-          style={styles.fieldInput}
-          placeholder="Reps set 1"
-          keyboardType="numeric"
-          value={reps1}
-          onChangeText={setReps1}
-        />
-      </View>
+						{/* Reps Set 1 */}
+						<View style={styles.fieldRow}>
+							<Text style={styles.fieldLabel}>1</Text>
+							<TextInput
+								style={styles.fieldInput}
+								placeholder="Reps set 1"
+								keyboardType="numeric"
+								value={reps1}
+								onChangeText={setReps1}
+							/>
+						</View>
 
-      {/* Reps Set 2 */}
-      <View style={styles.fieldRow}>
-        <Text style={styles.fieldLabel}>2</Text>
-        <TextInput
-          style={styles.fieldInput}
-          placeholder="Reps set 2"
-          keyboardType="numeric"
-          value={reps2}
-          onChangeText={setReps2}
-        />
-      </View>
+						{/* Reps Set 2 */}
+						<View style={styles.fieldRow}>
+							<Text style={styles.fieldLabel}>2</Text>
+							<TextInput
+								style={styles.fieldInput}
+								placeholder="Reps set 2"
+								keyboardType="numeric"
+								value={reps2}
+								onChangeText={setReps2}
+							/>
+						</View>
 
-      {/* Reps Set 3 */}
-      <View style={styles.fieldRow}>
-        <Text style={styles.fieldLabel}>3</Text>
-        <TextInput
-          style={styles.fieldInput}
-          placeholder="Reps set 3"
-          keyboardType="numeric"
-          value={reps3}
-          onChangeText={setReps3}
-        />
-      </View>
+						{/* Reps Set 3 */}
+						<View style={styles.fieldRow}>
+							<Text style={styles.fieldLabel}>3</Text>
+							<TextInput
+								style={styles.fieldInput}
+								placeholder="Reps set 3"
+								keyboardType="numeric"
+								value={reps3}
+								onChangeText={setReps3}
+							/>
+						</View>
 
-      <TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
-        <Text style={styles.modalButtonText}>Listo</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+						<Text style={ styles.recordText }>Record: {recordHistory?.maxWeight} · {recordHistory?.sets[0].reps}, {recordHistory?.sets[1].reps}, {recordHistory?.sets[2].reps} · {getRecordDate(recordHistory?.date)}</Text>
+
+						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+							<Text style={styles.cancelButtonText}>Cancelar</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
+							<Text style={styles.modalButtonText}>Guardar</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 }
