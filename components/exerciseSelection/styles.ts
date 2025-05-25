@@ -35,10 +35,73 @@ export default StyleSheet.create({
 	finishButtonText: { color: '#fff', fontWeight: '600' },
 
 	// Modal styles
-	modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
-	modalContainer: { width: '80%', backgroundColor: '#fff', borderRadius: 12, padding: 20 },
-	modalTitle: { fontSize: 18, fontWeight: '600', marginVertical: 12, textAlign: 'center' },
-	input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
-	modalButton: { backgroundColor: '#007AFF', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-	modalButtonText: { color: '#fff', fontWeight: '600' }
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0,0,0,0.4)',
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	modalContainer: {
+		width: '80%',
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		padding: 20
+	},
+	modalTitle: {
+		fontSize: 18,
+		fontWeight: '600',
+		marginBottom: 16,
+		textAlign: 'center'
+	},
+	fieldRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 12
+	},
+	fieldLabel: {
+		width: 30,
+		fontSize: 16,
+		fontWeight: '500',
+		textAlign: 'center'
+	},
+	fieldInput: {
+		flex: 1,
+		borderWidth: 1,
+		borderColor: '#ccc',
+		borderRadius: 8,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		marginLeft: 8
+	},
+	modalButton: {
+		backgroundColor: '#007AFF',
+		paddingVertical: 12,
+		borderRadius: 8,
+		alignItems: 'center',
+		marginTop: 8
+	},
+	cancelButton: {
+		backgroundColor: '#fff',
+		borderWidth: 1,
+		borderColor: '#ccc',
+		borderRadius: 8,
+		paddingVertical: 12,
+		alignItems: 'center',
+		marginTop: 8
+	},
+	cancelButtonText: {
+		color: '#333',
+		fontWeight: '600',
+		fontSize: 16
+	},
+	modalButtonText: {
+		color: '#fff',
+		fontWeight: '600'
+	},
+	recordText: {
+		fontSize: 14,
+		color: '#666',
+		textAlign: 'center',
+		marginVertical: 12,
+	}
 });

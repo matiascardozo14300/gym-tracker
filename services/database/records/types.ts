@@ -23,3 +23,15 @@ export interface NewSetRecord {
 	weight: number;
 	reps: number;
 }
+
+export interface WeightPoint {
+	date: string;
+	weight: number;
+}
+
+export interface ExerciseMaxHistory {
+	exerciseRecordId: number;
+	date: string;
+	maxWeight: number;
+	sets: { weight: number; reps: number }[];
+}
