@@ -41,6 +41,15 @@ export default StyleSheet.create({
     overflow: 'hidden'
   },
 
+	picker: {
+		backgroundColor: '#fff',
+		color: '#000',
+	},
+	pickerItem: {
+		color: '#000',
+		backgroundColor: '#fff',
+	},
+
   chartTitle: {
     fontSize: 18,
     fontWeight: '600',

@@ -238,49 +238,49 @@ export default function ExerciseSelectionScreen() {
 
 						{/* Peso */}
 						<View style={styles.fieldRow}>
-							<Text style={styles.fieldLabel}>kg</Text>
 							<TextInput
 								style={styles.fieldInput}
 								placeholder="Peso"
 								keyboardType="numeric"
 								value={weight}
 								onChangeText={setWeight}
+								placeholderTextColor="#000"
 							/>
 						</View>
 
 						{/* Reps Set 1 */}
 						<View style={styles.fieldRow}>
-							<Text style={styles.fieldLabel}>1</Text>
 							<TextInput
 								style={styles.fieldInput}
 								placeholder="Reps set 1"
 								keyboardType="numeric"
 								value={reps1}
 								onChangeText={setReps1}
+								placeholderTextColor="#000"
 							/>
 						</View>
 
 						{/* Reps Set 2 */}
 						<View style={styles.fieldRow}>
-							<Text style={styles.fieldLabel}>2</Text>
 							<TextInput
 								style={styles.fieldInput}
 								placeholder="Reps set 2"
 								keyboardType="numeric"
 								value={reps2}
 								onChangeText={setReps2}
+								placeholderTextColor="#000"
 							/>
 						</View>
 
 						{/* Reps Set 3 */}
 						<View style={styles.fieldRow}>
-							<Text style={styles.fieldLabel}>3</Text>
 							<TextInput
 								style={styles.fieldInput}
 								placeholder="Reps set 3"
 								keyboardType="numeric"
 								value={reps3}
 								onChangeText={setReps3}
+								placeholderTextColor="#000"
 							/>
 						</View>
 

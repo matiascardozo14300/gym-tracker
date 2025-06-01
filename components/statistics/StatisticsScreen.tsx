@@ -79,9 +79,11 @@ export default function StatisticsScreen() {
 						selectedValue={selectedExercise}
 						onValueChange={ (v) => setSelectedExercise( v )}
 						mode="dropdown"
+						style={styles.picker}
+						itemStyle={styles.pickerItem}
 					>
 						{exercises.map( (ex) => (
-							<Picker.Item key={ex.id} label={ex.name} value={ex} />
+							<Picker.Item key={ex.id} label={ex.name} value={ex} color="#000" />
 						))}
 					</Picker>
 				</View>
