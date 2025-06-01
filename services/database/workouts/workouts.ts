@@ -1,6 +1,6 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import type { Workout, LastWorkout, NewWorkout } from './types';
+import type { Workout, LastWorkout, NewWorkout, WorkoutDetail } from './types';
 
 // Crea un nuevo entrenamiento
 export async function insertNewWorkout( workout: NewWorkout ): Promise<number> {
@@ -91,4 +91,67 @@ export async function getWorkoutDatesForMonth(
 		date: r.date,
 		workoutType: r.workoutType
 	}));
+}
+
+// Devuelve los datos completos de un workout por fecha
+export async function getWorkoutDetailByDate( dateString: string ): Promise<WorkoutDetail | null> {
+	const db = getDB();
+	const workoutRow = await db.getFirstAsync<{ id: number; workoutType: string }>(
+		`
+		SELECT id, workoutType
+		FROM workouts
+		WHERE date(startDate) = ?
+		ORDER BY id DESC
+		LIMIT 1;
+		`,
+		dateString
+	);
+
+	if( !workoutRow ) return null;
+	const { id: workoutId, workoutType } = workoutRow;
+
+	// Recuperar todos los registros de sets junto con el nombre del ejercicio
+	const rows = await db.getAllAsync<{ exerciseName: string; weight: number; reps: number; }>(
+		`
+		SELECT
+			e.name AS exerciseName,
+			s.weight,
+			s.reps
+		FROM exercise_records er
+		JOIN exercises      e ON er.exerciseId = e.id
+		JOIN sets           s ON s.exerciseRecordId = er.id
+		WHERE er.workoutId = ?
+		ORDER BY e.name, s.id;
+		`,
+		workoutId
+	);
+
+	const map: Record<
+	string,
+		{
+			name: string;
+			sets: { weight: number; reps: number }[];
+		}
+	> = {};
+
+	for( const row of rows ) {
+		if( !map[row.exerciseName] ) {
+			map[row.exerciseName] = {
+				name: row.exerciseName,
+				sets: [],
+			};
+		}
+
+		map[row.exerciseName].sets.push({
+			weight: row.weight,
+			reps: row.reps,
+		});
+	}
+
+	const exercises = Object.values( map );
+
+	return {
+		workoutType,
+		exercises,
+	};
 }
