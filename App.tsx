@@ -99,7 +99,7 @@ export default function App() {
 				<Stack.Screen
 					name="ExerciseSelection"
 					component={ExerciseSelectionScreen}
-					options={{ headerShown: true, title: 'Seleccionar ejercicios', headerBackVisible: false }}
+					options={{ headerShown: true, title: 'Choose exercises', headerBackVisible: false }}
 				/>
 
 			</Stack.Navigator>
