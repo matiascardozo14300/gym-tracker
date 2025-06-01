@@ -89,21 +89,11 @@ export default function ExerciseSelectionScreen() {
 
 	// Create workout, start timer, load exercises
 	useEffect( () => {
-		( async () => {
-			const now = new Date().toISOString();
-			const id = await insertNewWorkout({
-				startDate: now,
-				finishDate: now,
-				workoutType
-			} as NewWorkout );
-			setWorkoutId( id );
-
-			startTimeRef.current = Date.now();
-			intervalRef.current = setInterval(() => {
-				const diff = Date.now() - startTimeRef.current;
-				setSeconds( Math.floor( diff / 1000 ) );
-			}, 1000 );
-		})();
+		startTimeRef.current = Date.now();
+		intervalRef.current = setInterval(() => {
+			const diff = Date.now() - startTimeRef.current;
+			setSeconds( Math.floor( diff / 1000 ) );
+		}, 1000 );
 
 		// Cargar ejercicios disponibles
 		getExerciseByWorkoutType( workoutType )
@@ -150,11 +140,23 @@ export default function ExerciseSelectionScreen() {
 
 	// Maneja envío y cierre del modal
 	const handleSubmit = async () => {
-		if( workoutId == null || selectedExercise == null ) return;
+		if( selectedExercise == null ) return;
+
+		let currentWorkoutId = workoutId;
+		if( currentWorkoutId == null ) {
+			const now = new Date().toISOString();
+			const newId = await insertNewWorkout({
+				startDate: now,
+				finishDate: now,
+				workoutType
+			} as NewWorkout );
+			setWorkoutId( newId );
+			currentWorkoutId = newId;
+		}
 
 		// 1) Insertar ExerciseRecord
 		const exerciseRecordId = await insertExerciseRecord({
-			workoutId,
+			workoutId: currentWorkoutId,
 			exerciseId: selectedExercise.id
 		} as NewExerciseRecord );
 
@@ -192,6 +194,7 @@ export default function ExerciseSelectionScreen() {
 	// Finalizar workout y volver al Home
 	const handleFinish = async () => {
 		if( intervalRef.current ) clearInterval( intervalRef.current );
+
 		if( workoutId != null ) {
 			const now = new Date().toISOString();
 			await updateWorkoutFinishDate( workoutId, now );
@@ -208,7 +211,9 @@ export default function ExerciseSelectionScreen() {
 		  />
 		  <Text style={styles.cardText}>{item.name}</Text>
 		</TouchableOpacity>
-	  );
+	);
+
+	const isSubmitDisabled = !weight.trim() || !reps1.trim() || !reps2.trim() || !reps3.trim();
 
 	return (
 		<View style={styles.container}>
@@ -290,8 +295,8 @@ export default function ExerciseSelectionScreen() {
 							<Text style={styles.cancelButtonText}>Cancelar</Text>
 						</TouchableOpacity>
 
-						<TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
-							<Text style={styles.modalButtonText}>Guardar</Text>
+						<TouchableOpacity onPress={handleSubmit} disabled={isSubmitDisabled} style={[styles.modalButton, isSubmitDisabled && styles.modalButtonDisabled]}>
+							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Guardar</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

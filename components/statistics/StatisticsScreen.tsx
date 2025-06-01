@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import Header from '../header/Header';
 import { Picker } from '@react-native-picker/picker';
 import { LineChart } from 'react-native-chart-kit';
 import styles from './styles';
 import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint } from '../../services/database';
+import HelpIcon from '../../assets/icons/help.svg';
 
 const screenWidth = Dimensions.get('window').width - 32;
 const workoutTypes: WorkoutType[] = ['Pull', 'Push', 'Legs', 'FullBody'];
@@ -17,8 +18,11 @@ export default function StatisticsScreen() {
 
 	const [labels, setLabels] = useState<string[]>([]);
 	const [data, setData] = useState<number[]>([]);
+	const [repIncreased, setRepIncreased] = useState<boolean[]>([]);
 	const [maxWeight, setMaxWeight] = useState<number>(0);
 	const [avgTrend, setAvgTrend] = useState<number>(0);
+
+	const [helpModalVisible, setHelpModalVisible] = useState(false);
 
   	useEffect( () => {
 		getExerciseByWorkoutType( selectedType )
@@ -34,28 +38,47 @@ export default function StatisticsScreen() {
 
 		getExerciseRecords( selectedExercise.id )
 			.then( ( records: WeightPoint[] ) => {
-				const labels: string[] = [];
-				const data: number[] = [];
+				const newLabels: string[] = [];
+				const newData: number[] = [];
+				const newRepInc: boolean[] = [];
 
-				for( const record of records ) {
+				for( let i = 0; i < records.length; i++ ) {
+					const record = records[i];
 					const date = new Date( record.date );
-					labels.push( `${date.getDate()}/${date.getMonth() + 1}` );
-					data.push( record.weight );
-				}
-				setLabels( labels );
-				setData( data );
+					newLabels.push( `${date.getDate()}/${date.getMonth() + 1}` );
+					newData.push( record.weight );
 
-				if( data.length === 0 ) {
+					if( i === 0 ) {
+						newRepInc.push( false );
+					} else {
+						const prev = records[i - 1];
+
+						if( record.weight !== prev.weight ) {
+							newRepInc.push( false );
+						} else {
+							const sumCur = record.reps[0] + record.reps[1] + record.reps[2];
+							const sumPrev = prev.reps[0] + prev.reps[1] + prev.reps[2];
+							newRepInc.push( sumCur > sumPrev );
+						}
+					}
+				}
+
+				setLabels( newLabels );
+				setData( newData );
+				setRepIncreased( newRepInc );
+
+				if( newData.length === 0 ) {
 					setMaxWeight( 0 );
 					setAvgTrend( 0 );
 					return;
 				}
-				const mx = Math.max( ...data );
+				const mx = Math.max( ...newData );
 				setMaxWeight( mx );
 
-				const trend = ( data[ data.length - 1 ] - data[0] ) / ( data.length - 1 );
+				const trend = ( newData[ newData.length - 1 ] - newData[0] ) / ( newData.length - 1 );
 				setAvgTrend( parseFloat( trend.toFixed(1) ) );
-		});
+			})
+			.catch( console.error );
 	}, [selectedExercise] );
 
 	return (
@@ -88,7 +111,13 @@ export default function StatisticsScreen() {
 					</Picker>
 				</View>
 
-				<Text style={styles.chartTitle}>Weight (kg)</Text>
+				<View style={styles.chartTitleContainer}>
+					<Text style={styles.chartTitle}>Weight (kg)</Text>
+					<TouchableOpacity onPress={() => setHelpModalVisible(true)} style={styles.helpButton}>
+						<HelpIcon width={25} height={25} color={"grey"} />
+					</TouchableOpacity>
+				</View>
+
 				{labels.length >= 2 && data.length >= 2 ? (
 					<LineChart
 						data={{ labels, datasets: [{ data }] }}
@@ -96,27 +125,44 @@ export default function StatisticsScreen() {
 						height={220}
 						yAxisSuffix="kg"
 						chartConfig={{
-						backgroundGradientFrom: '#fff',
-						backgroundGradientTo: '#fff',
-						decimalPlaces: 0,
-						color: (opacity = 1) => `rgba(255,165,0,${opacity})`,
-						labelColor: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-						propsForDots: {
-						r: '5',
-						strokeWidth: '2',
-						stroke: '#FFA500'
-						},
-						propsForBackgroundLines: {
-						stroke: '#e3e3e3'
-						}
+							backgroundGradientFrom: '#fff',
+							backgroundGradientTo: '#fff',
+							decimalPlaces: 0,
+							color: (opacity = 1) => `rgba(255,165,0,${opacity})`,
+							labelColor: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+							propsForDots: {
+							r: '0',
+							},
+							propsForBackgroundLines: {
+							stroke: '#e3e3e3',
+							},
 						}}
 						bezier
 						style={styles.chartStyle}
+						renderDotContent={({ x, y, index }) => {
+							const isBigger = repIncreased[index];
+							const radius = isBigger ? 10 : 5;
+							return (
+							<View
+								key={`dot-${index}`}
+								style={{
+								position: 'absolute',
+								left: x - radius,
+								top: y - radius,
+								width: radius * 2,
+								height: radius * 2,
+								borderRadius: radius,
+								borderWidth: 2,
+								borderColor: '#FFA500',
+								backgroundColor: '#FFA500',
+								}}
+							/>
+							);
+						}}
 					/>
-					) : (
-					<Text>No hay suficientes registros para este ejercicio</Text>
-					)}
-
+  				) : (
+    				<Text>No hay suficientes registros para este ejercicio</Text>
+  				)}
 				<View style={styles.statsCard}>
 					<View style={styles.statsRow}>
 						<Text style={styles.statsLabel}>Max Weight</Text>
@@ -128,6 +174,36 @@ export default function StatisticsScreen() {
 						<Text style={styles.statsValue}>+{avgTrend} kg/day</Text>
 					</View>
 				</View>
+
+				<Modal
+					visible={helpModalVisible}
+					transparent
+					animationType="fade"
+					onRequestClose={() => setHelpModalVisible(false)}
+					>
+					<View style={styles.helpModalOverlay}>
+						<View style={styles.helpModalContainer}>
+							<Text style={styles.helpModalTitle}>¿Cómo funciona el gráfico?</Text>
+							<ScrollView contentContainerStyle={styles.helpModalContent}>
+								<Text style={styles.helpModalText}>
+									• Cada punto representa el peso levantado en una sesión (eje Y) en la fecha correspondiente (eje X).
+									{'\n\n'}
+									• Si el peso se incrementa respecto a la sesión anterior, el punto aparece más arriba: el gráfico traza una línea ascendente.
+									{'\n\n'}
+									• Si el peso se mantiene pero las repeticiones totales suben (por ejemplo: de 7–5–4 a 8–5–4 con el mismo peso), ese punto aparece con un radio el doble de grande (para indicar progreso en repeticiones sin haber subido peso).
+									{'\n\n'}
+									• Si peso y repeticiones se mantienen iguales, el punto conserva su tamaño normal.
+								</Text>
+							</ScrollView>
+							<TouchableOpacity
+								style={styles.helpModalCloseButton}
+								onPress={() => setHelpModalVisible(false)}
+							>
+								<Text style={styles.helpModalCloseText}>Cerrar</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</Modal>
 			</ScrollView>
 		</SafeAreaView>
 	);
