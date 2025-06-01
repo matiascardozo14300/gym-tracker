@@ -20,9 +20,7 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ markedDates, onDayPre
 			markedDates={ markedDates }
 			onDayPress={ onDayPress }
 			style={styles.calendar}
-			// Ajustes de tema básicos
 			theme={{
-			// Color del texto de hoy si no está marcado
 			todayTextColor: '#3339ff'
 			}}
 		/>

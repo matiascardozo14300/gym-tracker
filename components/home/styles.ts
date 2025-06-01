@@ -57,4 +57,66 @@ export default StyleSheet.create({
 	tabItem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 	tabIcon: { fontSize: 20 },
 	tabLabel: { fontSize: 12, marginTop: 2 },
+	modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 12,
+    textAlign: 'center',
+    color: '#444',
+  },
+  detailRow: {
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    paddingBottom: 8,
+  },
+  detailExerciseName: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  detailSetsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  detailSetText: {
+    fontSize: 13,
+    color: '#333',
+  },
+  modalEmptyText: {
+    textAlign: 'center',
+    color: '#666',
+    marginVertical: 16,
+  },
+  modalCloseButton: {
+    marginTop: 16,
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
 });
