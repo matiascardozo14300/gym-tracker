@@ -7,7 +7,7 @@ export default ({ config }) => ({
 
 	expo: {
 		...config.expo,
-		name: isProd ? 'Gym Tracker' : 'Gym Tracker (Dev)',
+		name: 'Gym Tracker',
 		slug: "gym-tracker",
 		version: '1.0.1',
 		// Definimos sdkVersion solo en producción
@@ -28,7 +28,7 @@ export default ({ config }) => ({
 		  package: "com.tudominio.gymtracker",
 		  versionCode: 1,
 		  adaptiveIcon: {
-			foregroundImage: "./assets/adaptive-icon.png",
+			foregroundImage: "./assets/app-logo.png",
 			backgroundColor: "#ffffff"
 		  }
 		},
