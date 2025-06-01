@@ -80,6 +80,9 @@ export default StyleSheet.create({
 		alignItems: 'center',
 		marginTop: 8
 	},
+	modalButtonDisabled: {
+  		backgroundColor: '#ccc',
+	},
 	cancelButton: {
 		backgroundColor: '#fff',
 		borderWidth: 1,
@@ -98,10 +101,13 @@ export default StyleSheet.create({
 		color: '#fff',
 		fontWeight: '600'
 	},
+	modalButtonTextDisabled: {
+		color: '#666',
+	},
 	recordText: {
 		fontSize: 14,
 		color: '#666',
 		textAlign: 'center',
 		marginVertical: 12,
-	}
+	},
 });

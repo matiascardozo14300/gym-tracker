@@ -97,9 +97,9 @@ export default function App() {
 				<Stack.Screen name="Tabs" component={MainTabs} />
 
 				<Stack.Screen
-				name="ExerciseSelection"
-				component={ExerciseSelectionScreen}
-				options={{ headerShown: true }}
+					name="ExerciseSelection"
+					component={ExerciseSelectionScreen}
+					options={{ headerShown: true, title: 'Choose exercises', headerBackVisible: false }}
 				/>
 
 			</Stack.Navigator>

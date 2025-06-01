@@ -27,6 +27,7 @@ export interface NewSetRecord {
 export interface WeightPoint {
 	date: string;
 	weight: number;
+	reps: [number, number, number];
 }
 
 export interface ExerciseMaxHistory {

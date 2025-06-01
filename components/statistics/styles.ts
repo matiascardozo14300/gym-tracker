@@ -76,5 +76,59 @@ export default StyleSheet.create({
   },
   statsLabel: { fontSize: 16 },
   statsValue: { fontSize: 18, fontWeight: '600' },
-  divider: { height: 1, backgroundColor: '#eee', marginVertical: 4 }
+  divider: { height: 1, backgroundColor: '#eee', marginVertical: 4 },
+  chartTitleContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 16,
+  marginBottom: 8,
+},
+
+
+helpButton: {
+  marginLeft: 8,
+  marginBottom: 4
+},
+
+// Overlay y contenedor del modal de ayuda
+helpModalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.4)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+helpModalContainer: {
+  width: '85%',
+  maxHeight: '80%',
+  backgroundColor: '#fff',
+  borderRadius: 12,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+},
+helpModalTitle: {
+  fontSize: 18,
+  fontWeight: '600',
+  marginBottom: 12,
+  textAlign: 'center',
+},
+helpModalContent: {
+  paddingBottom: 12,
+},
+helpModalText: {
+  fontSize: 14,
+  lineHeight: 20,
+  color: '#333',
+},
+helpModalCloseButton: {
+  marginTop: 8,
+  backgroundColor: '#007AFF',
+  borderRadius: 8,
+  paddingVertical: 10,
+  alignItems: 'center',
+},
+helpModalCloseText: {
+  color: '#fff',
+  fontWeight: '600',
+  fontSize: 16,
+},
 });

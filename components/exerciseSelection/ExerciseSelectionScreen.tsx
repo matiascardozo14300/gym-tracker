@@ -79,7 +79,8 @@ export default function ExerciseSelectionScreen() {
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	// Estados para modal e inputs
-	const [ modalVisible, setModalVisible] = useState(false);
+	const [ exerciseModalVisible, setExerciseModalVisible] = useState(false);
+	const [ finishModalVisible, setFinishModalVisible] = useState(false);
 	const [ selectedExercise, setSelectedExercise ] = useState<Exercise | null>(null);
 	const [ weight, setWeight ] = useState('');
 	const [ reps1, setReps1 ] = useState('');
@@ -89,21 +90,11 @@ export default function ExerciseSelectionScreen() {
 
 	// Create workout, start timer, load exercises
 	useEffect( () => {
-		( async () => {
-			const now = new Date().toISOString();
-			const id = await insertNewWorkout({
-				startDate: now,
-				finishDate: now,
-				workoutType
-			} as NewWorkout );
-			setWorkoutId( id );
-
-			startTimeRef.current = Date.now();
-			intervalRef.current = setInterval(() => {
-				const diff = Date.now() - startTimeRef.current;
-				setSeconds( Math.floor( diff / 1000 ) );
-			}, 1000 );
-		})();
+		startTimeRef.current = Date.now();
+		intervalRef.current = setInterval(() => {
+			const diff = Date.now() - startTimeRef.current;
+			setSeconds( Math.floor( diff / 1000 ) );
+		}, 1000 );
 
 		// Cargar ejercicios disponibles
 		getExerciseByWorkoutType( workoutType )
@@ -117,7 +108,7 @@ export default function ExerciseSelectionScreen() {
 
 	// Se abre el modal
 	useEffect( () => {
-		if( modalVisible && selectedExercise ) {
+		if( exerciseModalVisible && selectedExercise ) {
 			( async () => {
 				try {
 					const hist = await getExerciseMaxHistory( selectedExercise.id );
@@ -130,12 +121,12 @@ export default function ExerciseSelectionScreen() {
 		} else {
 			setRecordHistory( null );
 		}
-	}, [ modalVisible, selectedExercise ]);
+	}, [ exerciseModalVisible, selectedExercise ]);
 
 	// Maneja selección de ejercicio: abre modal
 	const handleCardPress = ( item: Exercise ) => {
 		setSelectedExercise( item );
-		setModalVisible( true );
+		setExerciseModalVisible( true );
 	};
 
 	const getRecordDate = ( date: string | undefined ) => {
@@ -150,11 +141,23 @@ export default function ExerciseSelectionScreen() {
 
 	// Maneja envío y cierre del modal
 	const handleSubmit = async () => {
-		if( workoutId == null || selectedExercise == null ) return;
+		if( selectedExercise == null ) return;
+
+		let currentWorkoutId = workoutId;
+		if( currentWorkoutId == null ) {
+			const now = new Date().toISOString();
+			const newId = await insertNewWorkout({
+				startDate: now,
+				finishDate: now,
+				workoutType
+			} as NewWorkout );
+			setWorkoutId( newId );
+			currentWorkoutId = newId;
+		}
 
 		// 1) Insertar ExerciseRecord
 		const exerciseRecordId = await insertExerciseRecord({
-			workoutId,
+			workoutId: currentWorkoutId,
 			exerciseId: selectedExercise.id
 		} as NewExerciseRecord );
 
@@ -170,7 +173,7 @@ export default function ExerciseSelectionScreen() {
 		}
 
 		// Reset modal inputs
-		setModalVisible( false );
+		setExerciseModalVisible( false );
 		setSelectedExercise( null );
 		setWeight( '' );
 		setReps1( '' );
@@ -180,7 +183,7 @@ export default function ExerciseSelectionScreen() {
 	}
 
 	const handleCancel = () => {
-		setModalVisible( false );
+		setExerciseModalVisible( false );
 		setSelectedExercise( null );
 		setWeight( '' );
 		setReps1( '' );
@@ -189,13 +192,19 @@ export default function ExerciseSelectionScreen() {
 		setRecordHistory( null );
 	}
 
+	const handleFinishPress = () => {
+		setFinishModalVisible( true );
+	}
+
 	// Finalizar workout y volver al Home
 	const handleFinish = async () => {
 		if( intervalRef.current ) clearInterval( intervalRef.current );
+
 		if( workoutId != null ) {
 			const now = new Date().toISOString();
 			await updateWorkoutFinishDate( workoutId, now );
 		}
+		setFinishModalVisible( false );
 		tabNav?.navigate('Home');
 		navigation.navigate('Tabs', { screen: 'Home' });
 	};
@@ -208,7 +217,9 @@ export default function ExerciseSelectionScreen() {
 		  />
 		  <Text style={styles.cardText}>{item.name}</Text>
 		</TouchableOpacity>
-	  );
+	);
+
+	const isSubmitDisabled = !weight.trim() || !reps1.trim() || !reps2.trim() || !reps3.trim();
 
 	return (
 		<View style={styles.container}>
@@ -224,12 +235,12 @@ export default function ExerciseSelectionScreen() {
 			{/* Cronómetro y botón Finish */}
 			<View style={ styles.footer} >
 				<TimerDisplay seconds={ seconds } />
-				<TouchableOpacity style={ styles.finishButton } onPress={ handleFinish }>
+				<TouchableOpacity style={ styles.finishButton } onPress={ workoutId != null ?  handleFinishPress : handleFinish }>
 					<Text style={ styles.finishButtonText }>Finish Workout</Text>
 				</TouchableOpacity>
 			</View>
 
-			<Modal visible={modalVisible} transparent animationType="slide">
+			<Modal visible={exerciseModalVisible} transparent animationType="slide">
 				<View style={styles.modalOverlay}>
 					<View style={styles.modalContainer}>
 						<Text style={styles.modalTitle}>
@@ -290,7 +301,21 @@ export default function ExerciseSelectionScreen() {
 							<Text style={styles.cancelButtonText}>Cancelar</Text>
 						</TouchableOpacity>
 
-						<TouchableOpacity style={styles.modalButton} onPress={handleSubmit}>
+						<TouchableOpacity onPress={handleSubmit} disabled={isSubmitDisabled} style={[styles.modalButton, isSubmitDisabled && styles.modalButtonDisabled]}>
+							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Guardar</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
+			<Modal visible={ finishModalVisible } transparent animationType="slide">
+				<View style={ styles.modalOverlay }>
+					<View style={ styles.modalContainer }>
+						<Text style={ styles.modalTitle }>¿Estás seguro de finalizar el entrenamiento?</Text>
+						<TouchableOpacity style={styles.cancelButton} onPress={() => setFinishModalVisible( false )}>
+							<Text style={styles.cancelButtonText}>Atrás</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity onPress={handleFinish} style={styles.modalButton}>
 							<Text style={styles.modalButtonText}>Guardar</Text>
 						</TouchableOpacity>
 					</View>

@@ -41,12 +41,13 @@ const WorkoutTypeSelector: React.FC = () => {
 export default function HomeScreen() {
 	const [ lastWorkouts, setLastWorkouts ] = useState<LastWorkout[]>([]);
 
-	const [markedDates, setMarkedDates] = useState<CustomMarkedDates>({});
+	const [ markedDates, setMarkedDates ] = useState<CustomMarkedDates>({});
 
 	const [modalVisible, setModalVisible] = useState( false );
 	const [selectedDate, setSelectedDate] = useState<string | null>( null );
 	const [workoutDetail, setWorkoutDetail] = useState<WorkoutDetail | null>( null );
 
+	// Al cargar la pantalla por primera vez
 	useEffect(() => {
 		getLast3Workouts().then( setLastWorkouts ).catch( console.error );
 
@@ -70,12 +71,32 @@ export default function HomeScreen() {
 					}
 				  }
 				};
-			  }
+			}
 			setMarkedDates( marks );
 		})();
 	}, []);
 
+	const fetchWorkoutsForMonth = async ( year: number, month: number ) => {
+		const items = await getWorkoutDatesForMonth( year, month );
+		const marks: CustomMarkedDates = {};
+		for (const { date, workoutType } of items) {
+			marks[date] = {
+				customStyles: {
+				container: {
+					backgroundColor: workoutTypeColors[ workoutType ] || 'grey',
+					borderRadius: 20
+				},
+				text: {
+					color: 'black',
+					fontWeight: '600'
+				}
+				}
+			};
+		}
+		setMarkedDates( marks );
+	}
 
+	// Cuando se selecciona un día en el calendario
 	useEffect( () => {
 		if( modalVisible && selectedDate ) {
 			( async () => {
@@ -104,6 +125,7 @@ export default function HomeScreen() {
 						setSelectedDate( dateString );
 						setModalVisible( true );
 					}}
+					onMonthChanged={ (date) => fetchWorkoutsForMonth( date?.year, date?.month )}
 				/>
 				<LatestWorkouts workouts={ lastWorkouts } onWorkoutPress={ async ( workout ) => {
 					const dateString = workout.startDate.includes( 'T' ) ? workout.startDate.split( 'T' )[0] : workout.startDate;

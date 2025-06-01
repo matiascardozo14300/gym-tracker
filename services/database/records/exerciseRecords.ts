@@ -26,19 +26,55 @@ export async function insertSetRecord( record: NewSetRecord ): Promise<number> {
 
 // Obtiene el histórico de pesos por fecha de un ejercicio determinado
 export async function getExerciseRecords( exerciseId: number ): Promise<WeightPoint[]> {
-	const rows = await getDB().getAllAsync<WeightPoint>(
-	`
-		SELECT w.startDate AS date, MIN(s.weight) AS weight
+	const db = getDB();
+	const recs = await db.getAllAsync<{ recordId: number; date: string }>(
+		`
+		SELECT
+			er.id AS recordId,
+			w.startDate AS date
 		FROM exercise_records er
-			JOIN workouts w ON er.workoutId = w.id
-			JOIN sets s ON s.exerciseRecordId = er.id
+		JOIN workouts w ON er.workoutId = w.id
 		WHERE er.exerciseId = ?
-		GROUP BY w.id, w.startDate
 		ORDER BY w.startDate;
-	`,
-    	exerciseId
-	);
-	return rows;
+		`,
+		exerciseId
+  	);
+
+	const result: WeightPoint[] = [];
+	for( const { recordId, date } of recs ) {
+		const setRows = await db.getAllAsync<{ weight: number; reps: number }>(
+			`
+			SELECT weight, reps
+			FROM sets
+			WHERE exerciseRecordId = ?
+			ORDER BY id;
+			`,
+			recordId
+		);
+
+		// Si no hay sets, lo ignoramos
+		if( setRows.length === 0 ) continue;
+
+		// Suponemos que siempre hay exactamente 3 sets. Si hay menos, rellenamos con 0
+		const repsArray: [number, number, number] = [
+			setRows[0]?.reps ?? 0,
+			setRows[1]?.reps ?? 0,
+			setRows[2]?.reps ?? 0
+		];
+		// Tomamos el peso del primer set (asumimos mismo peso en los 3)
+		const weight = setRows[0].weight;
+
+		// Cortamos la fecha ISO a "YYYY-MM-DD" si viene con hora
+		const dateKey = date.includes('T') ? date.split('T')[0] : date;
+
+		result.push({
+			date: dateKey,
+			weight,
+			reps: repsArray
+		});
+	}
+
+	return result;
 }
 
 // Obtiene el máximo de peso registrado para un ejercicio (junto con los sets)

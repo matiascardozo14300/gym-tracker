@@ -2,17 +2,23 @@ import React from 'react';
 import { View, StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 
-export type CustomMarkedDates = Record<string,{ customStyles: {
-	container: ViewStyle;
-	text: TextStyle;
-};}>;
+export type CustomMarkedDates = Record<
+	string,
+	{
+		customStyles: {
+			container: ViewStyle;
+			text: TextStyle;
+		};
+	}
+>;
 
 export type CalendarSectionProps = {
 	markedDates: CustomMarkedDates;
 	onDayPress: ( date: DateData ) => void;
+	onMonthChanged: ( date: DateData ) => void;
 };
 
-const CalendarSection: React.FC<CalendarSectionProps> = ({ markedDates, onDayPress }) => {
+const CalendarSection: React.FC<CalendarSectionProps> = ({ markedDates, onDayPress, onMonthChanged }) => {
 	return (
 		<View style={ styles.container }>
 		<Calendar
@@ -23,6 +29,7 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ markedDates, onDayPre
 			theme={{
 			todayTextColor: '#3339ff'
 			}}
+			onMonthChange={( date ) => onMonthChanged( date ) }
 		/>
 		</View>
 	);
