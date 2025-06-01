@@ -109,5 +109,5 @@ export default StyleSheet.create({
 		color: '#666',
 		textAlign: 'center',
 		marginVertical: 12,
-	}
+	},
 });
