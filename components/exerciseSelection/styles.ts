@@ -9,8 +9,21 @@ export default StyleSheet.create({
 		marginBottom: 16,
 		textAlign: 'center',
 	},
-	list: { paddingBottom: 16 },
-	row: { justifyContent: 'space-between', marginBottom: 16 },
+	sectionHeader: {
+		fontSize: 18,
+		fontWeight: '600',
+		marginVertical: 12,
+		marginLeft: 8
+	},
+	row: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		marginBottom: 16
+	},
+	list: {
+		paddingHorizontal: 8,
+		paddingBottom: 16
+	},
 	card: {
 		width: '48%',
 		backgroundColor: '#fff',
@@ -24,6 +37,12 @@ export default StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 2,
 	},
+	favoriteIconContainer: {
+		position: 'absolute',
+		top: 6,
+		right: 6,
+		zIndex: 1
+	},
 	image: { width: 100, height: 100, marginBottom: 8, resizeMode: 'contain' },
 	cardText: { fontSize: 16, textAlign: 'center', fontWeight: '600' },
 
@@ -31,7 +50,7 @@ export default StyleSheet.create({
 	footer: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
 	timerContainer: { flex: 0.3, alignItems: 'center' },
 	timerText: { fontSize: 18, fontWeight: '600' },
-	finishButton: { flex: 0.7, backgroundColor: '#28a745', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+	finishButton: { flex: 0.7, backgroundColor: '#007AFF', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
 	finishButtonText: { color: '#fff', fontWeight: '600' },
 
 	// Modal styles

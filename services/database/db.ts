@@ -15,8 +15,10 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 		CREATE TABLE IF NOT EXISTS exercises (
 			id INTEGER PRIMARY KEY NOT NULL,
 			name TEXT NOT NULL,
+			code TEXT NOT NULL UNIQUE,
 			muscleGroup TEXT NOT NULL,
-			workoutTypes TEXT NOT NULL
+			workoutTypes TEXT NOT NULL,
+			favorite INTEGER NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS workouts (
@@ -66,6 +68,7 @@ export async function exportDatabaseAsJson() {
 
 	// 2) Serializar a JSON
 	const payload = { workouts, exercises, exerciseRecords, sets };
+	//const payload = { workouts, exerciseRecords, sets };
 	const json = JSON.stringify( payload, null, 2 );
 
 	// 3) Escribir en un fichero temporal
