@@ -38,12 +38,17 @@ export default function StatisticsScreen() {
 
 		getExerciseRecords( selectedExercise.id )
 			.then( ( records: WeightPoint[] ) => {
+				const limited = records.map( (r) => ({
+					...r,
+					reps: r.reps.slice( 0, 3 ),
+				}));
+
 				const newLabels: string[] = [];
 				const newData: number[] = [];
 				const newRepInc: boolean[] = [];
 
-				for( let i = 0; i < records.length; i++ ) {
-					const record = records[i];
+				for( let i = 0; i < limited.length; i++ ) {
+					const record = limited[i];
 					const date = new Date( record.date );
 					newLabels.push( `${date.getDate()}/${date.getMonth() + 1}` );
 					newData.push( record.weight );
@@ -51,13 +56,14 @@ export default function StatisticsScreen() {
 					if( i === 0 ) {
 						newRepInc.push( false );
 					} else {
-						const prev = records[i - 1];
+						const prev = limited[i - 1];
 
 						if( record.weight !== prev.weight ) {
 							newRepInc.push( false );
 						} else {
-							const sumCur = record.reps[0] + record.reps[1] + record.reps[2];
-							const sumPrev = prev.reps[0] + prev.reps[1] + prev.reps[2];
+							const sum = ( arr: number[] ) => arr.reduce( (a, b) => a + b, 0 );
+							const sumCur = sum( record.reps );
+							const sumPrev = sum( prev.reps );
 							newRepInc.push( sumCur > sumPrev );
 						}
 					}
