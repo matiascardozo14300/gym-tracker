@@ -74,7 +74,10 @@ export default StyleSheet.create({
 	},
 	fieldRow: {
 		flexDirection: 'row',
-		alignItems: 'center',
+
+		/* alignItems: 'center', */
+		justifyContent: 'space-between',
+
 		marginBottom: 12
 	},
 	fieldLabel: {
@@ -90,7 +93,50 @@ export default StyleSheet.create({
 		borderRadius: 8,
 		paddingHorizontal: 12,
 		paddingVertical: 8,
-		marginLeft: 8
+
+		/* marginLeft: 8 */
+		marginHorizontal: 4,
+
+	},
+	checkboxRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 12,
+	},
+	checkboxBox: {
+		width: 20,
+		height: 20,
+		borderWidth: 1,
+		borderColor: '#ccc',
+		borderRadius: 4,
+		marginRight: 8,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	checkboxChecked: {
+		width: 12,
+		height: 12,
+		backgroundColor: '#007AFF',
+		borderRadius: 2,
+	},
+	checkboxLabel: {
+		fontSize: 16,
+		color: '#333',
+	},
+	addSetButton: {
+		alignSelf: 'flex-start',
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+		backgroundColor: '#007AFF20',
+		borderRadius: 8,
+		marginBottom: 16,
+	},
+	addSetButtonDisabled: {
+		backgroundColor: '#ccc',
+	},
+	addSetText: {
+		fontSize: 16,
+		color: '#007AFF',
 	},
 	modalButton: {
 		backgroundColor: '#007AFF',

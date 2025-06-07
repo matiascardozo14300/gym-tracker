@@ -36,6 +36,12 @@ export default function ExerciseSelectionScreen() {
 	const route = useRoute<ExSelRouteProp>();
   	const { workoutType } = route.params;
 
+	const INITIAL_SETS = [
+		{ weight: '', reps: '' },
+		{ weight: '', reps: '' },
+		{ weight: '', reps: '' }
+	];
+
 	const [ exercises, setExercises ] = useState<Exercise[]>([]);
 	const [ workoutId, setWorkoutId ] = useState<number | null>(null);
 	const [ refreshFlag, setRefreshFlag ] = useState(false);
@@ -49,10 +55,9 @@ export default function ExerciseSelectionScreen() {
 	const [ exerciseModalVisible, setExerciseModalVisible] = useState(false);
 	const [ finishModalVisible, setFinishModalVisible] = useState(false);
 	const [ selectedExercise, setSelectedExercise ] = useState<Exercise | null>(null);
-	const [ weight, setWeight ] = useState('');
-	const [ reps1, setReps1 ] = useState('');
-	const [ reps2, setReps2 ] = useState('');
-	const [ reps3, setReps3 ] = useState('');
+
+	const [ sets, setSets ] = useState<{ weight: string; reps: string }[]>( INITIAL_SETS );
+	const [ replicateWeight, setReplicateWeight ] = useState( false );
 	const [ recordHistory, setRecordHistory ] = useState<ExerciseMaxHistory | null>(null);
 
 	// Start timmer
@@ -92,20 +97,64 @@ export default function ExerciseSelectionScreen() {
 		}
 	}, [ exerciseModalVisible, selectedExercise ]);
 
+	// Botón de replicar peso
+	useEffect(() => {
+		if( replicateWeight ) {
+			setSets( ( prev ) => {
+				const firstWeight = prev[0]?.weight ?? '';
+				return prev.map( (s) => ({ ...s, weight: firstWeight }));
+			});
+		}
+	}, [ replicateWeight, sets[0]?.weight ]);
+
 	// Maneja selección de ejercicio: abre modal
 	const handleCardPress = ( item: Exercise ) => {
 		setSelectedExercise( item );
 		setExerciseModalVisible( true );
 	};
 
-	const getRecordDate = ( date: string | undefined ) => {
-		if( !date ) return 'No record';
-		const d = new Date( date );
-		return d.toLocaleDateString( undefined, {
-			weekday: 'long',
-			month: 'long',
-			day: 'numeric'
+	// Texto del record
+	const getRecordText = (): string => {
+		if( !recordHistory ) return "No record for this exercise";
+
+		const repsList = recordHistory.sets.map( s => s.reps ).join(', ');
+
+		const d = new Date( recordHistory.date );
+		const dd = String( d.getDate() ).padStart( 2, '0' );
+		const mm = String( d.getMonth() + 1 ).padStart( 2, '0' );
+
+		return `Record: ${recordHistory.maxWeight}kg · ${repsList} · ${dd}/${mm}`;
+	}
+
+	// Al cambiar el peso de un set
+	const handleWeightChange = ( idx: number, value: string ) => {
+		setSets( prev => {
+			const next = [ ...prev ];
+			next[idx].weight = value;
+
+			// si replicar está activo y es el primero, copio a todos
+			if( replicateWeight && idx === 0 ) {
+				return next.map( s => ({ ...s, weight: value }));
+			}
+			return next;
 		});
+	}
+
+	// Al cambiar las repeticiones de un set
+	const handleRepsChange = ( idx: number, value: string ) => {
+		setSets( prev => {
+			const next = [...prev];
+			next[idx].reps = value;
+			return next;
+		});
+	}
+
+	// Botón "+ Add set"
+	const addSet = () => {
+		setSets( prev => prev.length < 5
+			? [...prev, { weight: prev[0].weight, reps: '' }]
+			: prev
+		);
 	}
 
 	// Maneja envío y cierre del modal
@@ -130,34 +179,27 @@ export default function ExerciseSelectionScreen() {
 			exerciseId: selectedExercise.id
 		} as NewExerciseRecord );
 
-		// 2) Insertar los 3 SetRecords
-		const sets: NewSetRecord[] = [ reps1, reps2, reps3 ].map( (r, idx) => ({
-			exerciseRecordId,
-			weight: parseFloat( weight ),
-			reps: parseInt( r, 10 )
-		} as NewSetRecord ));
-
-		for( const set of sets ) {
-			await insertSetRecord( set );
+		for( const s of sets ) {
+			await insertSetRecord({
+				exerciseRecordId,
+				weight: parseFloat( s.weight ),
+				reps: parseInt( s.reps, 10 )
+			} as NewSetRecord );
 		}
 
 		// Reset modal inputs
 		setExerciseModalVisible( false );
 		setSelectedExercise( null );
-		setWeight( '' );
-		setReps1( '' );
-		setReps2( '' );
-		setReps3( '' );
+		setSets( INITIAL_SETS );
+		setReplicateWeight( false );
 		setRecordHistory( null );
 	}
 
 	const handleCancel = () => {
 		setExerciseModalVisible( false );
 		setSelectedExercise( null );
-		setWeight( '' );
-		setReps1( '' );
-		setReps2( '' );
-		setReps3( '' );
+		setSets( INITIAL_SETS );
+		setReplicateWeight( false );
 		setRecordHistory( null );
 	}
 
@@ -195,7 +237,13 @@ export default function ExerciseSelectionScreen() {
 		</TouchableOpacity>
 	);
 
-	const isSubmitDisabled = !weight.trim() || !reps1.trim() || !reps2.trim() || !reps3.trim();
+	// ¿Hay al menos un set completamente lleno?
+	const hasComplete = sets.some( s => s.weight.trim() !== '' && s.reps.trim() !== '' );
+
+	// ¿Hay algún set parcialmente lleno (peso **o** reps, pero no ambos)?
+	const hasPartial = sets.some( s => ( s.weight.trim() === '' ) !== ( s.reps.trim() === '' ) );
+
+	const isSubmitDisabled = !hasComplete || hasPartial;
 
 	const onFavoritePress = async ( exercise: Exercise ) => {
 		try {
@@ -268,55 +316,44 @@ export default function ExerciseSelectionScreen() {
 							{selectedExercise?.name || 'Agregar series'}
 						</Text>
 
-						{/* Peso */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Peso"
-								keyboardType="numeric"
-								value={weight}
-								onChangeText={setWeight}
-								placeholderTextColor="#000"
-							/>
-						</View>
+						{/* Inputs dinámicos de Peso i y Reps i */}
+						{sets.map( (s, i) => (
+							<View key={i} style={ styles.fieldRow }>
+								<TextInput
+									style={styles.fieldInput}
+									placeholder={`Peso ${i + 1}`}
+									keyboardType="numeric"
+									value={s.weight}
+									onChangeText={v => handleWeightChange(i, v)}
+								/>
+								<TextInput
+									style={styles.fieldInput}
+									placeholder={`Reps ${i + 1}`}
+									keyboardType="numeric"
+									value={s.reps}
+									onChangeText={v => handleRepsChange(i, v)}
+								/>
+							</View>
+						))}
 
-						{/* Reps Set 1 */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Reps set 1"
-								keyboardType="numeric"
-								value={reps1}
-								onChangeText={setReps1}
-								placeholderTextColor="#000"
-							/>
-						</View>
+						{/* Casilla “usar mismo peso para todas” */}
+						<TouchableOpacity style={styles.checkboxRow} onPress={() => setReplicateWeight(f => !f)}>
+							<View style={styles.checkboxBox}>
+								{replicateWeight && <View style={styles.checkboxChecked} />}
+							</View>
+							<Text style={styles.checkboxLabel}>Usar mismo peso en todas</Text>
+						</TouchableOpacity>
 
-						{/* Reps Set 2 */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Reps set 2"
-								keyboardType="numeric"
-								value={reps2}
-								onChangeText={setReps2}
-								placeholderTextColor="#000"
-							/>
-						</View>
+						{/* Botón +Add set (hasta 5) */}
+						<TouchableOpacity
+							style={[styles.addSetButton, sets.length >= 5 && styles.addSetButtonDisabled]}
+							onPress={addSet}
+							disabled={sets.length >= 5}
+						>
+							<Text style={styles.addSetText}>+ Add set</Text>
+						</TouchableOpacity>
 
-						{/* Reps Set 3 */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Reps set 3"
-								keyboardType="numeric"
-								value={reps3}
-								onChangeText={setReps3}
-								placeholderTextColor="#000"
-							/>
-						</View>
-
-						<Text style={ styles.recordText }>Record: {recordHistory?.maxWeight} · {recordHistory?.sets[0].reps}, {recordHistory?.sets[1].reps}, {recordHistory?.sets[2].reps} · {getRecordDate(recordHistory?.date)}</Text>
+						<Text style={ styles.recordText }>{ getRecordText() }</Text>
 
 						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
 							<Text style={styles.cancelButtonText}>Cancelar</Text>

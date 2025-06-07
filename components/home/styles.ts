@@ -77,11 +77,10 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
   modalSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: 12,
     textAlign: 'center',
-    color: '#444',
   },
   detailRow: {
     marginBottom: 12,
