@@ -4,15 +4,14 @@ import Header from '../header/Header';
 import { Picker } from '@react-native-picker/picker';
 import { LineChart } from 'react-native-chart-kit';
 import styles from './styles';
-import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint } from '../../services/database';
+import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint, getWorkoutTypes, WorkoutType } from '../../services/database';
 import HelpIcon from '../../assets/icons/help.svg';
 
 const screenWidth = Dimensions.get('window').width - 32;
-const workoutTypes: WorkoutType[] = ['Pull', 'Push', 'Legs', 'FullBody'];
-type WorkoutType = 'Pull' | 'Push' | 'Legs' | 'FullBody';
 
 export default function StatisticsScreen() {
-	const [selectedType, setSelectedType] = useState<WorkoutType>('Pull');;
+	const [workoutTypes, setWorkoutTypes] = useState<WorkoutType[]>([]);
+	const [selectedType, setSelectedType] = useState<number | null>(null);
 	const [exercises, setExercises] = useState<Exercise[]>([]);
 	const [selectedExercise, setSelectedExercise] = useState<Exercise>();
 
@@ -24,7 +23,18 @@ export default function StatisticsScreen() {
 
 	const [helpModalVisible, setHelpModalVisible] = useState(false);
 
+	useEffect( () => {
+		getWorkoutTypes().then( types => {
+			setWorkoutTypes( types );
+			if( types.length > 0 ) {
+				setSelectedType( types[0].id );
+			}
+		}).catch( console.error );
+	}, []);
+
   	useEffect( () => {
+		if( selectedType === null ) return;
+
 		getExerciseByWorkoutType( selectedType )
 			.then( ( exercises: Exercise[] ) => {
 				setExercises( exercises );
@@ -93,15 +103,19 @@ export default function StatisticsScreen() {
 				<Header title="Statistics" />
 
 				<Text style={styles.sectionTitle}>Choose Workout Type</Text>
-				<View style={styles.row}>
-					{workoutTypes.map( (t) => (
-						<TouchableOpacity key={t} onPress={() => setSelectedType(t)} style={[ styles.typeButton, selectedType === t && styles.typeButtonActive]}>
-							<Text style={[ styles.typeButtonText, selectedType === t && styles.typeButtonTextActive ]}>
-								{t}
+				<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+					{ workoutTypes.map( (type) => (
+						<TouchableOpacity
+							key={type.id}
+							onPress={() => setSelectedType( type.id )}
+							style={[ styles.typeButton, selectedType === type.id && styles.typeButtonActive]}
+						>
+							<Text style={[ styles.typeButtonText, selectedType === type.id && styles.typeButtonTextActive ]}>
+								{type.name}
 							</Text>
 						</TouchableOpacity>
 					))}
-				</View>
+				</ScrollView>
 
 				<View style={styles.dropdownContainer}>
 					<Picker
@@ -110,6 +124,8 @@ export default function StatisticsScreen() {
 						mode="dropdown"
 						style={styles.picker}
 						itemStyle={styles.pickerItem}
+						dropdownIconColor="#000"
+						dropdownIconRippleColor="#000"
 					>
 						{exercises.map( (ex) => (
 							<Picker.Item key={ex.id} label={ex.name} value={ex} color="#000" />

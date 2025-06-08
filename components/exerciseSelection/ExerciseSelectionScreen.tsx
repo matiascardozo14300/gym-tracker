@@ -34,7 +34,7 @@ export default function ExerciseSelectionScreen() {
 	const navigation = useNavigation<ExSelNavProp>();
 	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
 	const route = useRoute<ExSelRouteProp>();
-  	const { workoutType } = route.params;
+  	const { workoutTypeId } = route.params;
 
 	const INITIAL_SETS = [
 		{ weight: '', reps: '' },
@@ -75,10 +75,10 @@ export default function ExerciseSelectionScreen() {
 
 	// Busca ejercicios
 	useEffect(() => {
-		getExerciseByWorkoutType(workoutType)
-			.then(setExercises)
-			.catch(console.error);
-	}, [ workoutType, refreshFlag ]);
+		getExerciseByWorkoutType( workoutTypeId )
+			.then( setExercises )
+			.catch( console.error );
+	}, [ workoutTypeId, refreshFlag ]);
 
 	// Se abre el modal
 	useEffect( () => {
@@ -167,7 +167,7 @@ export default function ExerciseSelectionScreen() {
 			const newId = await insertNewWorkout({
 				startDate: now,
 				finishDate: now,
-				workoutType
+				workoutTypeId
 			} as NewWorkout );
 			setWorkoutId( newId );
 			currentWorkoutId = newId;
@@ -255,20 +255,18 @@ export default function ExerciseSelectionScreen() {
 		}
 	}
 
-	const muscleOrderMap: Record<string, string[]> = {
-		Pull: ['Back', 'Biceps', 'Abs'],
-		Push: ['Chest', 'Shoulders', 'Triceps', 'Abs'],
-		Legs: ['Cuadriceps', 'Hamstrings', 'Gluts', 'Abductors', 'Adductors', 'Calves', 'Abs'],
-		FullBody: ['Chest','Back','Shoulders','Biceps','Triceps', 'Cuadriceps', 'Hamstrings', 'Gluts', 'Abductors', 'Adductors', 'Calves', 'Abs']
-	}
-
 	const favoriteExercises = exercises.filter( e => e.favorite === 1 );
 
-	const orderedGroups = muscleOrderMap[workoutType] || [];
-	const groupSections = orderedGroups.map( group => ({
-		title: group,
-		data: exercises.filter( e => e.muscleGroup === group && e.favorite === 0 )
-	})).filter( section => section.data.length > 0 );
+	const categoryOrder = [
+		'Chest','Back','Shoulders','Biceps','Triceps',
+		'Cuadriceps','Hamstrings','Gluts','Abductors','Adductors','Calves','Abs'
+	];
+	const groupSections = categoryOrder
+		.map( group => ({
+			title: group,
+			data: exercises.filter( e => e.muscleGroup === group && e.favorite === 0 )
+		}))
+		.filter( section => section.data.length > 0 );
 
 	const sections = [
 		{
@@ -341,7 +339,7 @@ export default function ExerciseSelectionScreen() {
 							<View style={styles.checkboxBox}>
 								{replicateWeight && <View style={styles.checkboxChecked} />}
 							</View>
-							<Text style={styles.checkboxLabel}>Usar mismo peso en todas</Text>
+							<Text style={styles.checkboxLabel}>All same weight</Text>
 						</TouchableOpacity>
 
 						{/* Botón +Add set (hasta 5) */}
@@ -356,11 +354,11 @@ export default function ExerciseSelectionScreen() {
 						<Text style={ styles.recordText }>{ getRecordText() }</Text>
 
 						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-							<Text style={styles.cancelButtonText}>Cancelar</Text>
+							<Text style={styles.cancelButtonText}>Cancel</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity onPress={handleSubmit} disabled={isSubmitDisabled} style={[styles.modalButton, isSubmitDisabled && styles.modalButtonDisabled]}>
-							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Guardar</Text>
+							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Save</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -368,13 +366,13 @@ export default function ExerciseSelectionScreen() {
 			<Modal visible={ finishModalVisible } transparent animationType="slide">
 				<View style={ styles.modalOverlay }>
 					<View style={ styles.modalContainer }>
-						<Text style={ styles.modalTitle }>¿Estás seguro de finalizar el entrenamiento?</Text>
+						<Text style={ styles.modalTitle }>Are you sure you want to finish the workout?</Text>
 						<TouchableOpacity style={styles.cancelButton} onPress={() => setFinishModalVisible( false )}>
-							<Text style={styles.cancelButtonText}>Atrás</Text>
+							<Text style={styles.cancelButtonText}>Back</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity onPress={handleFinish} style={styles.modalButton}>
-							<Text style={styles.modalButtonText}>Guardar</Text>
+							<Text style={styles.modalButtonText}>Save</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

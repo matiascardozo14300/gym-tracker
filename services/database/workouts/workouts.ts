@@ -1,21 +1,43 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import type { Workout, LastWorkout, NewWorkout, WorkoutDetail } from './types';
+import type { Workout, LastWorkout, NewWorkout, WorkoutDetail, WorkoutType } from './types';
 
 // Crea un nuevo entrenamiento
 export async function insertNewWorkout( workout: NewWorkout ): Promise<number> {
 	const result = await getDB().runAsync(
-		`INSERT INTO workouts (startDate, finishDate, workoutType) VALUES (?, ?, ?);`,
+		`INSERT INTO workouts (startDate, finishDate, workoutTypeId) VALUES (?, ?, ?);`,
 		workout.startDate,
 		workout.finishDate,
-		workout.workoutType
+		workout.workoutTypeId
 	);
 	return result.lastInsertRowId!;
 }
 
 // Obtiene un listado de todos los entrenamientos
 export async function getAllWorkouts(): Promise<Workout[]> {
-	return getDB().getAllAsync<Workout>(`SELECT * FROM workouts;`);
+	const rows = await getDB().getAllAsync<{
+		id: number;
+		startDate: string;
+		finishDate: string;
+		workoutTypeName: string;
+	}>(`
+		SELECT
+			w.id,
+			w.startDate,
+			w.finishDate,
+			wt.name AS workoutTypeName
+		FROM workouts w
+		LEFT JOIN workout_types wt
+			ON w.workoutTypeId = wt.id
+		ORDER BY w.startDate DESC;
+    `);
+
+	return rows.map(r => ({
+		id: r.id,
+		startDate: r.startDate,
+		finishDate: r.finishDate,
+		workoutType: r.workoutTypeName
+	}));
 }
 
 // Actualiza la fecha de finalización de un entrenamiento al terminarlo
@@ -34,9 +56,14 @@ export async function getLast3Workouts(): Promise<LastWorkout[]> {
 		finishDate: string;
 		workoutType: string;
 	}>(
-		`SELECT startDate, finishDate, workoutType
-		FROM workouts
-		ORDER BY startDate DESC
+		`SELECT
+			w.startDate,
+			w.finishDate,
+			wt.name AS workoutType
+		FROM workouts w
+		LEFT JOIN workout_types wt
+			ON w.workoutTypeId = wt.id
+		ORDER BY w.startDate DESC
 		LIMIT 3;`
 	);
 
@@ -66,27 +93,28 @@ export async function getWorkoutDatesForMonth(
 	const nextMonthStr = String( nextMonth ).padStart(2, '0');
 	const to = `${nextYear}-${nextMonthStr}-01`;
 
-	// 1) Subconsulta ordenada DESC para que al agrupar por fecha nos quedemos con el más reciente
 	const rows = await getDB().getAllAsync<{
-		startDate: string;
-		workoutType: string;
 		date: string;
+		workoutType: string;
 	}>(
 	`
-		SELECT substr(startDate,1,10) as date, workoutType
+		SELECT
+			substr(w.startDate,1,10) AS date,
+			wt.name AS workoutType
 		FROM (
-			SELECT startDate, workoutType
+			SELECT startDate, workoutTypeId
 			FROM workouts
 			WHERE startDate >= ? AND startDate < ?
-			ORDER BY startDate DESC  -- más recientes primero
-		)
-		GROUP BY date; -- toma el primero (el más reciente) de cada grupo
+			ORDER BY startDate DESC
+		) AS w
+		LEFT JOIN workout_types wt
+			ON w.workoutTypeId = wt.id
+		GROUP BY date;
 	`,
 		from,
 		to
 	);
 
-	// 2) Retornamos directamente date + workoutType
 	return rows.map( r => ({
 		date: r.date,
 		workoutType: r.workoutType
@@ -98,10 +126,14 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 	const db = getDB();
 	const workoutRow = await db.getFirstAsync<{ id: number; workoutType: string }>(
 		`
-		SELECT id, workoutType
-		FROM workouts
-		WHERE date(startDate) = ?
-		ORDER BY id DESC
+		SELECT
+			w.id,
+			wt.name AS workoutType
+		FROM workouts w
+		LEFT JOIN workout_types wt
+			ON w.workoutTypeId = wt.id
+		WHERE date(w.startDate) = ?
+		ORDER BY w.id DESC
 		LIMIT 1;
 		`,
 		dateString
@@ -154,4 +186,36 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 		workoutType,
 		exercises,
 	};
+}
+
+// Obtiene todos los tipos de entrenamiento existentes
+export async function getWorkoutTypes(): Promise<WorkoutType[]> {
+	const rows = await getDB().getAllAsync<WorkoutType>(
+		`SELECT id, name, isCustom
+		FROM workout_types
+		ORDER BY isCustom, name;
+		`
+	);
+
+	return rows;
+}
+
+export async function createWorkoutType( name: string, exerciseIds: number[] ): Promise<number> {
+	const db = getDB();
+
+	const result = await db.runAsync(
+		`INSERT INTO workout_types (name, isCustom) VALUES (?, 1);`,
+		name
+	);
+	const workoutTypeId = result.lastInsertRowId!;
+
+	const stm = `
+		INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
+		VALUES (?, ?);
+	`;
+	for( const exId of exerciseIds ) {
+		await db.runAsync( stm, workoutTypeId, exId );
+	}
+
+	return workoutTypeId;
 }

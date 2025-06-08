@@ -1,5 +1,3 @@
-export type WorkoutType = "Pull" | "Push" | "Legs" | "FullBody";
-
 export interface Workout {
 	id: number;
 	startDate: string;
@@ -10,7 +8,7 @@ export interface Workout {
 export interface NewWorkout {
 	startDate: string;
 	finishDate: string;
-	workoutType: string;
+	workoutTypeId: number;
 }
 
 export interface LastWorkout {
@@ -25,4 +23,10 @@ export interface WorkoutDetail {
 		name: string;
 		sets: { weight: number; reps: number }[];
 	}[];
+}
+
+export interface WorkoutType {
+	id: number;
+	name: string;
+	isCustom: number;
 }

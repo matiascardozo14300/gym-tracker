@@ -1,42 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList, RootTabParamList } from '../../App';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Modal, FlatList } from 'react-native';
 import { getLast3Workouts, getWorkoutDatesForMonth, getWorkoutDetailByDate, LastWorkout, WorkoutDetail } from '../../services/database/';
 import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelection';
 import LatestWorkouts from '../latestWorkouts/LatestWorkouts';
+import WorkoutTypeSelector from './WorkoutTypeSelector';
 import styles from './styles';
 import { workoutTypeColors } from '../common/colorMap';
 import Header from '../header/Header';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { formateDateToLongText } from '../common/helper';
-
-const WorkoutTypeSelector: React.FC = () => {
-	const types = ['Pull', 'Push', 'Legs', 'FullBody'];
-	const tabNav = useNavigation<BottomTabNavigationProp<RootTabParamList, 'Home'>>();
-	const stackNav = tabNav.getParent<NativeStackNavigationProp<RootStackParamList>>();
-
-	return (
-		<View style={ styles.section }>
-			<Text style={ styles.sectionTitle }>Choose Workout Type</Text>
-			<View style={ styles.row }>
-				{ types.map( ( type ) => (
-					<TouchableOpacity
-						key={ type }
-						onPress={ () => stackNav?.navigate('ExerciseSelection', { workoutType: type }) }
-						style={[
-							styles.typeButton,
-							{ borderColor: workoutTypeColors[ type ] || '#ccc' }
-						]}
-					>
-						<Text style={ styles.typeButtonText }>{ type }</Text>
-					</TouchableOpacity>
-				))}
-			</View>
-		</View>
-	);
-};
 
 export default function HomeScreen() {
 	const [ lastWorkouts, setLastWorkouts ] = useState<LastWorkout[]>([]);
