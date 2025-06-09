@@ -24,7 +24,10 @@ export async function insertSetRecord( record: NewSetRecord ): Promise<number> {
 	return result.lastInsertRowId!;
 }
 
-// Obtiene el histórico de pesos por fecha de un ejercicio determinado
+// Obtiene el histórico de pesos por fecha de un ejercicio determinado,
+// de forma que:
+//   • Si hay varios registros el mismo día, toma SOLO el último.
+//   • Devuelve como máximo los últimos 10 días distintos.
 export async function getExerciseRecords( exerciseId: number ): Promise<WeightPoint[]> {
 	const db = getDB();
 	const recs = await db.getAllAsync<{ recordId: number; date: string }>(
@@ -35,19 +38,37 @@ export async function getExerciseRecords( exerciseId: number ): Promise<WeightPo
 		FROM exercise_records er
 		JOIN workouts w ON er.workoutId = w.id
 		WHERE er.exerciseId = ?
-		ORDER BY w.startDate;
+		ORDER BY w.startDate ASC;
 		`,
 		exerciseId
   	);
 
-	const result: WeightPoint[] = [];
+	type DayRec = { recordId: number; dateKey: string };
+	const distinct: DayRec[] = [];
+
 	for( const { recordId, date } of recs ) {
+		const dateKey = date.includes("T") ? date.split("T")[0] : date;
+		const last = distinct[distinct.length - 1];
+
+		if( last && last.dateKey === dateKey ) {
+			// mismo día: sobrescribo el recordId con el más reciente
+			last.recordId = recordId;
+		} else {
+			// día nuevo: lo añado
+			distinct.push({ recordId, dateKey });
+		}
+	}
+
+	const lastTen = distinct.slice( -10 );
+
+	const result: WeightPoint[] = [];
+	for( const { recordId, dateKey  } of lastTen ) {
 		const setRows = await db.getAllAsync<{ weight: number; reps: number }>(
 			`
 			SELECT weight, reps
 			FROM sets
 			WHERE exerciseRecordId = ?
-			ORDER BY id;
+			ORDER BY id ASC;
 			`,
 			recordId
 		);
@@ -55,22 +76,13 @@ export async function getExerciseRecords( exerciseId: number ): Promise<WeightPo
 		// Si no hay sets, lo ignoramos
 		if( setRows.length === 0 ) continue;
 
-		// Suponemos que siempre hay exactamente 3 sets. Si hay menos, rellenamos con 0
-		const repsArray: [number, number, number] = [
-			setRows[0]?.reps ?? 0,
-			setRows[1]?.reps ?? 0,
-			setRows[2]?.reps ?? 0
-		];
-		// Tomamos el peso del primer set (asumimos mismo peso en los 3)
 		const weight = setRows[0].weight;
-
-		// Cortamos la fecha ISO a "YYYY-MM-DD" si viene con hora
-		const dateKey = date.includes('T') ? date.split('T')[0] : date;
+		const reps = setRows.map( (r) => r.reps );
 
 		result.push({
 			date: dateKey,
 			weight,
-			reps: repsArray
+			reps,
 		});
 	}
 

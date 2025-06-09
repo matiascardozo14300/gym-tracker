@@ -12,26 +12,42 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 
 	// 2. Creo todas las tablas en un solo batch si no existen
 	await db.execAsync(`
+		CREATE TABLE IF NOT EXISTS workout_types (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL UNIQUE,
+			isCustom INTEGER NOT NULL DEFAULT 0
+		);
+
 		CREATE TABLE IF NOT EXISTS exercises (
-			id INTEGER PRIMARY KEY NOT NULL,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
+			code TEXT NOT NULL UNIQUE,
 			muscleGroup TEXT NOT NULL,
-			workoutTypes TEXT NOT NULL
+			favorite INTEGER NOT NULL DEFAULT 0
+		);
+
+		CREATE TABLE IF NOT EXISTS workout_type_exercises (
+			workoutTypeId INTEGER NOT NULL,
+			exerciseId INTEGER NOT NULL,
+			PRIMARY KEY (workoutTypeId, exerciseId),
+			FOREIGN KEY (workoutTypeId) REFERENCES workout_types(id),
+			FOREIGN KEY (exerciseId) REFERENCES exercises(id)
 		);
 
 		CREATE TABLE IF NOT EXISTS workouts (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			startDate TEXT NOT NULL,
 			finishDate TEXT NOT NULL,
-			workoutType TEXT NOT NULL
+			workoutTypeId INTEGER NOT NULL,
+			FOREIGN KEY (workoutTypeId) REFERENCES workout_types(id)
 		);
 
 		CREATE TABLE IF NOT EXISTS exercise_records (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			workoutId INTEGER NOT NULL,
 			exerciseId INTEGER NOT NULL,
-			FOREIGN KEY(workoutId) REFERENCES workouts(id),
-			FOREIGN KEY(exerciseId) REFERENCES exercises(id)
+			FOREIGN KEY (workoutId) REFERENCES workouts(id),
+			FOREIGN KEY (exerciseId) REFERENCES exercises(id)
 		);
 
 		CREATE TABLE IF NOT EXISTS sets (
@@ -39,8 +55,15 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 			exerciseRecordId INTEGER NOT NULL,
 			weight REAL NOT NULL,
 			reps INTEGER NOT NULL,
-			FOREIGN KEY(exerciseRecordId) REFERENCES exercise_records(id)
+			FOREIGN KEY (exerciseRecordId) REFERENCES exercise_records(id)
 		);
+
+		INSERT OR IGNORE INTO workout_types (name, isCustom)
+		VALUES
+			('Pull', 0),
+			('Push', 0),
+			('Legs', 0),
+			('FullBody', 0);
 	`);
 
 	console.log('Tablas inicializadas correctamente con execAsync');
@@ -63,9 +86,11 @@ export async function exportDatabaseAsJson() {
 	const exercises = await db.getAllAsync( 'SELECT * FROM exercises;' );
 	const exerciseRecords = await db.getAllAsync( 'SELECT * FROM exercise_records;' );
 	const sets = await db.getAllAsync( 'SELECT * FROM sets;' );
+	const workout_types = await db.getAllAsync( 'SELECT * FROM workout_types;' );
+	const workout_type_exercises = await db.getAllAsync( 'SELECT * FROM workout_type_exercises;' );
 
 	// 2) Serializar a JSON
-	const payload = { workouts, exercises, exerciseRecords, sets };
+	const payload = { workouts, exercises, exerciseRecords, sets, workout_types, workout_type_exercises };
 	const json = JSON.stringify( payload, null, 2 );
 
 	// 3) Escribir en un fichero temporal
@@ -107,8 +132,8 @@ export async function importDatabaseFromJson() {
 		throw new Error('El archivo seleccionado no es un JSON válido.');
 	}
 
-	const { workouts, exercises, exerciseRecords, sets } = payload;
-	if( !Array.isArray(workouts) || !Array.isArray(exercises) || !Array.isArray(exerciseRecords) || !Array.isArray(sets)) {
+	const { workouts, exercises, exerciseRecords, sets, workout_types, workout_type_exercises } = payload;
+	if( !Array.isArray(workouts) || !Array.isArray(exercises) || !Array.isArray(exerciseRecords) || !Array.isArray(sets) || !Array.isArray(workout_types) || !Array.isArray(workout_type_exercises)) {
 		throw new Error('Formato de backup incorrecto: faltan tablas o no son arrays.');
 	}
 
@@ -116,29 +141,63 @@ export async function importDatabaseFromJson() {
 
 	try {
 		await db.execAsync(`
+			DELETE FROM workout_type_exercises;
 			DELETE FROM sets;
 			DELETE FROM exercise_records;
 			DELETE FROM exercises;
 			DELETE FROM workouts;
+			DELETE FROM workout_types;
 		`);
 
 		// 5) Insertar filas validadas
+		for( const wt of workout_types ) {
+			if (
+				typeof wt.id !== 'number' ||
+				typeof wt.name !== 'string' ||
+				typeof wt.isCustom !== 'number'
+			) {
+				throw new Error('Registro inválido en workout_types.');
+			}
+			await db.runAsync(
+				`INSERT INTO workout_types (id, name, isCustom)
+				VALUES (?, ?, ?);`,
+				wt.id,
+				wt.name,
+				wt.isCustom
+			);
+		}
+
+		for( const wte of workout_type_exercises ) {
+			if (
+				typeof wte.workoutTypeId !== 'number' ||
+				typeof wte.exerciseId !== 'number'
+			) {
+				throw new Error('Registro inválido en workout_types.');
+			}
+			await db.runAsync(
+				`INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
+				VALUES (?, ?);`,
+				wte.workoutTypeId,
+				wte.exerciseId
+			);
+		}
+
 		for( const w of workouts ) {
 			if (
 				typeof w.id !== 'number' ||
 				typeof w.startDate !== 'string' ||
 				typeof w.finishDate !== 'string' ||
-				typeof w.workoutType !== 'string'
+				typeof w.workoutTypeId !== 'number'
 			) {
 				throw new Error('Registro inválido en workouts.');
 			}
 			await db.runAsync(
-				`INSERT INTO workouts (id, startDate, finishDate, workoutType)
+				`INSERT INTO workouts (id, startDate, finishDate, workoutTypeId)
 				VALUES (?, ?, ?, ?);`,
 				w.id,
 				w.startDate,
 				w.finishDate,
-				w.workoutType
+				w.workoutTypeId
 			);
 		}
 
@@ -146,18 +205,20 @@ export async function importDatabaseFromJson() {
 			if (
 				typeof ex.id !== 'number' ||
 				typeof ex.name !== 'string' ||
+				typeof ex.code !== 'string' ||
 				typeof ex.muscleGroup !== 'string' ||
-				typeof ex.workoutTypes !== 'string'
+				typeof ex.favorite !== 'number'
 			) {
 				throw new Error('Registro inválido en exercises.');
 			}
 			await db.runAsync(
-				`INSERT INTO exercises (id, name, muscleGroup, workoutTypes)
-				VALUES (?, ?, ?, ?);`,
+				`INSERT INTO exercises (id, name, code, muscleGroup, favorite)
+				VALUES (?, ?, ?, ?, ?);`,
 				ex.id,
 				ex.name,
+				ex.code,
 				ex.muscleGroup,
-				ex.workoutTypes
+				ex.favorite
 			);
 		}
 

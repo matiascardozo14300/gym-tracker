@@ -4,15 +4,14 @@ import Header from '../header/Header';
 import { Picker } from '@react-native-picker/picker';
 import { LineChart } from 'react-native-chart-kit';
 import styles from './styles';
-import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint } from '../../services/database';
+import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint, getWorkoutTypes, WorkoutType } from '../../services/database';
 import HelpIcon from '../../assets/icons/help.svg';
 
 const screenWidth = Dimensions.get('window').width - 32;
-const workoutTypes: WorkoutType[] = ['Pull', 'Push', 'Legs', 'FullBody'];
-type WorkoutType = 'Pull' | 'Push' | 'Legs' | 'FullBody';
 
 export default function StatisticsScreen() {
-	const [selectedType, setSelectedType] = useState<WorkoutType>('Pull');;
+	const [workoutTypes, setWorkoutTypes] = useState<WorkoutType[]>([]);
+	const [selectedType, setSelectedType] = useState<number | null>(null);
 	const [exercises, setExercises] = useState<Exercise[]>([]);
 	const [selectedExercise, setSelectedExercise] = useState<Exercise>();
 
@@ -24,7 +23,18 @@ export default function StatisticsScreen() {
 
 	const [helpModalVisible, setHelpModalVisible] = useState(false);
 
+	useEffect( () => {
+		getWorkoutTypes().then( types => {
+			setWorkoutTypes( types );
+			if( types.length > 0 ) {
+				setSelectedType( types[0].id );
+			}
+		}).catch( console.error );
+	}, []);
+
   	useEffect( () => {
+		if( selectedType === null ) return;
+
 		getExerciseByWorkoutType( selectedType )
 			.then( ( exercises: Exercise[] ) => {
 				setExercises( exercises );
@@ -38,12 +48,17 @@ export default function StatisticsScreen() {
 
 		getExerciseRecords( selectedExercise.id )
 			.then( ( records: WeightPoint[] ) => {
+				const limited = records.map( (r) => ({
+					...r,
+					reps: r.reps.slice( 0, 3 ),
+				}));
+
 				const newLabels: string[] = [];
 				const newData: number[] = [];
 				const newRepInc: boolean[] = [];
 
-				for( let i = 0; i < records.length; i++ ) {
-					const record = records[i];
+				for( let i = 0; i < limited.length; i++ ) {
+					const record = limited[i];
 					const date = new Date( record.date );
 					newLabels.push( `${date.getDate()}/${date.getMonth() + 1}` );
 					newData.push( record.weight );
@@ -51,13 +66,14 @@ export default function StatisticsScreen() {
 					if( i === 0 ) {
 						newRepInc.push( false );
 					} else {
-						const prev = records[i - 1];
+						const prev = limited[i - 1];
 
 						if( record.weight !== prev.weight ) {
 							newRepInc.push( false );
 						} else {
-							const sumCur = record.reps[0] + record.reps[1] + record.reps[2];
-							const sumPrev = prev.reps[0] + prev.reps[1] + prev.reps[2];
+							const sum = ( arr: number[] ) => arr.reduce( (a, b) => a + b, 0 );
+							const sumCur = sum( record.reps );
+							const sumPrev = sum( prev.reps );
 							newRepInc.push( sumCur > sumPrev );
 						}
 					}
@@ -87,15 +103,19 @@ export default function StatisticsScreen() {
 				<Header title="Statistics" />
 
 				<Text style={styles.sectionTitle}>Choose Workout Type</Text>
-				<View style={styles.row}>
-					{workoutTypes.map( (t) => (
-						<TouchableOpacity key={t} onPress={() => setSelectedType(t)} style={[ styles.typeButton, selectedType === t && styles.typeButtonActive]}>
-							<Text style={[ styles.typeButtonText, selectedType === t && styles.typeButtonTextActive ]}>
-								{t}
+				<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+					{ workoutTypes.map( (type) => (
+						<TouchableOpacity
+							key={type.id}
+							onPress={() => setSelectedType( type.id )}
+							style={[ styles.typeButton, selectedType === type.id && styles.typeButtonActive]}
+						>
+							<Text style={[ styles.typeButtonText, selectedType === type.id && styles.typeButtonTextActive ]}>
+								{type.name}
 							</Text>
 						</TouchableOpacity>
 					))}
-				</View>
+				</ScrollView>
 
 				<View style={styles.dropdownContainer}>
 					<Picker
@@ -104,6 +124,8 @@ export default function StatisticsScreen() {
 						mode="dropdown"
 						style={styles.picker}
 						itemStyle={styles.pickerItem}
+						dropdownIconColor="#000"
+						dropdownIconRippleColor="#000"
 					>
 						{exercises.map( (ex) => (
 							<Picker.Item key={ex.id} label={ex.name} value={ex} color="#000" />

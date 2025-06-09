@@ -7,16 +7,21 @@ export default StyleSheet.create({
 	section: { marginBottom: 24 },
 	sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
 
-	row: { flexDirection: 'row', justifyContent: 'space-between' },
+	row: { flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center' },
 	typeButton: {
-		flex: 1,
-		marginHorizontal: 4,
+		paddingHorizontal: 16,
+		marginRight: 12,
 		paddingVertical: 12,
 		borderWidth: 2,
 		borderRadius: 8,
 		alignItems: 'center',
+		justifyContent: 'center',
+		minWidth: 100,
 	},
-	typeButtonText: { fontSize: 16 },
+	typeButtonText: {
+		fontSize: 16,
+  		textAlign: 'center',
+	},
 
 	weekDaysRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
 	weekDay: { flex: 1, textAlign: 'center', fontWeight: '500' },
@@ -77,11 +82,10 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
   modalSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: 12,
     textAlign: 'center',
-    color: '#444',
   },
   detailRow: {
     marginBottom: 12,

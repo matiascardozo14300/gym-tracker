@@ -1,49 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, TextInput } from 'react-native';
+import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
-import { Exercise, ExerciseMaxHistory, getExerciseByWorkoutType, getExerciseMaxHistory, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, updateWorkoutFinishDate } from '../../services/database/';
+import { Exercise, ExerciseMaxHistory, getExerciseByWorkoutType, getExerciseMaxHistory, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import styles from './styles';
-
-const exerciseImageUrls: Record<string, string> = {
-	'1': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F26161101-Cable-Lateral-Pulldown-with-V-bar_Back_small.png&w=640&q=100',
-	'2': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F26561101-Cable-One-Arm-Biceps-Curl-(VERSION-2)_Upper-Arms_small.png&w=640&q=100',
-	'3': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F04471101-EZ-Barbell-Curl_Upper-Arms_small.png&w=640&q=100',
-	'4': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F13501101-Lever-Seated-Row_Back_small.png&w=640&q=100',
-	'5': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F02391101-Cable-Straight-Back-Seated-Row_Back_small.png&w=640&q=100',
-	'6': 'https://www.lyfta.app/_next/image?url=https%3A%2F%2Flyfta.app%2Fimages%2Fexercises%2F16461101.png&w=3840&q=75',
-	'7': 'https://lyfta.app/images/exercises/00071101.png',
-	'8': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F01971101-Cable-Pulldown-(pro-lat-bar)_Back_small.png&w=640&q=100',
-	'9': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F02921101-Dumbbell-Bent-over-Row_back_Back-AFIX_small.png&w=640&q=100',
-	'10': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F03131101-Dumbbell-Hammer-Curl_Forearm_small.png&w=640&q=100',
-	'11': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F06521101-Pull-up_Back_small.png&w=640&q=100',
-	'12': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F00251101-Barbell-Bench-Press_Chest-FIX_small.png&w=640&q=100',
-	'13': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F01921101-Cable-One-Arm-Lateral-Raise_Shoulders_small.png&w=640&q=100',
-	'14': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F03341101-Dumbbell-Lateral-Raise_shoulder-AFIX_small.png&w=640&q=100',
-	'15': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F00471101-Barbell-Incline-Bench-Press_Chest_small.png&w=640&q=100',
-	'16': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F16051101-Cable-Triceps-Pushdown-(SZ-bar)_Upper-arms_small.png&w=640&q=100',
-	'17': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F41151101-Cable-Overhead-Tricep-Extension-Straight-Bar-(male)_Upper-Arms_small.png&w=640&q=100',
-	'18': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F10301101-Lever-Pec-Deck-Fly_Chest_small.png&w=640&q=100',
-	'19': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F50331101-Cable-Single-Arm-Triceps-Pushdown-(Rope-Attachment)_Upper-Arms_small.png&w=640&q=100',
-	'20': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05771101-Lever-Chest-Press_Chest_small.png&w=640&q=100',
-	'21': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F07481101-Smith-Bench-Press_Chest-FIX_small.png&w=640&q=100',
-	'22': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F07571101-Smith-Incline-Bench-Press_Chest-FIX_small.png&w=640&q=100',
-	'23': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F02891101-Dumbbell-Bench-Press_Chest_small.png&w=640&q=100',
-	'24': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F03141101-Dumbbell-Incline-Bench-Press_Chest-FIX_small.png&w=640&q=100',
-	'25': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F07511101-Smith-Close-Grip-Bench-Press_Upper-Arms_small.png&w=640&q=100',
-	'26': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F06621101-Push-up-m_Chest-FIX_small.png&w=640&q=100',
-	'27': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05991101-Lever-Seated-Leg-Curl_Thighs-FIX_small.png&w=640&q=100',
-	'28': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05861101-Lever-Lying-Leg-Curl_Thighs_small.png&w=640&q=100',
-	'29': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F07401101-Sled-45-Leg-Wide-Press_Thighs_small.png&w=640&q=100',
-	'30': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05851101-Lever-Leg-Extension_Thighs_small.png&w=640&q=100',
-	'31': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F33851101-Lever-Seated-Leg-Press-(VERSION-2)_Thighs_small.png&w=640&q=100',
-	'32': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05981101-Lever-Seated-Hip-Adduction_Thighs_small.png&w=640&q=100',
-	'34': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F23151101-Lever-Rotary-Calf_Calves_small.png&w=640&q=100',
-	'35': 'https://my.lyfta.app/_next/image?url=https%3A%2F%2Fapilyfta.com%2Fstatic%2FGymvisualPNG%2F05941101-Lever-Seated-Calf-Raise-(plate-loaded)_Calf_small.png&w=640&q=100',
-};
+import { exerciseImageUrls } from '../common/allExercisesImages';
+import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
+import StarOutlineIcon from '../../assets/icons/favorite.svg';
+import { getLocalISOString } from '../common/helper';
 
 type ExSelRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
 type ExSelNavProp = CompositeNavigationProp<
@@ -68,10 +35,17 @@ export default function ExerciseSelectionScreen() {
 	const navigation = useNavigation<ExSelNavProp>();
 	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
 	const route = useRoute<ExSelRouteProp>();
-  	const { workoutType } = route.params;
+  	const { workoutTypeId } = route.params;
+
+	const INITIAL_SETS = [
+		{ weight: '', reps: '' },
+		{ weight: '', reps: '' },
+		{ weight: '', reps: '' }
+	];
 
 	const [ exercises, setExercises ] = useState<Exercise[]>([]);
 	const [ workoutId, setWorkoutId ] = useState<number | null>(null);
+	const [ refreshFlag, setRefreshFlag ] = useState(false);
 
 	// Timer state
 	const [seconds, setSeconds] = useState(0);
@@ -82,13 +56,12 @@ export default function ExerciseSelectionScreen() {
 	const [ exerciseModalVisible, setExerciseModalVisible] = useState(false);
 	const [ finishModalVisible, setFinishModalVisible] = useState(false);
 	const [ selectedExercise, setSelectedExercise ] = useState<Exercise | null>(null);
-	const [ weight, setWeight ] = useState('');
-	const [ reps1, setReps1 ] = useState('');
-	const [ reps2, setReps2 ] = useState('');
-	const [ reps3, setReps3 ] = useState('');
+
+	const [ sets, setSets ] = useState<{ weight: string; reps: string }[]>( INITIAL_SETS );
+	const [ replicateWeight, setReplicateWeight ] = useState( false );
 	const [ recordHistory, setRecordHistory ] = useState<ExerciseMaxHistory | null>(null);
 
-	// Create workout, start timer, load exercises
+	// Start timmer
 	useEffect( () => {
 		startTimeRef.current = Date.now();
 		intervalRef.current = setInterval(() => {
@@ -96,15 +69,17 @@ export default function ExerciseSelectionScreen() {
 			setSeconds( Math.floor( diff / 1000 ) );
 		}, 1000 );
 
-		// Cargar ejercicios disponibles
-		getExerciseByWorkoutType( workoutType )
-			.then(setExercises)
-			.catch(console.error);
-
 		return () => {
 			if( intervalRef.current ) clearInterval( intervalRef.current );
 		};
-	}, [ workoutType ] );
+	}, [] );
+
+	// Busca ejercicios
+	useEffect(() => {
+		getExerciseByWorkoutType( workoutTypeId )
+			.then( setExercises )
+			.catch( console.error );
+	}, [ workoutTypeId, refreshFlag ]);
 
 	// Se abre el modal
 	useEffect( () => {
@@ -123,20 +98,64 @@ export default function ExerciseSelectionScreen() {
 		}
 	}, [ exerciseModalVisible, selectedExercise ]);
 
+	// Botón de replicar peso
+	useEffect(() => {
+		if( replicateWeight ) {
+			setSets( ( prev ) => {
+				const firstWeight = prev[0]?.weight ?? '';
+				return prev.map( (s) => ({ ...s, weight: firstWeight }));
+			});
+		}
+	}, [ replicateWeight, sets[0]?.weight ]);
+
 	// Maneja selección de ejercicio: abre modal
 	const handleCardPress = ( item: Exercise ) => {
 		setSelectedExercise( item );
 		setExerciseModalVisible( true );
 	};
 
-	const getRecordDate = ( date: string | undefined ) => {
-		if( !date ) return 'No record';
-		const d = new Date( date );
-		return d.toLocaleDateString( undefined, {
-			weekday: 'long',
-			month: 'long',
-			day: 'numeric'
+	// Texto del record
+	const getRecordText = (): string => {
+		if( !recordHistory ) return "No record for this exercise";
+
+		const repsList = recordHistory.sets.map( s => s.reps ).join(', ');
+
+		const d = new Date( recordHistory.date );
+		const dd = String( d.getDate() ).padStart( 2, '0' );
+		const mm = String( d.getMonth() + 1 ).padStart( 2, '0' );
+
+		return `Record: ${recordHistory.maxWeight}kg · ${repsList} · ${dd}/${mm}`;
+	}
+
+	// Al cambiar el peso de un set
+	const handleWeightChange = ( idx: number, value: string ) => {
+		setSets( prev => {
+			const next = [ ...prev ];
+			next[idx].weight = value;
+
+			// si replicar está activo y es el primero, copio a todos
+			if( replicateWeight && idx === 0 ) {
+				return next.map( s => ({ ...s, weight: value }));
+			}
+			return next;
 		});
+	}
+
+	// Al cambiar las repeticiones de un set
+	const handleRepsChange = ( idx: number, value: string ) => {
+		setSets( prev => {
+			const next = [...prev];
+			next[idx].reps = value;
+			return next;
+		});
+	}
+
+	// Botón "+ Add set"
+	const addSet = () => {
+		setSets( prev => prev.length < 5
+			? [...prev, { weight: prev[0].weight, reps: '' }]
+			: prev
+		);
 	}
 
 	// Maneja envío y cierre del modal
@@ -145,11 +164,11 @@ export default function ExerciseSelectionScreen() {
 
 		let currentWorkoutId = workoutId;
 		if( currentWorkoutId == null ) {
-			const now = new Date().toISOString();
+			const now = getLocalISOString();
 			const newId = await insertNewWorkout({
 				startDate: now,
 				finishDate: now,
-				workoutType
+				workoutTypeId
 			} as NewWorkout );
 			setWorkoutId( newId );
 			currentWorkoutId = newId;
@@ -161,34 +180,27 @@ export default function ExerciseSelectionScreen() {
 			exerciseId: selectedExercise.id
 		} as NewExerciseRecord );
 
-		// 2) Insertar los 3 SetRecords
-		const sets: NewSetRecord[] = [ reps1, reps2, reps3 ].map( (r, idx) => ({
-			exerciseRecordId,
-			weight: parseFloat( weight ),
-			reps: parseInt( r, 10 )
-		} as NewSetRecord ));
-
-		for( const set of sets ) {
-			await insertSetRecord( set );
+		for( const s of sets ) {
+			await insertSetRecord({
+				exerciseRecordId,
+				weight: parseFloat( s.weight ),
+				reps: parseInt( s.reps, 10 )
+			} as NewSetRecord );
 		}
 
 		// Reset modal inputs
 		setExerciseModalVisible( false );
 		setSelectedExercise( null );
-		setWeight( '' );
-		setReps1( '' );
-		setReps2( '' );
-		setReps3( '' );
+		setSets( INITIAL_SETS );
+		setReplicateWeight( false );
 		setRecordHistory( null );
 	}
 
 	const handleCancel = () => {
 		setExerciseModalVisible( false );
 		setSelectedExercise( null );
-		setWeight( '' );
-		setReps1( '' );
-		setReps2( '' );
-		setReps3( '' );
+		setSets( INITIAL_SETS );
+		setReplicateWeight( false );
 		setRecordHistory( null );
 	}
 
@@ -201,7 +213,7 @@ export default function ExerciseSelectionScreen() {
 		if( intervalRef.current ) clearInterval( intervalRef.current );
 
 		if( workoutId != null ) {
-			const now = new Date().toISOString();
+			const now = getLocalISOString();
 			await updateWorkoutFinishDate( workoutId, now );
 		}
 		setFinishModalVisible( false );
@@ -211,25 +223,81 @@ export default function ExerciseSelectionScreen() {
 
 	const renderItem = ({ item }: { item: Exercise }) => (
 		<TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
-		  <Image
-			source={{ uri: exerciseImageUrls[item.id.toString()] }}
-			style={styles.image}
-		  />
-		  <Text style={styles.cardText}>{item.name}</Text>
+			<TouchableOpacity style={ styles.favoriteIconContainer } onPress={ () => onFavoritePress( item ) }>
+				{ item.favorite === 1 ? (
+					<StarFilledIcon width={20} height={20} fill={'#007AFF'} />
+				) : (
+					<StarOutlineIcon width={20} height={20} />
+				)}
+			</TouchableOpacity>
+			<Image
+				source={{ uri: exerciseImageUrls[item.code] }}
+				style={styles.image}
+			/>
+			<Text style={styles.cardText}>{item.name}</Text>
 		</TouchableOpacity>
 	);
 
-	const isSubmitDisabled = !weight.trim() || !reps1.trim() || !reps2.trim() || !reps3.trim();
+	// ¿Hay al menos un set completamente lleno?
+	const hasComplete = sets.some( s => s.weight.trim() !== '' && s.reps.trim() !== '' );
+
+	// ¿Hay algún set parcialmente lleno (peso **o** reps, pero no ambos)?
+	const hasPartial = sets.some( s => ( s.weight.trim() === '' ) !== ( s.reps.trim() === '' ) );
+
+	const isSubmitDisabled = !hasComplete || hasPartial;
+
+	const onFavoritePress = async ( exercise: Exercise ) => {
+		try {
+			await toggleExerciseFavorite( exercise.id, exercise.favorite === 1 ? 0 : 1 );
+			setRefreshFlag( f => !f );
+		} catch( error ) {
+			console.error( 'No se pudo cambiar favorito:', error );
+			console.log( 'No se pudo cambiar favorito:', error );
+		}
+	}
+
+	const favoriteExercises = exercises.filter( e => e.favorite === 1 );
+
+	const categoryOrder = [
+		'Chest','Back','Shoulders','Biceps','Triceps',
+		'Cuadriceps','Hamstrings','Gluts','Abductors','Adductors','Calves','Abs'
+	];
+	const groupSections = categoryOrder
+		.map( group => ({
+			title: group,
+			data: exercises.filter( e => e.muscleGroup === group && e.favorite === 0 )
+		}))
+		.filter( section => section.data.length > 0 );
+
+	const sections = [
+		{
+			title: 'Favorites',
+			data: favoriteExercises
+		},
+		...groupSections
+	];
 
 	return (
 		<View style={styles.container}>
-			<FlatList
-			data={exercises}
-			keyExtractor={(item) => item.id.toString()}
-			numColumns={2}
-			renderItem={renderItem}
-			columnWrapperStyle={styles.row}
-			contentContainerStyle={styles.list}
+			<SectionList
+				sections={sections}
+				keyExtractor={(item) => item.id.toString()}
+				renderSectionHeader={({ section: { title } }) => (
+					<Text style={ styles.sectionHeader }>{ title }</Text>
+				)}
+				renderItem={({ item, index, section }) => {
+					if( index % 2 !== 0 ) return null;
+					const first = item;
+					const second = section.data[ index + 1 ];
+					return (
+						<View style={styles.row}>
+							{renderItem({ item: first })}
+							{second ? renderItem({ item: second }) : <View style={[styles.card, { opacity: 0 }]} />}
+						</View>
+					);
+				}}
+				contentContainerStyle={styles.list}
+				stickySectionHeadersEnabled={false}
 			/>
 
 			{/* Cronómetro y botón Finish */}
@@ -247,62 +315,51 @@ export default function ExerciseSelectionScreen() {
 							{selectedExercise?.name || 'Agregar series'}
 						</Text>
 
-						{/* Peso */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Peso"
-								keyboardType="numeric"
-								value={weight}
-								onChangeText={setWeight}
-								placeholderTextColor="#000"
-							/>
-						</View>
+						{/* Inputs dinámicos de Peso i y Reps i */}
+						{sets.map( (s, i) => (
+							<View key={i} style={ styles.fieldRow }>
+								<TextInput
+									style={styles.fieldInput}
+									placeholder={`Peso ${i + 1}`}
+									keyboardType="numeric"
+									value={s.weight}
+									onChangeText={v => handleWeightChange(i, v)}
+								/>
+								<TextInput
+									style={styles.fieldInput}
+									placeholder={`Reps ${i + 1}`}
+									keyboardType="numeric"
+									value={s.reps}
+									onChangeText={v => handleRepsChange(i, v)}
+								/>
+							</View>
+						))}
 
-						{/* Reps Set 1 */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Reps set 1"
-								keyboardType="numeric"
-								value={reps1}
-								onChangeText={setReps1}
-								placeholderTextColor="#000"
-							/>
-						</View>
+						{/* Casilla “usar mismo peso para todas” */}
+						<TouchableOpacity style={styles.checkboxRow} onPress={() => setReplicateWeight(f => !f)}>
+							<View style={styles.checkboxBox}>
+								{replicateWeight && <View style={styles.checkboxChecked} />}
+							</View>
+							<Text style={styles.checkboxLabel}>All same weight</Text>
+						</TouchableOpacity>
 
-						{/* Reps Set 2 */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Reps set 2"
-								keyboardType="numeric"
-								value={reps2}
-								onChangeText={setReps2}
-								placeholderTextColor="#000"
-							/>
-						</View>
+						{/* Botón +Add set (hasta 5) */}
+						<TouchableOpacity
+							style={[styles.addSetButton, sets.length >= 5 && styles.addSetButtonDisabled]}
+							onPress={addSet}
+							disabled={sets.length >= 5}
+						>
+							<Text style={styles.addSetText}>+ Add set</Text>
+						</TouchableOpacity>
 
-						{/* Reps Set 3 */}
-						<View style={styles.fieldRow}>
-							<TextInput
-								style={styles.fieldInput}
-								placeholder="Reps set 3"
-								keyboardType="numeric"
-								value={reps3}
-								onChangeText={setReps3}
-								placeholderTextColor="#000"
-							/>
-						</View>
-
-						<Text style={ styles.recordText }>Record: {recordHistory?.maxWeight} · {recordHistory?.sets[0].reps}, {recordHistory?.sets[1].reps}, {recordHistory?.sets[2].reps} · {getRecordDate(recordHistory?.date)}</Text>
+						<Text style={ styles.recordText }>{ getRecordText() }</Text>
 
 						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-							<Text style={styles.cancelButtonText}>Cancelar</Text>
+							<Text style={styles.cancelButtonText}>Cancel</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity onPress={handleSubmit} disabled={isSubmitDisabled} style={[styles.modalButton, isSubmitDisabled && styles.modalButtonDisabled]}>
-							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Guardar</Text>
+							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Save</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -310,13 +367,13 @@ export default function ExerciseSelectionScreen() {
 			<Modal visible={ finishModalVisible } transparent animationType="slide">
 				<View style={ styles.modalOverlay }>
 					<View style={ styles.modalContainer }>
-						<Text style={ styles.modalTitle }>¿Estás seguro de finalizar el entrenamiento?</Text>
+						<Text style={ styles.modalTitle }>Are you sure you want to finish the workout?</Text>
 						<TouchableOpacity style={styles.cancelButton} onPress={() => setFinishModalVisible( false )}>
-							<Text style={styles.cancelButtonText}>Atrás</Text>
+							<Text style={styles.cancelButtonText}>Back</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity onPress={handleFinish} style={styles.modalButton}>
-							<Text style={styles.modalButtonText}>Guardar</Text>
+							<Text style={styles.modalButtonText}>Save</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
