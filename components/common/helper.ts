@@ -11,3 +11,15 @@ export function formateDateToLongText( dateString: string ): string {
 
 	return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
+
+export function getLocalISOString( d = new Date() ): string {
+	const pad = ( n: number ) => ( n < 10 ? '0' : '' ) + n;
+	return (
+		d.getFullYear() +
+		'-' + pad( d.getMonth() + 1 ) +
+		'-' + pad( d.getDate() ) +
+		'T' + pad( d.getHours() ) +
+		':' + pad( d.getMinutes() ) +
+		':' + pad( d.getSeconds() )
+	);
+}

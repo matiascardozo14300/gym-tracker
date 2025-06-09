@@ -10,6 +10,7 @@ import styles from './styles';
 import { exerciseImageUrls } from '../common/allExercisesImages';
 import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
 import StarOutlineIcon from '../../assets/icons/favorite.svg';
+import { getLocalISOString } from '../common/helper';
 
 type ExSelRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
 type ExSelNavProp = CompositeNavigationProp<
@@ -163,7 +164,7 @@ export default function ExerciseSelectionScreen() {
 
 		let currentWorkoutId = workoutId;
 		if( currentWorkoutId == null ) {
-			const now = new Date().toISOString();
+			const now = getLocalISOString();
 			const newId = await insertNewWorkout({
 				startDate: now,
 				finishDate: now,
@@ -212,7 +213,7 @@ export default function ExerciseSelectionScreen() {
 		if( intervalRef.current ) clearInterval( intervalRef.current );
 
 		if( workoutId != null ) {
-			const now = new Date().toISOString();
+			const now = getLocalISOString();
 			await updateWorkoutFinishDate( workoutId, now );
 		}
 		setFinishModalVisible( false );
