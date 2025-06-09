@@ -117,14 +117,18 @@ export async function runCustomQuery(): Promise<void> {
 	const db = getDB();
 	await db.execAsync(`
 		ALTER TABLE workouts
-			ADD COLUMN workoutTypeId INTEGER NULL
-			REFERENCES workout_types(id);
+		ADD COLUMN workoutTypeId INTEGER NULL
+		REFERENCES workout_types(id);
 
-		UPDATE workouts
-		SET workoutTypeId = (
-			SELECT id
-			FROM workout_types
-			WHERE workout_types.name = workouts.workoutType
-		);
+		ALTER TABLE exercises
+		ADD COLUMN code TEXT;
+
+		ALTER TABLE exercises
+		ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;
+
+		UPDATE exercises
+		SET code = 'ex_' || id;
+
+		CREATE UNIQUE INDEX idx_exercises_code ON exercises(code);
 	`);
 }
