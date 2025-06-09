@@ -167,6 +167,27 @@ export async function importDatabaseFromJson() {
 			);
 		}
 
+		for (const ex of exercises) {
+			if (
+				typeof ex.id !== 'number' ||
+				typeof ex.name !== 'string' ||
+				typeof ex.code !== 'string' ||
+				typeof ex.muscleGroup !== 'string' ||
+				typeof ex.favorite !== 'number'
+			) {
+				throw new Error('Registro inválido en exercises.');
+			}
+			await db.runAsync(
+				`INSERT INTO exercises (id, name, code, muscleGroup, favorite)
+				VALUES (?, ?, ?, ?, ?);`,
+				ex.id,
+				ex.name,
+				ex.code,
+				ex.muscleGroup,
+				ex.favorite
+			);
+		}
+
 		for( const wte of workout_type_exercises ) {
 			if (
 				typeof wte.workoutTypeId !== 'number' ||
@@ -198,27 +219,6 @@ export async function importDatabaseFromJson() {
 				w.startDate,
 				w.finishDate,
 				w.workoutTypeId
-			);
-		}
-
-		for (const ex of exercises) {
-			if (
-				typeof ex.id !== 'number' ||
-				typeof ex.name !== 'string' ||
-				typeof ex.code !== 'string' ||
-				typeof ex.muscleGroup !== 'string' ||
-				typeof ex.favorite !== 'number'
-			) {
-				throw new Error('Registro inválido en exercises.');
-			}
-			await db.runAsync(
-				`INSERT INTO exercises (id, name, code, muscleGroup, favorite)
-				VALUES (?, ?, ?, ?, ?);`,
-				ex.id,
-				ex.name,
-				ex.code,
-				ex.muscleGroup,
-				ex.favorite
 			);
 		}
 
@@ -259,6 +259,8 @@ export async function importDatabaseFromJson() {
 		}
 	} catch (err) {
 		// Re-lanzar para informar error sin dejar BD en estado parcial
-		throw new Error(`Importación fallida: ${err}`);
+		const errMsg = err instanceof Error ? err.message : String( err );
+		console.error( '[importDatabaseFromJson] Error completo:', err );
+		throw new Error(`Importación fallida: ${errMsg}`);
 	}
 }

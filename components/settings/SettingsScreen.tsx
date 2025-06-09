@@ -73,9 +73,12 @@ export default function SettingsScreen() {
 		try {
 			await importDatabaseFromJson();
 			Alert.alert('Restauración', 'La base de datos se importó correctamente.');
-		} catch( error ) {
-			console.error(error);
-			Alert.alert('Error', 'No se pudo importar la base de datos.');
+		} catch( err ) {
+			console.error(err);
+			const message = err instanceof Error
+				? err.message
+				: String(err);
+			Alert.alert('Error al importar BD', message);
 		}
 	}
 
