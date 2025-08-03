@@ -324,6 +324,7 @@ export default function ExerciseSelectionScreen() {
 									keyboardType="numeric"
 									value={s.weight}
 									onChangeText={v => handleWeightChange(i, v)}
+									placeholderTextColor="#000"
 								/>
 								<TextInput
 									style={styles.fieldInput}
@@ -331,6 +332,7 @@ export default function ExerciseSelectionScreen() {
 									keyboardType="numeric"
 									value={s.reps}
 									onChangeText={v => handleRepsChange(i, v)}
+									placeholderTextColor="#000"
 								/>
 							</View>
 						))}

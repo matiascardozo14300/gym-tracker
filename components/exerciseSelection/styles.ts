@@ -93,8 +93,6 @@ export default StyleSheet.create({
 		borderRadius: 8,
 		paddingHorizontal: 12,
 		paddingVertical: 8,
-
-		/* marginLeft: 8 */
 		marginHorizontal: 4,
 
 	},
