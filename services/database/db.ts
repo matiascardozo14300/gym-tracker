@@ -2,71 +2,43 @@ import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing   from 'expo-sharing';
+import { migrations } from './migrations';
+import { getLocalISOString } from '../../components/common/helper';
 
 const DB_NAME = 'gymtracker.db';
 let db: SQLite.SQLiteDatabase;
 
 export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
-	// 1. Abro (o creo) la base de datos de manera asíncrona
-	db = await SQLite.openDatabaseAsync(DB_NAME);
+	db = await SQLite.openDatabaseAsync( DB_NAME );
 
-	// 2. Creo todas las tablas en un solo batch si no existen
+	// 1. Creo la tabla que lleva el registro de migraciones
 	await db.execAsync(`
-		CREATE TABLE IF NOT EXISTS workout_types (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL UNIQUE,
-			isCustom INTEGER NOT NULL DEFAULT 0
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			id INTEGER PRIMARY KEY,
+			applied_at TEXT NOT NULL
 		);
-
-		CREATE TABLE IF NOT EXISTS exercises (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			code TEXT NOT NULL UNIQUE,
-			muscleGroup TEXT NOT NULL,
-			favorite INTEGER NOT NULL DEFAULT 0
-		);
-
-		CREATE TABLE IF NOT EXISTS workout_type_exercises (
-			workoutTypeId INTEGER NOT NULL,
-			exerciseId INTEGER NOT NULL,
-			PRIMARY KEY (workoutTypeId, exerciseId),
-			FOREIGN KEY (workoutTypeId) REFERENCES workout_types(id),
-			FOREIGN KEY (exerciseId) REFERENCES exercises(id)
-		);
-
-		CREATE TABLE IF NOT EXISTS workouts (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			startDate TEXT NOT NULL,
-			finishDate TEXT NOT NULL,
-			workoutTypeId INTEGER NOT NULL,
-			FOREIGN KEY (workoutTypeId) REFERENCES workout_types(id)
-		);
-
-		CREATE TABLE IF NOT EXISTS exercise_records (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			workoutId INTEGER NOT NULL,
-			exerciseId INTEGER NOT NULL,
-			FOREIGN KEY (workoutId) REFERENCES workouts(id),
-			FOREIGN KEY (exerciseId) REFERENCES exercises(id)
-		);
-
-		CREATE TABLE IF NOT EXISTS sets (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			exerciseRecordId INTEGER NOT NULL,
-			weight REAL NOT NULL,
-			reps INTEGER NOT NULL,
-			FOREIGN KEY (exerciseRecordId) REFERENCES exercise_records(id)
-		);
-
-		INSERT OR IGNORE INTO workout_types (name, isCustom)
-		VALUES
-			('Pull', 0),
-			('Push', 0),
-			('Legs', 0),
-			('FullBody', 0);
 	`);
 
-	console.log('Tablas inicializadas correctamente con execAsync');
+	// 2. Leo las migraciones ya aplicadas
+	const appliedRows: { id: number }[] = await db.getAllAsync( 'SELECT id FROM schema_migrations;' );
+	const appliedIds = appliedRows.map( r => r.id );
+
+	// 3. Ejecuto sólo las que faltan
+	for( const migration of migrations ) {
+		if( !appliedIds.includes( migration.id ) ) {
+			console.log( "Aplicando migración id: ", migration.id );
+			await db.execAsync( migration.up );
+
+			const appliedAt = getLocalISOString();
+			await db.runAsync(
+				'INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?);',
+				migration.id,
+				appliedAt
+			);
+		}
+	}
+
+	console.log('Database ready with all migrations applied.');
 	return db;
 }
 

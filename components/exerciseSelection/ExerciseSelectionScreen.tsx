@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList } fro
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
-import { Exercise, ExerciseMaxHistory, getExerciseByWorkoutType, getExerciseMaxHistory, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
+import { Exercise, ExerciseLastHistory, getExerciseByWorkoutType, getExerciseLastHistory, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import styles from './styles';
@@ -59,7 +59,7 @@ export default function ExerciseSelectionScreen() {
 
 	const [ sets, setSets ] = useState<{ weight: string; reps: string }[]>( INITIAL_SETS );
 	const [ replicateWeight, setReplicateWeight ] = useState( false );
-	const [ recordHistory, setRecordHistory ] = useState<ExerciseMaxHistory | null>(null);
+	const [ lastHistory, setLastHistory ] = useState<ExerciseLastHistory | null>(null);
 
 	// Start timmer
 	useEffect( () => {
@@ -86,15 +86,15 @@ export default function ExerciseSelectionScreen() {
 		if( exerciseModalVisible && selectedExercise ) {
 			( async () => {
 				try {
-					const hist = await getExerciseMaxHistory( selectedExercise.id );
-					setRecordHistory( hist );
+					const hist = await getExerciseLastHistory( selectedExercise.id );
+					setLastHistory( hist );
 				} catch( error ) {
-					console.error( 'Error al obtener el máximo para el ejercicio: ', error );
-					setRecordHistory( null );
+					console.error( 'Error al obtener el último registro para el ejercicio: ', error );
+					setLastHistory( null );
 				}
 			})();
 		} else {
-			setRecordHistory( null );
+			setLastHistory( null );
 		}
 	}, [ exerciseModalVisible, selectedExercise ]);
 
@@ -116,15 +116,27 @@ export default function ExerciseSelectionScreen() {
 
 	// Texto del record
 	const getRecordText = (): string => {
-		if( !recordHistory ) return "No record for this exercise";
+		if( !lastHistory ) return "Última sesión: sin datos";
 
-		const repsList = recordHistory.sets.map( s => s.reps ).join(', ');
+		const grupos: Map<number, number[]> = new Map();
 
-		const d = new Date( recordHistory.date );
+		for( const set of lastHistory.sets ) {
+			if( !grupos.has( set.weight ) ) {
+				grupos.set( set.weight, [] );
+			}
+			grupos.get( set.weight )!.push( set.reps );
+		}
+
+		const partes: string[] = [];
+		for( const [ peso, repsList ] of grupos.entries() ) {
+			partes.push( `${peso}kg x ${repsList.join(", ")}` );
+		}
+
+		const d = new Date( lastHistory.date );
 		const dd = String( d.getDate() ).padStart( 2, '0' );
 		const mm = String( d.getMonth() + 1 ).padStart( 2, '0' );
 
-		return `Record: ${recordHistory.maxWeight}kg · ${repsList} · ${dd}/${mm}`;
+		return `Última sesión: ${partes.join(", ")} · ${dd}/${mm}`;
 	}
 
 	// Al cambiar el peso de un set
@@ -193,7 +205,7 @@ export default function ExerciseSelectionScreen() {
 		setSelectedExercise( null );
 		setSets( INITIAL_SETS );
 		setReplicateWeight( false );
-		setRecordHistory( null );
+		setLastHistory( null );
 	}
 
 	const handleCancel = () => {
@@ -201,7 +213,7 @@ export default function ExerciseSelectionScreen() {
 		setSelectedExercise( null );
 		setSets( INITIAL_SETS );
 		setReplicateWeight( false );
-		setRecordHistory( null );
+		setLastHistory( null );
 	}
 
 	const handleFinishPress = () => {
