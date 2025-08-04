@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList } fro
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
-import { Exercise, ExerciseLastHistory, getExerciseByWorkoutType, getExerciseLastHistory, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
+import { Exercise, ExerciseLastHistory, getExerciseByWorkoutType, getExerciseLastHistory, getExerciseNotes, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, saveExerciseNotes, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import styles from './styles';
@@ -54,12 +54,15 @@ export default function ExerciseSelectionScreen() {
 
 	// Estados para modal e inputs
 	const [ exerciseModalVisible, setExerciseModalVisible] = useState(false);
+	const [ notesModalVisible, setNotesModalVisible ] = useState(false);
 	const [ finishModalVisible, setFinishModalVisible] = useState(false);
 	const [ selectedExercise, setSelectedExercise ] = useState<Exercise | null>(null);
 
 	const [ sets, setSets ] = useState<{ weight: string; reps: string }[]>( INITIAL_SETS );
 	const [ replicateWeight, setReplicateWeight ] = useState( false );
 	const [ lastHistory, setLastHistory ] = useState<ExerciseLastHistory | null>(null);
+	const [ originalNotes, setOriginalNotes ] = useState<string>("");
+	const [ notes, setNotes ] = useState<string>("");
 
 	// Start timmer
 	useEffect( () => {
@@ -97,6 +100,26 @@ export default function ExerciseSelectionScreen() {
 			setLastHistory( null );
 		}
 	}, [ exerciseModalVisible, selectedExercise ]);
+
+	// Se abre el modal de notas
+	useEffect( () => {
+		if( notesModalVisible && selectedExercise ) {
+			( async () => {
+				try {
+					const exerciseNotes = await getExerciseNotes( selectedExercise.id );
+					setNotes( exerciseNotes );
+					setOriginalNotes( exerciseNotes );
+				} catch( error ) {
+					console.error( 'Error al obtener las notas del ejercicio' );
+					setNotes( "" );
+					setOriginalNotes("");
+				}
+			})();
+		} else {
+			setNotes( "" );
+			setOriginalNotes("");
+		}
+	}, [ notesModalVisible, selectedExercise ]);
 
 	// Botón de replicar peso
 	useEffect(() => {
@@ -220,7 +243,21 @@ export default function ExerciseSelectionScreen() {
 		setFinishModalVisible( true );
 	}
 
-	// Finalizar workout y volver al Home
+	const isDirty = notes !== originalNotes;
+
+	const saveNotes = async () => {
+		if (!isDirty) return;
+
+		if( selectedExercise ) {
+			await saveExerciseNotes( selectedExercise.id, notes );
+		} else {
+			console.error( "No se pudieron guardar las notas" );
+		}
+
+		setNotesModalVisible(false);
+	}
+
+	// Finalizar workout y volver al Inicio
 	const handleFinish = async () => {
 		if( intervalRef.current ) clearInterval( intervalRef.current );
 
@@ -316,7 +353,7 @@ export default function ExerciseSelectionScreen() {
 			<View style={ styles.footer} >
 				<TimerDisplay seconds={ seconds } />
 				<TouchableOpacity style={ styles.finishButton } onPress={ workoutId != null ?  handleFinishPress : handleFinish }>
-					<Text style={ styles.finishButtonText }>Finish Workout</Text>
+					<Text style={ styles.finishButtonText }>Finalizar Entrenamiento</Text>
 				</TouchableOpacity>
 			</View>
 
@@ -354,26 +391,35 @@ export default function ExerciseSelectionScreen() {
 							<View style={styles.checkboxBox}>
 								{replicateWeight && <View style={styles.checkboxChecked} />}
 							</View>
-							<Text style={styles.checkboxLabel}>All same weight</Text>
+							<Text style={styles.checkboxLabel}>Mismo peso</Text>
 						</TouchableOpacity>
 
-						{/* Botón +Add set (hasta 5) */}
-						<TouchableOpacity
-							style={[styles.addSetButton, sets.length >= 5 && styles.addSetButtonDisabled]}
-							onPress={addSet}
-							disabled={sets.length >= 5}
-						>
-							<Text style={styles.addSetText}>+ Add set</Text>
-						</TouchableOpacity>
+						{/* Fila de botones: Add set --- Notes */}
+						<View style={ styles.buttonsRow }>
+							<TouchableOpacity
+								style={[ styles.addSetButton, sets.length >= 5 && styles.addSetButtonDisabled ]}
+								onPress={addSet}
+								disabled={ sets.length >= 5 }
+							>
+								<Text style={styles.addSetText}>+ Agregar set</Text>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								style={styles.addNotesButton}
+								onPress={() => setNotesModalVisible( true )}
+							>
+								<Text style={styles.addNotesText}>Notas</Text>
+							</TouchableOpacity>
+						</View>
 
 						<Text style={ styles.recordText }>{ getRecordText() }</Text>
 
 						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-							<Text style={styles.cancelButtonText}>Cancel</Text>
+							<Text style={styles.cancelButtonText}>Cancelar</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity onPress={handleSubmit} disabled={isSubmitDisabled} style={[styles.modalButton, isSubmitDisabled && styles.modalButtonDisabled]}>
-							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Save</Text>
+							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Guardar</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -381,13 +427,49 @@ export default function ExerciseSelectionScreen() {
 			<Modal visible={ finishModalVisible } transparent animationType="slide">
 				<View style={ styles.modalOverlay }>
 					<View style={ styles.modalContainer }>
-						<Text style={ styles.modalTitle }>Are you sure you want to finish the workout?</Text>
+						<Text style={ styles.modalTitle }>¿Estás seguro de finalizar el entrenamiento?</Text>
 						<TouchableOpacity style={styles.cancelButton} onPress={() => setFinishModalVisible( false )}>
-							<Text style={styles.cancelButtonText}>Back</Text>
+							<Text style={styles.cancelButtonText}>Atrás</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity onPress={handleFinish} style={styles.modalButton}>
-							<Text style={styles.modalButtonText}>Save</Text>
+							<Text style={styles.modalButtonText}>Guardar</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
+
+			{/* Modal de notas */}
+			<Modal visible={notesModalVisible} transparent animationType="fade">
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContainer}>
+						<Text style={styles.modalTitle}>Notas del ejercicio</Text>
+
+						<TextInput
+							style={styles.textArea}
+							multiline
+							maxLength={500}
+							placeholder="Escribe notas para el ejercicio. Por ejemplo: ajustes del asiento o máquina, indicaciones de calentamiento, etc."
+							placeholderTextColor="#666"
+							value={notes}
+							onChangeText={setNotes}
+						/>
+
+						<TouchableOpacity
+							style={styles.cancelButton}
+							onPress={() => setNotesModalVisible(false)}
+						>
+							<Text style={styles.cancelButtonText}>Cancelar</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+                  				styles.modalButton,
+                  				!isDirty && styles.modalButtonDisabled
+							]}
+							onPress={saveNotes}
+							disabled={!isDirty}
+						>
+							<Text style={[ styles.modalButtonText, !isDirty && styles.modalButtonTextDisabled ]}>Guardar</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

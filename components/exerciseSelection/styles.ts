@@ -121,8 +121,12 @@ export default StyleSheet.create({
 		fontSize: 16,
 		color: '#333',
 	},
+	buttonsRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		marginVertical: 12
+	},
 	addSetButton: {
-		alignSelf: 'flex-start',
 		paddingHorizontal: 16,
 		paddingVertical: 8,
 		backgroundColor: '#007AFF20',
@@ -135,6 +139,20 @@ export default StyleSheet.create({
 	addSetText: {
 		fontSize: 16,
 		color: '#007AFF',
+	},
+	addNotesButton: {
+		backgroundColor: '#FFFFFF',
+		borderWidth: 1,
+		borderColor: '#ccc',
+		paddingVertical: 8,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		marginBottom: 16,
+	},
+	addNotesText: {
+		fontSize: 16,
+		color: '#333',
+		fontWeight: '600',
 	},
 	modalButton: {
 		backgroundColor: '#007AFF',
@@ -173,4 +191,17 @@ export default StyleSheet.create({
 		textAlign: 'center',
 		marginVertical: 12,
 	},
+	textArea: {
+		borderWidth: 1,
+		borderColor: '#ccc',
+		borderRadius: 4,
+		height: 120,
+		padding: 8,
+		textAlignVertical: 'top',
+		marginBottom: 16
+	},
+	notesButtonsRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between'
+	}
 });

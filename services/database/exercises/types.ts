@@ -28,3 +28,10 @@ export interface ExerciseInsert {
 	muscleGroup: MuscleGroup;
 	workoutTypes: string[];
 }
+
+export interface ExerciseNotes {
+	id: number;
+	exerciseId: number;
+	note: string;
+	lastUpdated: string;
+}
