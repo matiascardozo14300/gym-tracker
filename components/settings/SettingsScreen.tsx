@@ -95,7 +95,7 @@ export default function SettingsScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
-				<Header title='Settings' />
+				<Header title='Ajustes' />
 
 				<Text style={styles.sectionTitle}>Datos personales</Text>
 				<View style={styles.personalSection}>

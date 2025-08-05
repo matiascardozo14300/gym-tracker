@@ -50,8 +50,8 @@ export default function WorkoutExerciseSelectionScreen() {
 			setNotAddedExercises([]);
 			setFinishModalVisible(false);
 
-			tabNav?.navigate('Workouts');
-			navigation.navigate('Tabs', { screen: 'Workouts' });
+			tabNav?.navigate('Rutinas');
+			navigation.navigate('Tabs', { screen: 'Rutinas' });
 		} catch( error ) {
 			console.error( 'Error al crear workout type:', error );
     		Alert.alert( 'Error', 'No se pudo crear el tipo de entrenamiento' );

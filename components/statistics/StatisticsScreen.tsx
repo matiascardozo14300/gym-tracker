@@ -100,9 +100,9 @@ export default function StatisticsScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
-				<Header title="Statistics" />
+				<Header title="Progreso" />
 
-				<Text style={styles.sectionTitle}>Choose Workout Type</Text>
+				<Text style={styles.sectionTitle}>Elegí la rutina que quieras consultar</Text>
 				<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
 					{ workoutTypes.map( (type) => (
 						<TouchableOpacity
@@ -134,7 +134,7 @@ export default function StatisticsScreen() {
 				</View>
 
 				<View style={styles.chartTitleContainer}>
-					<Text style={styles.chartTitle}>Weight (kg)</Text>
+					<Text style={styles.chartTitle}>Peso (kg)</Text>
 					<TouchableOpacity onPress={() => setHelpModalVisible(true)} style={styles.helpButton}>
 						<HelpIcon width={25} height={25} color={"grey"} />
 					</TouchableOpacity>
@@ -187,13 +187,13 @@ export default function StatisticsScreen() {
   				)}
 				<View style={styles.statsCard}>
 					<View style={styles.statsRow}>
-						<Text style={styles.statsLabel}>Max Weight</Text>
+						<Text style={styles.statsLabel}>Peso máximo</Text>
 						<Text style={styles.statsValue}>{maxWeight} kg</Text>
 					</View>
 					<View style={styles.divider} />
 					<View style={styles.statsRow}>
-						<Text style={styles.statsLabel}>Average Trend</Text>
-						<Text style={styles.statsValue}>+{avgTrend} kg/day</Text>
+						<Text style={styles.statsLabel}>Evolución promedio del peso</Text>
+						<Text style={styles.statsValue}>+{avgTrend} kg/día</Text>
 					</View>
 				</View>
 

@@ -266,8 +266,8 @@ export default function ExerciseSelectionScreen() {
 			await updateWorkoutFinishDate( workoutId, now );
 		}
 		setFinishModalVisible( false );
-		tabNav?.navigate('Home');
-		navigation.navigate('Tabs', { screen: 'Home' });
+		tabNav?.navigate('Inicio');
+		navigation.navigate('Tabs', { screen: 'Inicio' });
 	};
 
 	const renderItem = ({ item }: { item: Exercise }) => (
@@ -320,7 +320,7 @@ export default function ExerciseSelectionScreen() {
 
 	const sections = [
 		{
-			title: 'Favorites',
+			title: 'Favoritos',
 			data: favoriteExercises
 		},
 		...groupSections

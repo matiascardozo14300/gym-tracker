@@ -8,7 +8,7 @@ import { getWorkoutTypes, WorkoutType } from '../../services/database';
 import styles from './styles';
 import { workoutTypeColors } from '../common/colorMap';
 
-type TabNav = BottomTabNavigationProp<RootTabParamList, 'Home'>;
+type TabNav = BottomTabNavigationProp<RootTabParamList, 'Inicio'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function WorkoutTypeSelector() {
@@ -25,7 +25,7 @@ export default function WorkoutTypeSelector() {
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Choose Workout Type</Text>
+			<Text style={styles.sectionTitle}>Empezá tu entrenamiento</Text>
 
 			<ScrollView	horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
 				{types.map( (t) => (

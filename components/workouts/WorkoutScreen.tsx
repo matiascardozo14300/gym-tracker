@@ -8,7 +8,7 @@ import { RootStackParamList, RootTabParamList } from "../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 
-type TabNav = BottomTabNavigationProp<RootTabParamList, 'Workouts'>;
+type TabNav = BottomTabNavigationProp<RootTabParamList, 'Rutinas'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function WorkoutScreen() {
@@ -43,11 +43,11 @@ export default function WorkoutScreen() {
 
 	const ListHeader = () => (
 		<>
-			<Header title="Workouts" />
+			<Header title="Rutinas" />
 
 			<View style={styles.buttonRow}>
 				<TouchableOpacity style={styles.createButton} onPress={handleCreateWorkout}>
-					<Text style={styles.createButtonText}>Create workout</Text>
+					<Text style={styles.createButtonText}>Crear rutina</Text>
 				</TouchableOpacity>
 				{/* <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteWorkout}>
 					<Text style={styles.deleteButtonText}>Delete workout</Text>
