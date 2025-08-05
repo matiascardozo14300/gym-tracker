@@ -87,7 +87,7 @@ export default function HomeScreen() {
 	return (
 		<SafeAreaView style={ styles.container }>
 			<ScrollView contentContainerStyle={ styles.scrollContent }>
-				<Header title='Home' />
+				<Header title='Inicio' />
 				<WorkoutTypeSelector />
 				<CalendarSection
 					markedDates={ markedDates }

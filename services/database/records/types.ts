@@ -30,9 +30,8 @@ export interface WeightPoint {
 	reps: number[];
 }
 
-export interface ExerciseMaxHistory {
+export interface ExerciseLastHistory  {
 	exerciseRecordId: number;
 	date: string;
-	maxWeight: number;
 	sets: { weight: number; reps: number }[];
 }

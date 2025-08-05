@@ -1,6 +1,6 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import { Exercise, ExerciseInsert } from './types';
+import { Exercise, ExerciseInsert, ExerciseNotes } from './types';
 
 /**
  * Recupera todos los ejercicios asociados a un workoutTypeId.
@@ -131,4 +131,60 @@ export async function runCustomQuery(): Promise<void> {
 
 		CREATE UNIQUE INDEX idx_exercises_code ON exercises(code);
 	`);
+}
+
+export async function getExerciseNotes( exerciseId: number ): Promise<string> {
+	const db = getDB();
+
+	const row = await db.getFirstAsync<ExerciseNotes>(
+		`
+		SELECT id, exerciseId, note, lastUpdated
+		FROM exercise_notes
+		WHERE exerciseId = ?
+		ORDER BY datetime(lastUpdated) DESC
+		LIMIT 1;
+		`,
+		exerciseId
+	);
+
+	return row != null ? row.note : "";
+}
+
+export async function saveExerciseNotes( exerciseId: number, note: string ): Promise<void> {
+	const db = getDB();
+
+	const timestamp = new Date().toISOString();
+
+	const existing = await db.getFirstAsync<{ id: number }>(
+		`
+		SELECT id
+		FROM exercise_notes
+		WHERE exerciseId = ?
+		LIMIT 1;
+		`,
+		exerciseId
+	);
+
+	if( existing ) {
+		await db.runAsync(
+			`
+			UPDATE exercise_notes
+			SET note = ?, lastUpdated = ?
+			WHERE id = ?;
+			`,
+			note,
+			timestamp,
+			existing.id
+		);
+	} else {
+		await db.runAsync(
+			`
+			INSERT INTO exercise_notes (exerciseId, note, lastUpdated)
+			VALUES (?, ?, ?);
+			`,
+			exerciseId,
+			note,
+			timestamp
+		);
+	}
 }

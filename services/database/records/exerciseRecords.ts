@@ -1,6 +1,6 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import { ExerciseMaxHistory, NewExerciseRecord, NewSetRecord, WeightPoint } from './types';
+import { ExerciseLastHistory, NewExerciseRecord, NewSetRecord, WeightPoint } from './types';
 
 
 // Inserta un nuevo ExcerciseRecord
@@ -90,45 +90,35 @@ export async function getExerciseRecords( exerciseId: number ): Promise<WeightPo
 }
 
 // Obtiene el máximo de peso registrado para un ejercicio (junto con los sets)
-export async function getExerciseMaxHistory( exerciseId: number ): Promise<ExerciseMaxHistory | null> {
+export async function getExerciseLastHistory( exerciseId: number ): Promise<ExerciseLastHistory | null> {
+
 	const db = getDB();
 
 	const row = await db.getFirstAsync<{
 		exerciseRecordId: number;
-		date: string;
-		maxWeight: number;
+    	date: string;
 	}>(
-		 `
-		WITH maxW AS (
-			SELECT MAX(s.weight) AS maxWeight
+		`
+			SELECT
+				er.id AS exerciseRecordId,
+				w.startDate AS date
 			FROM exercise_records er
-			JOIN sets s ON s.exerciseRecordId = er.id
+			JOIN workouts w
+				ON er.workoutId = w.id
 			WHERE er.exerciseId = ?
-		)
-		SELECT
-			er.id AS exerciseRecordId,
-			w.startDate AS date,
-			maxW.maxWeight
-		FROM exercise_records er
-		JOIN workouts w ON er.workoutId = w.id
-		JOIN sets s ON s.exerciseRecordId = er.id
-		JOIN maxW ON s.weight = maxW.maxWeight
-		WHERE er.exerciseId = ?
-		ORDER BY w.startDate DESC
-		LIMIT 1;
+			ORDER BY w.startDate DESC
+			LIMIT 1;
 		`,
-		exerciseId,
 		exerciseId
 	);
 
 	if( !row ) return null;
 
-	// Obtener los sets de esa sesión
 	const sets = await db.getAllAsync<{ weight: number; reps: number }>(
 		`
-		SELECT weight, reps
-		FROM sets
-		WHERE exerciseRecordId = ?;
+			SELECT weight, reps
+			FROM sets
+			WHERE exerciseRecordId = ?;
 		`,
 		row.exerciseRecordId
 	);
@@ -136,7 +126,6 @@ export async function getExerciseMaxHistory( exerciseId: number ): Promise<Exerc
 	return {
 		exerciseRecordId: row.exerciseRecordId,
 		date: row.date,
-		maxWeight: row.maxWeight,
 		sets
 	};
 }

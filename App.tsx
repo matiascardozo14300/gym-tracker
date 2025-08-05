@@ -30,10 +30,10 @@ export type RootStackParamList = {
 };
 
 export type RootTabParamList = {
-	Home: undefined;
-	Settings: undefined;
-	Workouts: undefined;
-	Statistics: undefined;
+	Inicio: undefined;
+	Ajustes: undefined;
+	Rutinas: undefined;
+	Progreso: undefined;
 };
 
 type RootStackNavProp = NativeStackNavigationProp<RootStackParamList>;
@@ -49,13 +49,13 @@ function MainTabs() {
         headerShown: false,
         tabBarIcon: ({ color, size }) => {
           switch (route.name) {
-            case 'Home':
+            case 'Inicio':
               return <HomeIcon width={size} height={size} fill={color} />;
-            case 'Workouts':
+            case 'Rutinas':
               return <WorkoutsIcon width={size} height={size} fill={color} />;
-            case 'Statistics':
+            case 'Progreso':
               return <ChartIcon width={size} height={size} fill={color} />;
-            case 'Settings':
+            case 'Ajustes':
               return <SettingsIcon width={size} height={size} fill={color} />;
             default:
               return null;
@@ -63,10 +63,10 @@ function MainTabs() {
         }
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Workouts" component={WorkoutScreen} />
-      <Tab.Screen name="Statistics" component={StatisticsScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Inicio" component={HomeScreen} />
+      <Tab.Screen name="Rutinas" component={WorkoutScreen} />
+      <Tab.Screen name="Progreso" component={StatisticsScreen} />
+      <Tab.Screen name="Ajustes" component={SettingsScreen} />
     </Tab.Navigator>
 	);
 }
@@ -102,13 +102,13 @@ export default function App() {
 				<Stack.Screen
 					name="ExerciseSelection"
 					component={ExerciseSelectionScreen}
-					options={{ headerShown: true, title: 'Choose exercises', headerBackVisible: false }}
+					options={{ headerShown: true, title: 'Seleccioná ejercicios', headerBackVisible: false }}
 				/>
 
 				<Stack.Screen
 					name="WorkoutExerciseSelection"
 					component={WorkoutExerciseSelectionScreen}
-					options={{ headerShown: true, title: 'Choose exercises', headerBackVisible: false }}
+					options={{ headerShown: true, title: 'Seleccioná ejercicios', headerBackVisible: false }}
 				/>
 
 			</Stack.Navigator>

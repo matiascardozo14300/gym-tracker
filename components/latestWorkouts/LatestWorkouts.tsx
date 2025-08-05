@@ -31,7 +31,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, onWorkoutPress }) =>
 const LatestWorkouts: React.FC<LatestWorkoutsProps> = ({ workouts, onWorkoutPress }) => {
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Latest Workouts</Text>
+			<Text style={styles.sectionTitle}>Últimos entrenamientos</Text>
 			{workouts.map((w) => (
 				<WorkoutCard key={w.startDate} workout={w} onWorkoutPress={ onWorkoutPress } />
 			))}
