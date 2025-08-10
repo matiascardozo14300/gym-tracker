@@ -5,7 +5,6 @@ import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelectio
 import LatestWorkouts from '../latestWorkouts/LatestWorkouts';
 import WorkoutTypeSelector from './WorkoutTypeSelector';
 import styles from './styles';
-import { workoutTypeColors } from '../common/colorMap';
 import Header from '../header/Header';
 import { formateDateToLongText } from '../common/helper';
 
@@ -29,11 +28,11 @@ export default function HomeScreen() {
 			const items = await getWorkoutDatesForMonth( year, month );
 
 			const marks: CustomMarkedDates = {};
-			for (const { date, workoutType } of items) {
+			for (const { date, workoutType, color } of items) {
 				marks[date] = {
 				  customStyles: {
 					container: {
-					  backgroundColor: workoutTypeColors[ workoutType ] || 'grey',
+					  backgroundColor: color || 'grey',
 					  borderRadius: 20
 					},
 					text: {
@@ -50,11 +49,11 @@ export default function HomeScreen() {
 	const fetchWorkoutsForMonth = async ( year: number, month: number ) => {
 		const items = await getWorkoutDatesForMonth( year, month );
 		const marks: CustomMarkedDates = {};
-		for (const { date, workoutType } of items) {
+		for (const { date, workoutType, color } of items) {
 			marks[date] = {
 				customStyles: {
 				container: {
-					backgroundColor: workoutTypeColors[ workoutType ] || 'grey',
+					backgroundColor: color || 'grey',
 					borderRadius: 20
 				},
 				text: {

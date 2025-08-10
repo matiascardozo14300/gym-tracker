@@ -85,7 +85,7 @@ export async function getLast3Workouts(): Promise<LastWorkout[]> {
 export async function getWorkoutDatesForMonth(
 	year: number,
 	month: number
-  ): Promise<{ date: string; workoutType: string }[]> {
+  ): Promise<{ date: string; workoutType: string; color: string | null; }[]> {
 	const monthStr = String( month ).padStart(2, '0');
 	const from = `${year}-${monthStr}-01`;
 	const nextMonth = month === 12 ? 1 : month + 1;
@@ -96,11 +96,13 @@ export async function getWorkoutDatesForMonth(
 	const rows = await getDB().getAllAsync<{
 		date: string;
 		workoutType: string;
+		color: string | null;
 	}>(
 	`
 		SELECT
 			substr(w.startDate,1,10) AS date,
-			wt.name AS workoutType
+			wt.name AS workoutType,
+			wt.color AS color
 		FROM (
 			SELECT startDate, workoutTypeId
 			FROM workouts
@@ -117,7 +119,8 @@ export async function getWorkoutDatesForMonth(
 
 	return rows.map( r => ({
 		date: r.date,
-		workoutType: r.workoutType
+		workoutType: r.workoutType,
+		color: r.color
 	}));
 }
 
