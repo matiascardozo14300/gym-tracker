@@ -188,11 +188,17 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 	};
 }
 
-// Obtiene todos los tipos de entrenamiento existentes
-export async function getWorkoutTypes(): Promise<WorkoutType[]> {
+// Obtiene todos los tipos de entrenamiento existentes (activos por defecto)
+export async function getWorkoutTypes( opts: { includeArchived?: boolean } = {} ): Promise<WorkoutType[]> {
+	const { includeArchived = false } = opts;
+
+	const where = includeArchived ? '' : 'WHERE isArchived = 0';
+
 	const rows = await getDB().getAllAsync<WorkoutType>(
-		`SELECT id, name, isCustom
+		`
+		SELECT id, name, isCustom, color, isArchived, archivedAt
 		FROM workout_types
+		${where}
 		ORDER BY isCustom, name;
 		`
 	);

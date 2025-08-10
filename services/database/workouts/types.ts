@@ -29,4 +29,7 @@ export interface WorkoutType {
 	id: number;
 	name: string;
 	isCustom: number;
+	color?: string | null;
+	isArchived?: number;
+	archivedAt?: string | null;
 }
