@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Modal, FlatList } from 'react-native';
 import { getLast3Workouts, getWorkoutDatesForMonth, getWorkoutDetailByDate, LastWorkout, WorkoutDetail } from '../../services/database/';
 import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelection';
@@ -7,6 +7,7 @@ import WorkoutTypeSelector from './WorkoutTypeSelector';
 import styles from './styles';
 import Header from '../header/Header';
 import { formateDateToLongText } from '../common/helper';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function HomeScreen() {
 	const [ lastWorkouts, setLastWorkouts ] = useState<LastWorkout[]>([]);
@@ -17,53 +18,47 @@ export default function HomeScreen() {
 	const [selectedDate, setSelectedDate] = useState<string | null>( null );
 	const [workoutDetail, setWorkoutDetail] = useState<WorkoutDetail | null>( null );
 
-	// Al cargar la pantalla por primera vez
-	useEffect(() => {
-		getLast3Workouts().then( setLastWorkouts ).catch( console.error );
+	const today = new Date();
+	const [ currentYear, setCurrentYear ] = useState( today.getFullYear() );
+	const [ currentMonth, setCurrentMonth ] = useState( today.getMonth() + 1 );
 
-		(async () => {
-			const today = new Date();
-			const year = today.getFullYear();
-			const month = today.getMonth() + 1;
-			const items = await getWorkoutDatesForMonth( year, month );
+	const isFocused = useIsFocused();
 
-			const marks: CustomMarkedDates = {};
-			for (const { date, workoutType, color } of items) {
-				marks[date] = {
-				  customStyles: {
-					container: {
-					  backgroundColor: color || 'grey',
-					  borderRadius: 20
-					},
-					text: {
-					  color: 'black',
-					  fontWeight: '600'
-					}
-				  }
-				};
-			}
-			setMarkedDates( marks );
-		})();
-	}, []);
+	const load = useCallback( async ( year: number, month: number ) => {
+		const [ last3, items ] = await Promise.all([
+			getLast3Workouts(),
+			getWorkoutDatesForMonth( year, month ),
+		]);
 
-	const fetchWorkoutsForMonth = async ( year: number, month: number ) => {
-		const items = await getWorkoutDatesForMonth( year, month );
+		setLastWorkouts( last3 );
+
 		const marks: CustomMarkedDates = {};
-		for (const { date, workoutType, color } of items) {
+		for( const { date, workoutType, color } of items ) {
 			marks[date] = {
 				customStyles: {
-				container: {
-					backgroundColor: color || 'grey',
-					borderRadius: 20
-				},
-				text: {
-					color: 'black',
-					fontWeight: '600'
-				}
+					container: {
+						backgroundColor: color || 'grey',
+						borderRadius: 20
+					},
+					text: {
+						color: 'black',
+						fontWeight: '600'
+					}
 				}
 			};
 		}
 		setMarkedDates( marks );
+	}, []);
+
+	useEffect(() => {
+		if( isFocused ) {
+			load( currentYear, currentMonth );
+		}
+	}, [ isFocused, currentYear, currentMonth, load ]);
+
+	const handleMonthChange = ( year: number, month: number ) => {
+		setCurrentMonth( month );
+		setCurrentYear( year );
 	}
 
 	// Cuando se selecciona un día en el calendario
@@ -95,7 +90,7 @@ export default function HomeScreen() {
 						setSelectedDate( dateString );
 						setModalVisible( true );
 					}}
-					onMonthChanged={ (date) => fetchWorkoutsForMonth( date?.year, date?.month )}
+					onMonthChanged={ (date) => handleMonthChange( date?.year, date?.month )}
 				/>
 				<LatestWorkouts workouts={ lastWorkouts } onWorkoutPress={ async ( workout ) => {
 					const dateString = workout.startDate.includes( 'T' ) ? workout.startDate.split( 'T' )[0] : workout.startDate;

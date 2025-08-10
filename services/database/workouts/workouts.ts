@@ -228,3 +228,11 @@ export async function createWorkoutType( name: string, exerciseIds: number[] ): 
 
 	return workoutTypeId;
 }
+
+export async function updateWorkoutTypeColor( workoutTypeId: number, color: string ): Promise<void> {
+	await getDB().runAsync(
+		`UPDATE workout_types SET color = ? WHERE id = ?;`,
+		color,
+		workoutTypeId
+	);
+}

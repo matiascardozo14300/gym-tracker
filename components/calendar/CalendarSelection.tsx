@@ -21,16 +21,17 @@ export type CalendarSectionProps = {
 const CalendarSection: React.FC<CalendarSectionProps> = ({ markedDates, onDayPress, onMonthChanged }) => {
 	return (
 		<View style={ styles.container }>
-		<Calendar
-			markingType="custom"
-			markedDates={ markedDates }
-			onDayPress={ onDayPress }
-			style={styles.calendar}
-			theme={{
-			todayTextColor: '#3339ff'
-			}}
-			onMonthChange={( date ) => onMonthChanged( date ) }
-		/>
+			<Calendar
+				markingType="custom"
+				markedDates={ markedDates }
+				onDayPress={ onDayPress }
+				style={styles.calendar}
+				theme={{
+				todayTextColor: '#3339ff'
+				}}
+				onMonthChange={( date ) => onMonthChanged( date ) }
+				firstDay={1}
+			/>
 		</View>
 	);
 };

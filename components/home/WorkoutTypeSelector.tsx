@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, RootTabParamList } from '../../App';
@@ -20,12 +20,20 @@ export default function WorkoutTypeSelector() {
 	const tabNav = useNavigation<TabNav>();
   	const stackNav = tabNav.getParent<StackNav>();
 
-	useEffect( () => {
-		( async () => {
-			const allActiveTypes = await getWorkoutTypes();
-			setTypes( allActiveTypes );
-		})();
-	}, []);
+	const isFocused = useIsFocused();
+
+	useEffect(() => {
+		let alive = true;
+
+		const load = async () => {
+			const rows = await getWorkoutTypes();
+			if (alive) setTypes(rows);
+		};
+
+		if (isFocused) load();
+
+		return () => { alive = false; };
+	}, [isFocused]);
 
 	const gridItems: GridItem[] = useMemo( () => {
 		const includeAdd = types.length < MAX_CELLS; // Hay lugar para el botón Añadir +
