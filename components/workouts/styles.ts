@@ -86,5 +86,55 @@ export default StyleSheet.create({
   },
   startIcon: {
 	marginLeft: 6,
-  }
+  },
+  modalOverlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0,0,0,0.4)',
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	modalContainer: {
+		width: '80%',
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		padding: 20
+	},
+	modalTitle: {
+		fontSize: 18,
+		fontWeight: '600',
+		marginBottom: 8,
+		textAlign: 'center'
+	},
+	modalText: {
+		fontSize: 14,
+		color: '#374151',
+		lineHeight: 20,
+		marginBottom: 16,
+		textAlign: 'center',
+	},
+	cancelButton: {
+		backgroundColor: '#fff',
+		borderWidth: 1,
+		borderColor: '#ccc',
+		borderRadius: 8,
+		paddingVertical: 12,
+		alignItems: 'center',
+		marginTop: 8
+	},
+	cancelButtonText: {
+		color: '#333',
+		fontWeight: '600',
+		fontSize: 16
+	},
+	modalButton: {
+		backgroundColor: '#E53935',
+		paddingVertical: 12,
+		borderRadius: 8,
+		alignItems: 'center',
+		marginTop: 8
+	},
+	modalButtonText: {
+		color: '#fff',
+		fontWeight: '600'
+	},
 });

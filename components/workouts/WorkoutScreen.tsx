@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getWorkoutTypes, updateWorkoutTypeColor, WorkoutType } from '../../services/database';
-import { View, Text, SafeAreaView, TouchableOpacity, FlatList, StyleSheet, Modal } from "react-native";
+import { deleteWorkoutType, getWorkoutTypes, updateWorkoutTypeColor, WorkoutType } from '../../services/database';
+import { View, Text, SafeAreaView, TouchableOpacity, FlatList, StyleSheet, Modal, Alert } from "react-native";
 import styles from './styles';
 import Header from '../header/Header';
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -35,6 +35,8 @@ export default function WorkoutScreen() {
 	const [ colorModalVisible, setColorModalVisible ] = useState(false);
 	const [ target, setTarget ] = useState<WorkoutType | null>(null);
 	const [ tempColor, setTempColor ] = useState<string | null>(null);
+	const [ deleteModalVisible, setDeleteModalVisible ] = useState(false);
+	const [ targetToDelete, setTargetToDelete ] = useState<WorkoutType | null>(null);
 
 	const tabNav = useNavigation<TabNav>();
 	const stackNav = tabNav.getParent<StackNav>();
@@ -62,7 +64,38 @@ export default function WorkoutScreen() {
 	}
 
 	const handleDeleteWorkout = ( item: WorkoutType ) => {
-		// TODO: Confirmar modal y archivar
+		setTargetToDelete( item );
+		setDeleteModalVisible( true );
+	}
+
+	const closeConfirm = () => {
+		setDeleteModalVisible( false );
+		setTargetToDelete( null );
+	}
+
+	const confirmDelete = async () => {
+		if( !targetToDelete ) return;
+		try {
+			const res = await deleteWorkoutType( targetToDelete.id );
+
+			if( !res.ok ) {
+				if (res.code === 'NOT_FOUND') {
+					Alert.alert('Error', 'La rutina no existe.');
+				} else if (res.code === 'ALREADY_ARCHIVED') {
+					Alert.alert('Aviso', 'La rutina ya estaba eliminada.');
+				} else {
+					Alert.alert('Error', 'No se pudo eliminar la rutina.');
+				}
+				return;
+			}
+
+			setTypes( prev => prev.filter( t => t.id !== targetToDelete.id ) );
+
+			setDeleteModalVisible( false );
+			setTargetToDelete( null );
+		} catch( e ) {
+			Alert.alert('Error', 'Ocurrió un problema al eliminar la rutina.');
+		}
 	}
 
 	const saveColor = async () => {
@@ -168,6 +201,24 @@ export default function WorkoutScreen() {
 								<Text style={pickStyles.saveText}>Guardar</Text>
 							</TouchableOpacity>
 						</View>
+					</View>
+				</View>
+			</Modal>
+			<Modal transparent animationType="slide" visible={deleteModalVisible}>
+				<View style={styles.modalOverlay}>
+					<View style={ styles.modalContainer }>
+						<Text style={ styles.modalTitle }>Eliminar rutina</Text>
+						<Text style={ styles.modalText }>
+							{`¿Seguro que querés eliminar "${targetToDelete?.name}"?\n\n` +
+         					'Los entrenamientos pasados que usan esta rutina se seguirán viendo.'}
+						</Text>
+						<TouchableOpacity style={styles.cancelButton} onPress={closeConfirm}>
+							<Text style={styles.cancelButtonText}>Cancelar</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity onPress={confirmDelete} style={styles.modalButton}>
+							<Text style={styles.modalButtonText}>Eliminar</Text>
+						</TouchableOpacity>
 					</View>
 				</View>
 			</Modal>

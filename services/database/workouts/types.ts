@@ -41,3 +41,7 @@ export type CreateWorkoutTypeResult =
 export type UpdateResult =
 	{ ok: true } |
 	{ ok: false; code: 'NOT_FOUND' | 'DUPLICATE_NAME' };
+
+export type ArchiveResult =
+  | { ok: true }
+  | { ok: false; code: 'NOT_FOUND' | 'ALREADY_ARCHIVED' };
