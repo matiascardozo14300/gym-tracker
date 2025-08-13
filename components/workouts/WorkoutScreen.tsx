@@ -44,7 +44,7 @@ export default function WorkoutScreen() {
 	}, []);
 
 	const handleCreateWorkout = () => {
-		stackNav?.navigate( 'WorkoutExerciseSelection' );
+		stackNav?.navigate( 'WorkoutExerciseSelection', {} );
 	}
 
 	const handleStartWorkout = ( item: WorkoutType ) => {
@@ -58,7 +58,7 @@ export default function WorkoutScreen() {
 	}
 
 	const handleEditWorkout = ( item: WorkoutType ) => {
-		// TODO: Editar rutina
+		stackNav?.navigate( 'WorkoutExerciseSelection', { workoutTypeId: item.id } );
 	}
 
 	const handleDeleteWorkout = ( item: WorkoutType ) => {

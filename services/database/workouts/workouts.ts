@@ -1,6 +1,6 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import type { Workout, LastWorkout, NewWorkout, WorkoutDetail, WorkoutType } from './types';
+import type { Workout, LastWorkout, NewWorkout, WorkoutDetail, WorkoutType, CreateWorkoutTypeResult, UpdateResult } from './types';
 
 // Crea un nuevo entrenamiento
 export async function insertNewWorkout( workout: NewWorkout ): Promise<number> {
@@ -209,24 +209,43 @@ export async function getWorkoutTypes( opts: { includeArchived?: boolean } = {} 
 	return rows;
 }
 
-export async function createWorkoutType( name: string, exerciseIds: number[] ): Promise<number> {
+export async function createWorkoutType( name: string, exerciseIds: number[] ): Promise<CreateWorkoutTypeResult> {
 	const db = getDB();
 
-	const result = await db.runAsync(
-		`INSERT INTO workout_types (name, isCustom) VALUES (?, 1);`,
-		name
+	const cleaned = name.trim().replace(/\s+/g, ' ');
+	if( !cleaned ) return { ok: false, code: 'DUPLICATE_NAME' };
+
+	const existing = await db.getFirstAsync<{ id: number }>(
+		`SELECT id FROM workout_types WHERE name = ? COLLATE NOCASE LIMIT 1;`,
+    	cleaned
 	);
-	const workoutTypeId = result.lastInsertRowId!;
 
-	const stm = `
-		INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
-		VALUES (?, ?);
-	`;
-	for( const exId of exerciseIds ) {
-		await db.runAsync( stm, workoutTypeId, exId );
+	if( existing ) return { ok: false, code: 'DUPLICATE_NAME' };
+
+	try {
+		const result = await db.runAsync(
+			`INSERT INTO workout_types (name, isCustom) VALUES (?, 1);`,
+			cleaned
+		);
+		const workoutTypeId = result.lastInsertRowId!;
+
+		const stm = `
+			INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
+			VALUES (?, ?);
+		`;
+		for( const exId of exerciseIds ) {
+			await db.runAsync( stm, workoutTypeId, exId );
+		}
+
+		return { ok: true, id: workoutTypeId };
+	} catch( err ) {
+		const msg = String(err);
+    	if (msg.includes('UNIQUE') || msg.includes('constraint')) {
+      		return { ok: false, code: 'DUPLICATE_NAME' };
+    	}
+
+		throw err;
 	}
-
-	return workoutTypeId;
 }
 
 export async function updateWorkoutTypeColor( workoutTypeId: number, color: string ): Promise<void> {
@@ -235,4 +254,86 @@ export async function updateWorkoutTypeColor( workoutTypeId: number, color: stri
 		color,
 		workoutTypeId
 	);
+}
+
+export async function updateWorkoutTypeAndExercises( workoutTypeId: number, newName: string, exerciseIds: number[] ): Promise<UpdateResult> {
+	const db = getDB();
+
+	const cleaned = newName.trim().replace(/\s+/g, ' ');
+  	if (!cleaned) return { ok: false, code: 'DUPLICATE_NAME' };
+
+	const current = await db.getFirstAsync<{ name: string }>(
+		`SELECT name FROM workout_types WHERE id = ?;`,
+		workoutTypeId
+	);
+	if (!current) return { ok: false, code: 'NOT_FOUND' };
+
+	const sameName = current.name === cleaned;
+
+	if( !sameName ) {
+		const dup = await db.getFirstAsync<{ id: number }>(
+			`SELECT id
+			FROM workout_types
+			WHERE name = ? COLLATE NOCASE AND id <> ?
+			LIMIT 1;`,
+			cleaned,
+			workoutTypeId
+		);
+
+		if( dup ) return { ok: false, code: 'DUPLICATE_NAME' };
+	}
+
+	await db.runAsync('BEGIN');
+	try {
+		if( !sameName ) {
+			await db.runAsync(
+				`UPDATE workout_types
+				SET name = ?
+				WHERE id = ?;`,
+				cleaned,
+				workoutTypeId
+			);
+		}
+
+		await db.runAsync( `DELETE FROM workout_type_exercises WHERE workoutTypeId = ?;`, workoutTypeId );
+
+		const uniqueExerciseIds = [...new Set(exerciseIds)];
+
+		for( const exId of uniqueExerciseIds ) {
+			await db.runAsync(
+				`INSERT OR IGNORE INTO workout_type_exercises (workoutTypeId, exerciseId)
+				VALUES (?, ?);`,
+				workoutTypeId, exId
+			);
+		}
+
+		await db.runAsync( 'COMMIT' );
+		return { ok: true }
+	} catch( err: any ) {
+		await db.runAsync( 'ROLLBACK' );
+		const msg = String(err?.message ?? err);
+		if( msg.includes('UNIQUE') || msg.includes('constraint') ) {
+			return { ok: false, code: 'DUPLICATE_NAME' };
+		}
+
+		throw err;
+	}
+}
+
+export async function getWorkoutTypeNameById(
+  workoutTypeId: number
+): Promise<string> {
+  const db = getDB();
+
+  const row = await db.getFirstAsync<{ name: string }>(
+    `
+    SELECT name
+    FROM workout_types
+    WHERE id = ?
+    LIMIT 1;
+    `,
+    workoutTypeId
+  );
+
+  return row?.name ?? "";
 }

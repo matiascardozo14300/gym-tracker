@@ -27,7 +27,7 @@ import { LocaleConfig } from 'react-native-calendars';
 export type RootStackParamList = {
 	Tabs: { screen: keyof RootTabParamList };
 	ExerciseSelection: { workoutTypeId: number };
-	WorkoutExerciseSelection: undefined;
+	WorkoutExerciseSelection: { workoutTypeId?: number };
 };
 
 export type RootTabParamList = {

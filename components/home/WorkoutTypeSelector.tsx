@@ -49,7 +49,7 @@ export default function WorkoutTypeSelector() {
 	};
 
 	const handlePressAdd = () => {
-		stackNav?.navigate( 'WorkoutExerciseSelection' );
+		stackNav?.navigate( 'WorkoutExerciseSelection', {} );
 	};
 
 	const renderItem = ({ item }: { item: GridItem }) => {
