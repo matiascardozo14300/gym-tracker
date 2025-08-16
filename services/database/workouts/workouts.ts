@@ -1,6 +1,7 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import type { Workout, LastWorkout, NewWorkout, WorkoutDetail, WorkoutType } from './types';
+import { type Workout, type LastWorkout, type NewWorkout, type WorkoutDetail, type WorkoutType, type CreateWorkoutTypeResult, type UpdateResult, type ArchiveResult } from './types';
+import { ARCHIVE_TAG, formatDeletedWorkoutName } from '../../../utils/deleteName';
 
 // Crea un nuevo entrenamiento
 export async function insertNewWorkout( workout: NewWorkout ): Promise<number> {
@@ -54,12 +55,14 @@ export async function getLast3Workouts(): Promise<LastWorkout[]> {
 	const rows = await getDB().getAllAsync<{
 		startDate: string;
 		finishDate: string;
-		workoutType: string;
+		workoutType: string | null;
+    	isArchived: number | null;
 	}>(
 		`SELECT
 			w.startDate,
 			w.finishDate,
-			wt.name AS workoutType
+			wt.name AS workoutType,
+			wt.isArchived AS isArchived
 		FROM workouts w
 		LEFT JOIN workout_types wt
 			ON w.workoutTypeId = wt.id
@@ -68,7 +71,7 @@ export async function getLast3Workouts(): Promise<LastWorkout[]> {
 	);
 
 	// Mappear a formato con duración
-	return rows.map(({ startDate, finishDate, workoutType }) => {
+	return rows.map(({ startDate, finishDate, workoutType, isArchived }) => {
 		const start = new Date( startDate );
 		const end = new Date( finishDate );
 		const diffMs = end.getTime() - start.getTime();
@@ -77,7 +80,11 @@ export async function getLast3Workouts(): Promise<LastWorkout[]> {
 		const minutes = diffMin % 60;
 		const duration = `${hours}h ${minutes}m`;
 
-		return { startDate, workoutType, duration };
+		return {
+			startDate,
+			workoutType: formatDeletedWorkoutName( workoutType, isArchived ),
+			duration
+		};
 	});
 }
 
@@ -85,7 +92,7 @@ export async function getLast3Workouts(): Promise<LastWorkout[]> {
 export async function getWorkoutDatesForMonth(
 	year: number,
 	month: number
-  ): Promise<{ date: string; workoutType: string }[]> {
+  ): Promise<{ date: string; workoutType: string; color: string | null; }[]> {
 	const monthStr = String( month ).padStart(2, '0');
 	const from = `${year}-${monthStr}-01`;
 	const nextMonth = month === 12 ? 1 : month + 1;
@@ -95,12 +102,16 @@ export async function getWorkoutDatesForMonth(
 
 	const rows = await getDB().getAllAsync<{
 		date: string;
-		workoutType: string;
+		workoutType: string | null;
+		color: string | null;
+		isArchived: number | null;
 	}>(
 	`
 		SELECT
 			substr(w.startDate,1,10) AS date,
-			wt.name AS workoutType
+			wt.name AS workoutType,
+			wt.color AS color,
+			wt.isArchived AS isArchived
 		FROM (
 			SELECT startDate, workoutTypeId
 			FROM workouts
@@ -117,18 +128,20 @@ export async function getWorkoutDatesForMonth(
 
 	return rows.map( r => ({
 		date: r.date,
-		workoutType: r.workoutType
+		workoutType: formatDeletedWorkoutName( r.workoutType, r.isArchived ),
+		color: r.color
 	}));
 }
 
 // Devuelve los datos completos de un workout por fecha
 export async function getWorkoutDetailByDate( dateString: string ): Promise<WorkoutDetail | null> {
 	const db = getDB();
-	const workoutRow = await db.getFirstAsync<{ id: number; workoutType: string }>(
+	const workoutRow = await db.getFirstAsync<{ id: number; workoutType: string | null; isArchived: number | null; }>(
 		`
 		SELECT
 			w.id,
-			wt.name AS workoutType
+			wt.name AS workoutType,
+			wt.isArchived AS isArchived
 		FROM workouts w
 		LEFT JOIN workout_types wt
 			ON w.workoutTypeId = wt.id
@@ -140,7 +153,7 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 	);
 
 	if( !workoutRow ) return null;
-	const { id: workoutId, workoutType } = workoutRow;
+	const { id: workoutId, workoutType, isArchived } = workoutRow;
 
 	// Recuperar todos los registros de sets junto con el nombre del ejercicio
 	const rows = await db.getAllAsync<{ exerciseName: string; weight: number; reps: number; }>(
@@ -183,16 +196,22 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 	const exercises = Object.values( map );
 
 	return {
-		workoutType,
+		workoutType: formatDeletedWorkoutName( workoutType, isArchived ),
 		exercises,
 	};
 }
 
-// Obtiene todos los tipos de entrenamiento existentes
-export async function getWorkoutTypes(): Promise<WorkoutType[]> {
+// Obtiene todos los tipos de entrenamiento existentes (activos por defecto)
+export async function getWorkoutTypes( opts: { includeArchived?: boolean } = {} ): Promise<WorkoutType[]> {
+	const { includeArchived = false } = opts;
+
+	const where = includeArchived ? '' : 'WHERE isArchived = 0';
+
 	const rows = await getDB().getAllAsync<WorkoutType>(
-		`SELECT id, name, isCustom
+		`
+		SELECT id, name, isCustom, color, isArchived, archivedAt
 		FROM workout_types
+		${where}
 		ORDER BY isCustom, name;
 		`
 	);
@@ -200,22 +219,170 @@ export async function getWorkoutTypes(): Promise<WorkoutType[]> {
 	return rows;
 }
 
-export async function createWorkoutType( name: string, exerciseIds: number[] ): Promise<number> {
+export async function createWorkoutType( name: string, exerciseIds: number[] ): Promise<CreateWorkoutTypeResult> {
 	const db = getDB();
 
-	const result = await db.runAsync(
-		`INSERT INTO workout_types (name, isCustom) VALUES (?, 1);`,
-		name
-	);
-	const workoutTypeId = result.lastInsertRowId!;
+	const cleaned = name.trim().replace(/\s+/g, ' ');
+	if( !cleaned ) return { ok: false, code: 'DUPLICATE_NAME' };
 
-	const stm = `
-		INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
-		VALUES (?, ?);
-	`;
-	for( const exId of exerciseIds ) {
-		await db.runAsync( stm, workoutTypeId, exId );
+	const existing = await db.getFirstAsync<{ id: number }>(
+		`SELECT id FROM workout_types WHERE name = ? COLLATE NOCASE LIMIT 1;`,
+    	cleaned
+	);
+
+	if( existing ) return { ok: false, code: 'DUPLICATE_NAME' };
+
+	try {
+		const result = await db.runAsync(
+			`INSERT INTO workout_types (name, isCustom) VALUES (?, 1);`,
+			cleaned
+		);
+		const workoutTypeId = result.lastInsertRowId!;
+
+		const stm = `
+			INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
+			VALUES (?, ?);
+		`;
+		for( const exId of exerciseIds ) {
+			await db.runAsync( stm, workoutTypeId, exId );
+		}
+
+		return { ok: true, id: workoutTypeId };
+	} catch( err ) {
+		const msg = String(err);
+    	if (msg.includes('UNIQUE') || msg.includes('constraint')) {
+      		return { ok: false, code: 'DUPLICATE_NAME' };
+    	}
+
+		throw err;
+	}
+}
+
+export async function updateWorkoutTypeColor( workoutTypeId: number, color: string ): Promise<void> {
+	await getDB().runAsync(
+		`UPDATE workout_types SET color = ? WHERE id = ?;`,
+		color,
+		workoutTypeId
+	);
+}
+
+export async function updateWorkoutTypeAndExercises( workoutTypeId: number, newName: string, exerciseIds: number[] ): Promise<UpdateResult> {
+	const db = getDB();
+
+	const cleaned = newName.trim().replace(/\s+/g, ' ');
+  	if (!cleaned) return { ok: false, code: 'DUPLICATE_NAME' };
+
+	const current = await db.getFirstAsync<{ name: string }>(
+		`SELECT name FROM workout_types WHERE id = ?;`,
+		workoutTypeId
+	);
+	if (!current) return { ok: false, code: 'NOT_FOUND' };
+
+	const sameName = current.name === cleaned;
+
+	if( !sameName ) {
+		const dup = await db.getFirstAsync<{ id: number }>(
+			`SELECT id
+			FROM workout_types
+			WHERE name = ? COLLATE NOCASE AND id <> ?
+			LIMIT 1;`,
+			cleaned,
+			workoutTypeId
+		);
+
+		if( dup ) return { ok: false, code: 'DUPLICATE_NAME' };
 	}
 
-	return workoutTypeId;
+	await db.runAsync('BEGIN');
+	try {
+		if( !sameName ) {
+			await db.runAsync(
+				`UPDATE workout_types
+				SET name = ?
+				WHERE id = ?;`,
+				cleaned,
+				workoutTypeId
+			);
+		}
+
+		await db.runAsync( `DELETE FROM workout_type_exercises WHERE workoutTypeId = ?;`, workoutTypeId );
+
+		const uniqueExerciseIds = [...new Set(exerciseIds)];
+
+		for( const exId of uniqueExerciseIds ) {
+			await db.runAsync(
+				`INSERT OR IGNORE INTO workout_type_exercises (workoutTypeId, exerciseId)
+				VALUES (?, ?);`,
+				workoutTypeId, exId
+			);
+		}
+
+		await db.runAsync( 'COMMIT' );
+		return { ok: true }
+	} catch( err: any ) {
+		await db.runAsync( 'ROLLBACK' );
+		const msg = String(err?.message ?? err);
+		if( msg.includes('UNIQUE') || msg.includes('constraint') ) {
+			return { ok: false, code: 'DUPLICATE_NAME' };
+		}
+
+		throw err;
+	}
+}
+
+export async function getWorkoutTypeNameById(
+  workoutTypeId: number
+): Promise<string> {
+  const db = getDB();
+
+  const row = await db.getFirstAsync<{ name: string }>(
+    `
+    SELECT name
+    FROM workout_types
+    WHERE id = ?
+    LIMIT 1;
+    `,
+    workoutTypeId
+  );
+
+  return row?.name ?? "";
+}
+
+export async function deleteWorkoutType( workoutTypeId: number ): Promise<ArchiveResult> {
+	const db = getDB();
+
+	const row = await db.getFirstAsync<{ name: string; isArchived: number }>(
+		`SELECT name, isArchived FROM workout_types WHERE id = ? LIMIT 1;`,
+		workoutTypeId
+	);
+
+	if( !row ) return { ok: false, code: 'NOT_FOUND' };
+	if( ( row.isArchived ?? 0 ) === 1 ) return { ok: false, code: 'ALREADY_ARCHIVED' };
+
+	const archivedAtIso = new Date().toISOString();
+	const ts = archivedAtIso.slice(0, 19).replace('T', ' ');
+
+	// Nombre nuevo: "<old> §ARCHIVED§ 2025-08-13 17:22:10 #<id>"
+	const archivedName = `${row.name} ${ARCHIVE_TAG} ${ts} #${workoutTypeId}`;
+	console.log("Rutina a eliminar: ", archivedName);
+	const deleteColor = "#ccc";
+
+	try {
+		await db.runAsync(
+			`
+			UPDATE workout_types
+			SET isArchived = 1, archivedAt = ?, name = ?, color = ?
+			WHERE id = ?;`,
+			archivedAtIso,
+			archivedName,
+			deleteColor,
+			workoutTypeId
+		);
+
+		return { ok: true };
+	} catch( error: any ) {
+		console.error("Error al borrar la rutina: ", error);
+		throw error;
+	}
+
 }

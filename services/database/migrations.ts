@@ -77,4 +77,30 @@ export const migrations: Migration[] = [
 				FROM exercises;
     	`
 	},
+	{
+		id: 3,
+		up: `
+			ALTER TABLE workout_types ADD COLUMN color TEXT;
+
+			ALTER TABLE workout_types ADD COLUMN isArchived INTEGER NOT NULL DEFAULT 0;
+
+			ALTER TABLE workout_types ADD COLUMN archivedAt TEXT;
+
+			UPDATE workout_types
+			SET color = '#F8BBD0'
+			WHERE name = 'Pull';
+
+			UPDATE workout_types
+			SET color = '#BBDEFB'
+			WHERE name = 'Push';
+
+			UPDATE workout_types
+			SET color = '#C8E6C9'
+			WHERE name = 'Legs';
+
+			UPDATE workout_types
+			SET color = '#E1BEE7'
+			WHERE name = 'FullBody';
+    	`
+	}
 ];

@@ -9,7 +9,7 @@ import styles from './styles';
 import { exerciseImageUrls } from '../../common/allExercisesImages';
 import AddIcon from '../../../assets/icons/add.svg';
 import RemoveIcon from '../../../assets/icons/remove.svg';
-import { createWorkoutType, Exercise, getAllExercises } from '../../../services/database';
+import { createWorkoutType, Exercise, getAllExercises, getExerciseByWorkoutType, getWorkoutTypeNameById, updateWorkoutTypeAndExercises } from '../../../services/database';
 
 type WkExSelRouteProp = RouteProp<RootStackParamList, 'WorkoutExerciseSelection'>;
 type WkExSelNavProp = CompositeNavigationProp<
@@ -22,15 +22,38 @@ export default function WorkoutExerciseSelectionScreen() {
 	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
 	const route = useRoute<WkExSelRouteProp>();
 
+	const workoutTypeId = route.params?.workoutTypeId;
+	const isEditMode = !!workoutTypeId;
+
 	const [ workoutTypeName, setWorkoutTypeName ] = useState<string>('');
 	const [ addedExercises, setAddedExercises ] = useState<Exercise[]>([]);
 	const [ notAddedExercises, setNotAddedExercises ] = useState<Exercise[]>([]);
-
 	const [ finishModalVisible, setFinishModalVisible ] = useState(false);
 
 	useEffect( () => {
-		getAllExercises().then( setNotAddedExercises ).catch( console.error );
-	}, []);
+		(async () => {
+			try {
+				const all = await getAllExercises();
+
+				if( isEditMode && workoutTypeId ) {
+					const exercises = await getExerciseByWorkoutType( workoutTypeId );
+					const wkName = await getWorkoutTypeNameById( workoutTypeId );
+					setWorkoutTypeName( wkName );
+
+					const addedIds = new Set( exercises.map( e => e.id ) );
+					setAddedExercises( exercises );
+					setNotAddedExercises( all.filter( e => !addedIds.has( e.id ) ) );
+				} else {
+					setWorkoutTypeName('');
+					setAddedExercises([]);
+					setNotAddedExercises(all);
+				}
+			} catch( error ) {
+				console.error("Error loading data", error);
+				Alert.alert('Error', 'No se pudo cargar la información');
+			}
+		})();
+	}, [isEditMode, workoutTypeId]);
 
 	const handleSubmit = async () => {
 		if( !workoutTypeName.trim() ) {
@@ -43,7 +66,31 @@ export default function WorkoutExerciseSelectionScreen() {
 		}
 
 		try {
-			const newTypeId = await createWorkoutType( workoutTypeName.trim(), addedExercises.map( (ex) => ex.id ) );
+			if( isEditMode && workoutTypeId ) {
+				const res = await updateWorkoutTypeAndExercises(
+					workoutTypeId,
+					workoutTypeName.trim(),
+					addedExercises.map( ex => ex.id )
+				);
+
+				if( !res.ok ) {
+					if( res.code === 'DUPLICATE_NAME' ) {
+						Alert.alert( 'Nombre duplicado', 'Ya existe una rutina con ese nombre.' );
+					} else if( res.code === 'NOT_FOUND' ) {
+						Alert.alert( 'Error', 'La rutina no existe.' );
+					}
+					return;
+				}
+			} else {
+				const res = await createWorkoutType(
+					workoutTypeName.trim(),
+					addedExercises.map( ex => ex.id )
+				);
+				if( !res.ok && res.code === 'DUPLICATE_NAME' ) {
+					Alert.alert('Nombre duplicado', 'Ya existe una rutina con ese nombre.');
+ 					 return;
+				}
+			}
 
 			setWorkoutTypeName('');
 			setAddedExercises([]);
@@ -68,9 +115,7 @@ export default function WorkoutExerciseSelectionScreen() {
 		}
 	}
 
-	const handleFinishPress = () => {
-		setFinishModalVisible( true );
-	}
+	const handleFinishPress = () => setFinishModalVisible( true );
 
 	const isExerciseAdded = ( item: Exercise ): boolean => {
 		if( item === null ) return false;
@@ -110,7 +155,7 @@ export default function WorkoutExerciseSelectionScreen() {
 	}));
 
 	const sections = [
-		{ key: 'Added',    title: 'Added',    data: addedExercises },
+		{ key: 'Añadidos',    title: 'Añadidos',    data: addedExercises },
 		...groupSections.map(s => ({ key: s.title, ...s }))
 	];
 
@@ -118,7 +163,6 @@ export default function WorkoutExerciseSelectionScreen() {
 		<View style={styles.container}>
 			<SectionList
 				sections={sections}
-				/* keyExtractor={(item) => item.id.toString()} */
 				keyExtractor={(item, index) => `${item.id}-${index}`}
 				renderSectionHeader={({ section }) => (
 					<Text style={ styles.sectionHeader }>{section.title}</Text>
@@ -140,17 +184,17 @@ export default function WorkoutExerciseSelectionScreen() {
 
 			<View style={styles.footer}>
 				<TouchableOpacity onPress={handleFinishPress} disabled={isFinishDisabled} style={[ styles.finishButton, isFinishDisabled && styles.finishButtonDisabled ]}>
-					<Text style={[styles.finishButtonText, isFinishDisabled && styles.finishButtonTextDisabled]}>Save Workout</Text>
+					<Text style={[styles.finishButtonText, isFinishDisabled && styles.finishButtonTextDisabled]}>Guardar Rutina</Text>
 				</TouchableOpacity>
 			</View>
 
 			<Modal visible={finishModalVisible} transparent animationType='slide'>
 				<View style={ styles.modalOverlay }>
 					<View style={ styles.modalContainer }>
-						<Text style={styles.workoutNameText}>Workout Name</Text>
+						<Text style={styles.workoutNameText}>Nombre de la rutina</Text>
 						<TextInput
 							style={styles.nameInput}
-							placeholder='Workout Name'
+							placeholder='Nombre'
 							value={workoutTypeName}
 							onChangeText={setWorkoutTypeName}
 						/>
@@ -158,13 +202,13 @@ export default function WorkoutExerciseSelectionScreen() {
 						<View style={styles.buttonRow}>
 							<TouchableOpacity style={styles.cancelButton} onPress={() => setFinishModalVisible(false)}>
 								<Text style={styles.cancelButtonText}>
-									Back
+									Atrás
 								</Text>
 							</TouchableOpacity>
 
 							<TouchableOpacity style={[styles.modalButton,isSaveDisabled && styles.modalButtonDisabled]}	onPress={handleSubmit} disabled={isSaveDisabled}>
 								<Text style={[ styles.modalButtonText, isSaveDisabled && styles.modalButtonTextDisabled ]}>
-									Save
+									Guardar
 								</Text>
 							</TouchableOpacity>
 						</View>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Dimensions, Modal } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Dimensions, Modal, FlatList, StyleSheet } from 'react-native';
 import Header from '../header/Header';
 import { Picker } from '@react-native-picker/picker';
 import { LineChart } from 'react-native-chart-kit';
@@ -8,6 +8,8 @@ import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint, ge
 import HelpIcon from '../../assets/icons/help.svg';
 
 const screenWidth = Dimensions.get('window').width - 32;
+
+const NUM_COLS = 3;
 
 export default function StatisticsScreen() {
 	const [workoutTypes, setWorkoutTypes] = useState<WorkoutType[]>([]);
@@ -24,10 +26,10 @@ export default function StatisticsScreen() {
 	const [helpModalVisible, setHelpModalVisible] = useState(false);
 
 	useEffect( () => {
-		getWorkoutTypes().then( types => {
-			setWorkoutTypes( types );
-			if( types.length > 0 ) {
-				setSelectedType( types[0].id );
+		getWorkoutTypes().then( activeTypes => {
+			setWorkoutTypes( activeTypes );
+			if( activeTypes.length > 0 ) {
+				setSelectedType( activeTypes[0].id );
 			}
 		}).catch( console.error );
 	}, []);
@@ -97,31 +99,38 @@ export default function StatisticsScreen() {
 			.catch( console.error );
 	}, [selectedExercise] );
 
+	const renderWorkoutType = ({ item }: { item: WorkoutType }) => {
+		return (
+			<TouchableOpacity style={[ styles.typeButton, selectedType === item.id && styles.typeButtonActive ]} onPress={() => setSelectedType( item.id )}>
+				<Text style={[ styles.typeButtonText, selectedType === item.id && styles.typeButtonTextActive ]}>
+					{item.name}
+				</Text>
+			</TouchableOpacity>
+		);
+	}
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
 				<Header title="Progreso" />
 
 				<Text style={styles.sectionTitle}>Elegí la rutina que quieras consultar</Text>
-				<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-					{ workoutTypes.map( (type) => (
-						<TouchableOpacity
-							key={type.id}
-							onPress={() => setSelectedType( type.id )}
-							style={[ styles.typeButton, selectedType === type.id && styles.typeButtonActive]}
-						>
-							<Text style={[ styles.typeButtonText, selectedType === type.id && styles.typeButtonTextActive ]}>
-								{type.name}
-							</Text>
-						</TouchableOpacity>
-					))}
-				</ScrollView>
+
+				<FlatList
+					data={workoutTypes}
+					keyExtractor={(it, idx) => (it.id ? `id-${it.id}` : `id-${it.id}`)}
+					numColumns={NUM_COLS}
+					columnWrapperStyle={gridStyles.row}
+					renderItem={renderWorkoutType}
+					scrollEnabled={false}
+					contentContainerStyle={gridStyles.gridContainer}
+				/>
 
 				<View style={styles.dropdownContainer}>
 					<Picker
 						selectedValue={selectedExercise}
 						onValueChange={ (v) => setSelectedExercise( v )}
-						mode="dropdown"
+						mode="dialog"
 						style={styles.picker}
 						itemStyle={styles.pickerItem}
 						dropdownIconColor="#000"
@@ -230,3 +239,14 @@ export default function StatisticsScreen() {
 		</SafeAreaView>
 	);
 }
+
+const gridStyles = StyleSheet.create({
+  gridContainer: {
+    paddingTop: 4,
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 10,
+	gap: 5
+  },
+});

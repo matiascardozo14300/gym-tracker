@@ -4,7 +4,7 @@ export default StyleSheet.create({
 	container: { flex: 1, backgroundColor: '#fff' },
 	scrollContent: { padding: 16, paddingBottom: 80 },
 
-	section: { marginBottom: 24 },
+	section: { marginBottom: 10 },
 	sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
 
 	row: { flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center' },
