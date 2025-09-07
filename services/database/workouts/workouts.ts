@@ -209,10 +209,10 @@ export async function getWorkoutTypes( opts: { includeArchived?: boolean } = {} 
 
 	const rows = await getDB().getAllAsync<WorkoutType>(
 		`
-		SELECT id, name, isCustom, color, isArchived, archivedAt
+		SELECT id, name, isCustom, color, isArchived, archivedAt, sortOrder
 		FROM workout_types
 		${where}
-		ORDER BY isCustom, name;
+		ORDER BY sortOrder ASC, name COLLATE NOCASE;
 		`
 	);
 
@@ -234,7 +234,7 @@ export async function createWorkoutType( name: string, exerciseIds: number[] ): 
 
 	try {
 		const result = await db.runAsync(
-			`INSERT INTO workout_types (name, isCustom) VALUES (?, 1);`,
+			`INSERT INTO workout_types (name, isCustom, sortOrder) VALUES (?, 1, (SELECT COALESCE(MAX(sortOrder), 0) + 1 FROM workout_types WHERE isArchived = 0));`,
 			cleaned
 		);
 		const workoutTypeId = result.lastInsertRowId!;
@@ -385,4 +385,24 @@ export async function deleteWorkoutType( workoutTypeId: number ): Promise<Archiv
 		throw error;
 	}
 
+}
+
+export async function reorderWorkoutTypes( orderedIds: number[] ): Promise<void> {
+	const db = getDB();
+	await db.runAsync('BEGIN');
+
+	try {
+		// i = 0..n-1 → sortOrder = i+1
+		for( let i = 0; i < orderedIds.length; i++ ) {
+			await db.runAsync(
+				`UPDATE workout_types SET sortOrder = ? WHERE id = ?;`,
+				i + 1,
+				orderedIds[i]
+			);
+		}
+		await db.runAsync('COMMIT');
+	} catch( e ) {
+		await db.runAsync('ROLLBACK');
+		throw e;
+	}
 }

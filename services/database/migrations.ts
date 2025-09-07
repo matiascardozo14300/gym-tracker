@@ -102,5 +102,15 @@ export const migrations: Migration[] = [
 			SET color = '#E1BEE7'
 			WHERE name = 'FullBody';
     	`
+	},
+	{
+		id: 4,
+		up: `
+			ALTER TABLE workout_types ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0;
+
+			UPDATE workout_types SET sortOrder = id;
+
+			CREATE INDEX IF NOT EXISTS idx_workout_types_isArchived_sortOrder ON workout_types(isArchived, sortOrder);
+    	`
 	}
 ];
