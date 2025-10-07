@@ -12,7 +12,7 @@ export default function SettingsScreen() {
 		<View style={styles.wrap}>
 			<ComingSoonCard
 				title="Próximamente"
-				subtitle="Estamos trabajando en esta sección para que puedas personalizar tu experiencia en GymTracker."
+				subtitle="Estamos trabajando en esta sección para que puedas personalizar tu experiencia en Rackit."
 				icon="🛠️"
 				progress={0.45}
 				progressLabel="En desarrollo"
