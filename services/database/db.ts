@@ -4,6 +4,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing   from 'expo-sharing';
 import { migrations } from './migrations';
 import { getLocalISOString } from '../../components/common/helper';
+import { seedInitialExercisesIfNeeded } from '../database/seed';
 
 const DB_NAME = 'gymtracker.db';
 let db: SQLite.SQLiteDatabase;
@@ -29,12 +30,23 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 			console.log( "Aplicando migración id: ", migration.id );
 			await db.execAsync( migration.up );
 
+			// Luego de la migración 1 -> seed ejercicios antes de registrar la 2
+			if( migration.id === 1 ) {
+				await seedInitialExercisesIfNeeded( db );
+			}
+
 			const appliedAt = getLocalISOString();
 			await db.runAsync(
 				'INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?);',
 				migration.id,
 				appliedAt
 			);
+		}
+
+		// Por compatibilidad -> si ya existía la migración 1 aplicada, pero no tenía los ejercicios creados,
+		// aseguro que se creen justo antes de la migración 2
+		if( migration.id === 2 && !appliedIds.includes(2) ) {
+			await seedInitialExercisesIfNeeded( db ); // Si ya están los ejercicios, no hace nada
 		}
 	}
 
