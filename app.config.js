@@ -7,6 +7,51 @@ export default ({ config }) => ({
 
 	expo: {
 		...config.expo,
+		name: 'Rackit',
+		slug: "gym-tracker",
+		version: '1.0.1',
+		// Definimos sdkVersion solo en producción
+		...( isProd && { sdkVersion: '53.0.7' } ),
+		orientation: "portrait",
+		userInterfaceStyle: "light",
+		newArchEnabled: true,
+
+		icon: './assets/logo.png',
+
+		splash: {
+			image: "./assets/splash-icon.png",
+			resizeMode: "contain",
+			backgroundColor: "#ffffff"
+		},
+
+		ios: {
+			supportsTablet: true,
+			buildNumber: '1',
+		},
+
+		android: {
+			package: "com.tudominio.gymtracker",
+			versionCode: 1,
+			adaptiveIcon: {
+				foregroundImage: "./assets/logo-foreground.png",
+				backgroundColor: "#ffffff"
+			},
+			icon: './assets/logo.png',
+		},
+		web: {
+			favicon: "./assets/favicon.png"
+		},
+		plugins: [ "expo-sqlite" ],
+		extra: {
+			eas: {
+				projectId: "b99c42df-f182-4777-82ba-13faecf71dd3"
+			}
+		}
+	}
+})
+
+	/* expo: {
+		...config.expo,
 		name: 'Gym Tracker',
 		slug: "gym-tracker",
 		version: '1.0.1',
@@ -43,8 +88,7 @@ export default ({ config }) => ({
 			projectId: "b99c42df-f182-4777-82ba-13faecf71dd3"
 		  }
 		}
-	}
-})
+	} */
 
 /* {
   "expo": {

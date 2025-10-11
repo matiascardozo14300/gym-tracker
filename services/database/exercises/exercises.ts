@@ -1,6 +1,7 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
 import { Exercise, ExerciseInsert, ExerciseNotes } from './types';
+import { lista } from '../../../components/common/allExercises';
 
 /**
  * Recupera todos los ejercicios asociados a un workoutTypeId.
