@@ -5,7 +5,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, RootTabParamList } from '../../App';
 import { getWorkoutTypes, WorkoutType } from '../../services/database';
-import styles from './styles';
+import {styles} from './styles';
 
 type TabNav = BottomTabNavigationProp<RootTabParamList, 'Inicio'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
