@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export default StyleSheet.create({
+export const styles = StyleSheet.create({
 	container: { flex: 1, padding: 16, backgroundColor: '#fff' },
 	title: {
 		marginTop: 16,
@@ -50,7 +50,7 @@ export default StyleSheet.create({
 	footer: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
 	timerContainer: { flex: 0.3, alignItems: 'center' },
 	timerText: { fontSize: 18, fontWeight: '600' },
-	finishButton: { flex: 0.7, backgroundColor: '#007AFF', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+	finishButton: { flex: 1, backgroundColor: '#007AFF', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
 	finishButtonText: { color: '#fff', fontWeight: '600' },
 
 	// Modal styles
@@ -156,7 +156,7 @@ export default StyleSheet.create({
 	},
 	modalButton: {
 		backgroundColor: '#007AFF',
-		paddingVertical: 12,
+		paddingVertical: 14,
 		borderRadius: 8,
 		alignItems: 'center',
 		marginTop: 8
@@ -204,4 +204,58 @@ export default StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between'
 	}
+});
+
+export const fakePickerStyles = StyleSheet.create({
+  sheet: { paddingBottom: 12 },
+
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+
+  fakeInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#FAFAFA',
+  },
+  fakeInputLabel: { fontSize: 12, color: '#6B7280', marginBottom: 4, fontWeight: '600' },
+  fakeInputValue: { fontSize: 16, fontWeight: '800', color: '#111827' },
+
+  selectorPanel: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#EEE',
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  selectorTitle: { fontSize: 14, fontWeight: '700', marginBottom: 10, color: '#111827' },
+
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
+  chipSelected: {
+    backgroundColor: '#007AFF15',
+    borderColor: '#007AFF',
+  },
+  chipText: { color: '#374151', fontWeight: '600' },
+  chipTextSelected: { color: '#0B5FFF', fontWeight: '800' },
+
+  actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
 });

@@ -115,7 +115,7 @@ export default function HomeScreen() {
 		closeAllModals();
 		navigation.navigate( 'ExerciseSelection', {
 			workoutTypeId: type.id,
-			forDate: selectedDate, // 👈 param para modo "carga pasada"
+			selectedDate: selectedDate, // 👈 param para modo "carga pasada"
 		} as any );
 	}
 
