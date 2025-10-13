@@ -126,7 +126,7 @@ export default function WorkoutTypeSelector() {
 
 						{/* Título y texto */}
 						<Text style={modalStyles.title}>Ya registraste un entrenamiento hoy</Text>
-						<Text style={modalStyles.subtitle}>
+						<Text style={[modalStyles.subtitle, { fontWeight: 'normal' }]}>
 							Podés editar el que hiciste o cancelar para evitar duplicados.
 						</Text>
 

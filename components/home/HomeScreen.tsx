@@ -11,6 +11,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, RootTabParamList } from '../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { modalStyles } from '../common/modalStyles';
 
 type TabNav = BottomTabNavigationProp<RootTabParamList, 'Inicio'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
@@ -153,21 +154,25 @@ export default function HomeScreen() {
 						setWorkoutDetail( null );
 					}}
 				>
-					<View style={styles.modalOverlay}>
-						<View style={[styles.modalContainer, modalUX.container]}>
-							{/* Header */}
-							<View style={modalUX.header}>
-								<Text style={modalUX.title}>
-									{ selectedDate ? formateDateToLongText(selectedDate) : '' }
-								</Text>
-								{workoutDetail ? (
-									<Text style={modalUX.subtitle}>{workoutDetail.workoutType}</Text>
-								) : (
-									<Text style={modalUX.subtitleMuted}>Sin registro</Text>
-								)}
+					<View style={modalStyles.overlay}>
+						<View style={modalStyles.sheet}>
+
+							{/* Icono/Badge */}
+							<View style={modalStyles.iconWrap}>
+								<Text style={modalStyles.iconText}>🏋</Text>
 							</View>
 
-							<View style={modalUX.divider} />
+							{/* Título y texto */}
+							<Text style={modalStyles.title}>
+								{ selectedDate ? formateDateToLongText(selectedDate) : '' }
+							</Text>
+							{workoutDetail ? (
+								<Text style={modalStyles.subtitle}>{workoutDetail.workoutType}</Text>
+							) : (
+								<Text style={modalStyles.subtitle}>Sin registro</Text>
+							)}
+
+							<View style={modalStyles.divider} />
 
 							{/* Área scrollable de ejercicios */}
 							{workoutDetail ? (
@@ -199,52 +204,50 @@ export default function HomeScreen() {
 								</View>
 							)}
 
-							<View style={modalUX.divider} />
-
-							{/* Footer con acciones */}
-							<View style={modalUX.actions}>
+							{/* Acciones */}
+							<View style={modalStyles.actions}>
 								<TouchableOpacity
-									style={[modalUX.btn, modalUX.btnGhost]}
+									style={[modalStyles.btn, modalStyles.btnGhost]}
 									onPress={() => {
 										setModalVisible(false);
 										setWorkoutDetail(null);
 									}}
 								>
-									<Text style={[modalUX.btnText, modalUX.btnGhostText]}>Cerrar</Text>
+									<Text style={[modalStyles.btnText, modalStyles.btnGhostText]}>Cerrar</Text>
 								</TouchableOpacity>
 
 								{hasRecord ? (
 									// Caso 1: hay registro -> Editar
 									<TouchableOpacity
-										style={[modalUX.btn, modalUX.btnPrimary]}
+										style={[modalStyles.btn, modalStyles.btnPrimary]}
 										onPress={() => {
 											navigation.navigate( 'EditWorkout', { date: selectedDate || undefined } );
 											setModalVisible(false);
 											setWorkoutDetail(null);
 										}}
 									>
-										<Text style={modalUX.btnTextPrimary}>Editar</Text>
+										<Text style={[modalStyles.btnText, modalStyles.btnPrimaryText]}>Editar</Text>
 									</TouchableOpacity>
 								) : isTodaySelected ? (
 									// Caso 2: NO hay registro y la fecha es HOY -> Iniciar
 									<TouchableOpacity
-										style={[modalUX.btn, modalUX.btnPrimary]}
+										style={[modalStyles.btn, modalStyles.btnPrimary]}
 										onPress={() => {
 											stackNav?.navigate( 'Tabs', { screen: 'Rutinas' } );
 											setModalVisible(false);
 											setWorkoutDetail(null);
 										}}
 									>
-										<Text style={modalUX.btnTextPrimary}>Iniciar</Text>
+										<Text style={[modalStyles.btnText, modalStyles.btnPrimaryText]}>Iniciar</Text>
 									</TouchableOpacity>
 								) : (
 									// Caso 3: NO hay registro y la fecha NO es hoy -> Añadir (con bloqueo si es futura)
 									<TouchableOpacity
-										style={[modalUX.btn, modalUX.btnPrimary, addDisabled && modalUX.btnDisabled]}
+										style={[modalStyles.btn, modalStyles.btnPrimary, addDisabled && modalStyles.btnDisabled]}
 										onPress={openTypePicker}
 										disabled={addDisabled}
 									>
-										<Text style={[modalUX.btnTextPrimary, addDisabled && modalUX.btnTextDisabled]}>Añadir</Text>
+										<Text style={[modalStyles.btnText, modalStyles.btnPrimaryText, addDisabled && modalStyles.btnTextDisabled]}>Añadir</Text>
 									</TouchableOpacity>
 								)}
 							</View>
@@ -259,11 +262,21 @@ export default function HomeScreen() {
 					animationType="fade"
 					onRequestClose={() => setTypePickerVisible(false)}
 				>
-					<View style={styles.modalOverlay}>
-						<View style={[styles.modalContainer, pickerUX.container]}>
-							<Text style={pickerUX.title}>Seleccioná la rutina</Text>
-							<Text style={pickerUX.subtitle}>
-								Vas a cargar un entrenamiento para {selectedDate ? formateDateToLongText(selectedDate) : 'la fecha elegida'}.
+					<View style={modalStyles.overlay}>
+						<View style={modalStyles.sheet}>
+
+							{/* Icono/Badge */}
+							<View style={modalStyles.iconWrap}>
+								<Text style={modalStyles.iconText}>🏋</Text>
+							</View>
+
+							{/* Título y texto */}
+							<Text style={modalStyles.title}>Seleccioná la rutina</Text>
+							<Text style={[modalStyles.subtitle, { fontWeight: 'normal', marginBottom: 0 }]}>
+								Vas a cargar un entrenamiento para
+							</Text>
+							<Text style={[modalStyles.subtitle, { fontWeight: '600' }]}>
+								{selectedDate ? formateDateToLongText(selectedDate) : 'la fecha elegida'}.
 							</Text>
 
 							<FlatList
@@ -285,13 +298,13 @@ export default function HomeScreen() {
 								)}
 							/>
 
-							<View style={modalUX.actions}>
+							<View style={modalStyles.actions}>
 								<TouchableOpacity
-									style={[modalUX.btn, modalUX.btnGhost]}
+									style={[modalStyles.btn, modalStyles.btnGhost]}
 									onPress={() => setTypePickerVisible(false)}
 									activeOpacity={0.9}
 								>
-									<Text style={[modalUX.btnText, modalUX.btnGhostText]}>Atrás</Text>
+									<Text style={[modalStyles.btnText, modalStyles.btnGhostText]}>Atrás</Text>
 								</TouchableOpacity>
 							</View>
 						</View>

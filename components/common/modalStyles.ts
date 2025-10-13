@@ -43,7 +43,8 @@ export const modalStyles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	subtitle: {
-		fontSize: 14,
+		fontSize: 15,
+		fontWeight: 600,
 		color: '#111827',
 		textAlign: 'center',
 		marginBottom: 12,
@@ -86,4 +87,10 @@ export const modalStyles = StyleSheet.create({
 		color: "#fff",
 		fontWeight: "700"
 	},
+	btnDisabled: {
+		backgroundColor: '#ccc',
+	},
+	btnTextDisabled: {
+		color: '#666',
+	}
 });

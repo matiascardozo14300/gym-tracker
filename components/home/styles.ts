@@ -127,33 +127,11 @@ export const styles = StyleSheet.create({
 });
 
 export const modalUX = StyleSheet.create({
-  container: {
-    //padding: 14,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-	overflow: 'hidden'
-  },
-  header: { paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    alignItems: 'center', },
-  title: { fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center' },
-  subtitle: { fontSize: 15, fontWeight: '600', color: '#111827', textAlign: 'center', marginTop: 4 },
-  subtitleMuted: { fontSize: 14, color: '#6B7280', textAlign: 'center', marginTop: 4 },
-    listBlock: {
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-  },
-  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 5, marginHorizontal: 16 },
   scrollArea: {
     flexGrow: 1,
-    maxHeight: 320,           // ← altura fija razonable dentro del modal
+    maxHeight: 350,           // ← altura fija razonable dentro del modal
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 2,
   },
    detailRow: {
     paddingVertical: 10,
@@ -187,36 +165,9 @@ export const modalUX = StyleSheet.create({
 
   emptyWrap: { paddingVertical: 14, alignItems: 'center' },
   emptyText: { color: '#6B7280' },
-
-  actions: { flexDirection: 'row', gap: 10,
-	//marginTop: 12
-	padding: 16,
-    paddingTop: 12, },
-  btn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnGhost: { borderWidth: 1, borderColor: "#cfcfcf" },
-  btnGhostText: { color: "#444", fontWeight: "600" },
-  btnPrimary: { backgroundColor: '#007AFF' },
-  btnText: { fontSize: 15 },
-  btnTextPrimary: { color: "#fff", fontWeight: "700", fontSize: 15 },
-  btnDisabled: {
-  	backgroundColor: '#ccc',
-	},
-	btnTextDisabled: {
-		color: '#666',
-	}
 });
 
 export const pickerUX = StyleSheet.create({
-  container: { padding: 16, borderRadius: 16 },
-  title: { fontSize: 18, fontWeight: '800', textAlign: 'center', color: '#111827' },
-  subtitle: { fontSize: 13.5, color: '#6B7280', textAlign: 'center', marginTop: 6, marginBottom: 10 },
-
   grid: {
     paddingTop: 4,
     paddingBottom: 6,
