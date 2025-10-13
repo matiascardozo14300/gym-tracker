@@ -67,9 +67,10 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+	paddingHorizontal: 16
   },
   modalContainer: {
-    width: '85%',
+    width: '100%',
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
@@ -127,15 +128,19 @@ export const styles = StyleSheet.create({
 
 export const modalUX = StyleSheet.create({
   container: {
-    padding: 14,
+    //padding: 14,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOpacity: 0.12,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 6,
+	overflow: 'hidden'
   },
-  header: { alignItems: 'center', marginBottom: 6 },
+  header: { paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    alignItems: 'center', },
   title: { fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center' },
   subtitle: { fontSize: 15, fontWeight: '600', color: '#111827', textAlign: 'center', marginTop: 4 },
   subtitleMuted: { fontSize: 14, color: '#6B7280', textAlign: 'center', marginTop: 4 },
@@ -143,11 +148,16 @@ export const modalUX = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
-  divider: { height: 1, backgroundColor: '#EEE', marginVertical: 5 },
-
+  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 5, marginHorizontal: 16 },
+  scrollArea: {
+    flexGrow: 1,
+    maxHeight: 320,           // ← altura fija razonable dentro del modal
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
    detailRow: {
-    paddingVertical: 12,
-    paddingHorizontal: 2,
+    paddingVertical: 10,
+    //paddingHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomWidth: 1,
@@ -178,7 +188,10 @@ export const modalUX = StyleSheet.create({
   emptyWrap: { paddingVertical: 14, alignItems: 'center' },
   emptyText: { color: '#6B7280' },
 
-  actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  actions: { flexDirection: 'row', gap: 10,
+	//marginTop: 12
+	padding: 16,
+    paddingTop: 12, },
   btn: {
     flex: 1,
     height: 44,

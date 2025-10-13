@@ -167,10 +167,13 @@ export default function HomeScreen() {
 								)}
 							</View>
 
-							{/* Body */}
+							<View style={modalUX.divider} />
+
+							{/* Área scrollable de ejercicios */}
 							{workoutDetail ? (
-								<View style={modalUX.listBlock}>
+								<View style={modalUX.scrollArea}>
 									<FlatList
+										showsVerticalScrollIndicator
 										contentContainerStyle={{ paddingBottom: 0 }}
 										data={workoutDetail.exercises}
 										keyExtractor={(item) => item.name}
@@ -189,10 +192,14 @@ export default function HomeScreen() {
 									/>
 								</View>
 							) : (
-								<View style={modalUX.emptyWrap}>
-									<Text style={modalUX.emptyText}>No hay registros para este día</Text>
+								<View style={modalUX.scrollArea}>
+									<View style={modalUX.emptyWrap}>
+										<Text style={modalUX.emptyText}>No hay registros para este día</Text>
+									</View>
 								</View>
 							)}
+
+							<View style={modalUX.divider} />
 
 							{/* Footer con acciones */}
 							<View style={modalUX.actions}>

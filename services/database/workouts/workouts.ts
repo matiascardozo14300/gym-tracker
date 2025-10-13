@@ -627,3 +627,17 @@ export async function addExerciseToWorkout(params: { workoutId: number; exercise
 		throw e;
 	}
 }
+
+// Devuelve el ID del workout si existe uno comenzado hoy (por fecha local YYYY-MM-DD)
+export async function getWorkoutIdForDate( dateYYYYMMDD: string ): Promise<number | null> {
+	const db = getDB();
+	const row = await db.getFirstAsync<{id:number}>(
+		`SELECT id
+		FROM workouts
+		WHERE substr(startDate,1,10) = ?
+		ORDER BY startDate DESC
+		LIMIT 1`,
+		dateYYYYMMDD
+	);
+	return row?.id ?? null;
+}
