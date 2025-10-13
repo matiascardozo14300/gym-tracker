@@ -16,6 +16,8 @@ import SettingsScreen from './components/settings/SettingsScreen';
 import StatisticsScreen from './components/statistics/StatisticsScreen'
 import WorkoutScreen from './components/workouts/WorkoutScreen';
 import WorkoutExerciseSelectionScreen from './components/workouts/workoutExerciseSelection/WorkoutExerciseSelection';
+import EditWorkoutScreen from './components/workouts/editWorkout/EditWorkoutScreen';
+import AddExerciseToWorkoutScreen from './components/workouts/editWorkout/AddExerciseToWorkoutScreen';
 import { initDatabase } from './services/database';
 
 import HomeIcon from './assets/icons/home.svg';
@@ -28,6 +30,8 @@ export type RootStackParamList = {
 	Tabs: { screen: keyof RootTabParamList };
 	ExerciseSelection: { workoutTypeId: number };
 	WorkoutExerciseSelection: { workoutTypeId?: number };
+	EditWorkout: { workoutId?: number; date?: string };
+	AddExerciseToWorkout: { workoutId: number; workoutTypeId: number; usedExerciseIds: number[] };
 };
 
 export type RootTabParamList = {
@@ -122,6 +126,18 @@ export default function App() {
 					name="WorkoutExerciseSelection"
 					component={WorkoutExerciseSelectionScreen}
 					options={{ headerShown: true, title: 'Seleccioná ejercicios', headerBackVisible: false }}
+				/>
+
+				<Stack.Screen
+					name='EditWorkout'
+					component={EditWorkoutScreen}
+					options={{ headerShown: true, title: 'Editá tu entrenamiento', headerBackVisible: true }}
+				/>
+
+				<Stack.Screen
+					name='AddExerciseToWorkout'
+					component={AddExerciseToWorkoutScreen}
+					options={{ headerShown: true, title: 'Elegí el ejercicio', headerBackVisible: false }}
 				/>
 
 			</Stack.Navigator>

@@ -45,3 +45,27 @@ export type UpdateResult =
 export type ArchiveResult =
   | { ok: true }
   | { ok: false; code: 'NOT_FOUND' | 'ALREADY_ARCHIVED' };
+
+export type EditableWorkout = {
+	id: number;
+	date: string;           // 'YYYY-MM-DD'
+	workoutTypeId: number;
+	workoutType: string;
+	exercises: EditableExercise[];
+};
+
+export type EditableSet = { weight: number; reps: number };
+
+export type EditableExercise = {
+	exerciseRecordId: number;
+	exerciseId: number;
+	name: string;
+	code: string;
+	sets: EditableSet[];
+};
+
+export type AddableExercise = {
+	id: number;
+	name: string;
+	code: string;
+};

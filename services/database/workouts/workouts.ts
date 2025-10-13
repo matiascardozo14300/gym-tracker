@@ -1,6 +1,6 @@
 import { SQLiteRunResult } from 'expo-sqlite';
 import { getDB } from '../db';
-import { type Workout, type LastWorkout, type NewWorkout, type WorkoutDetail, type WorkoutType, type CreateWorkoutTypeResult, type UpdateResult, type ArchiveResult } from './types';
+import { type Workout, type LastWorkout, type NewWorkout, type WorkoutDetail, type WorkoutType, type CreateWorkoutTypeResult, type UpdateResult, type ArchiveResult, EditableWorkout, EditableSet, AddableExercise, EditableExercise } from './types';
 import { ARCHIVE_TAG, formatDeletedWorkoutName } from '../../../utils/deleteName';
 
 // Crea un nuevo entrenamiento
@@ -402,6 +402,227 @@ export async function reorderWorkoutTypes( orderedIds: number[] ): Promise<void>
 		}
 		await db.runAsync('COMMIT');
 	} catch( e ) {
+		await db.runAsync('ROLLBACK');
+		throw e;
+	}
+}
+
+// Trae la información de un entrenamiento para ser editado
+export async function fetchWorkoutForEdit(params: { workoutId?: number; date?: string | null }): Promise<EditableWorkout> {
+
+	const db = getDB();
+
+	let workoutId = params.workoutId ?? null;
+
+	if( !workoutId && params.date ) {
+		// Busco el workout cuyo startDate sea ese día
+		const row = await db.getFirstAsync<{ id: number; workoutTypeId: number; workoutType: string; startDate: string }>(
+			`
+			SELECT w.id, w.workoutTypeId, wt.name AS workoutType, w.startDate
+			FROM workouts w
+			JOIN workout_types wt ON wt.id = w.workoutTypeId
+			WHERE substr(w.startDate,1,10) = ?
+			ORDER BY w.startDate DESC
+			LIMIT 1;
+			`,
+			params.date
+		);
+
+		if( !row ) {
+			return {
+				id: -1,
+				date: params.date!,
+				workoutTypeId: -1,
+				workoutType: '',
+				exercises: [],
+      		};
+		}
+
+		workoutId = row.id;
+	}
+
+	if( !workoutId ) {
+		throw new Error('fetchWorkoutForEdit: se requiere workout id o date');
+	}
+
+	const header = await db.getFirstAsync<{ startDate: string; workoutTypeId: number; workoutType: string }>(
+		`
+		SELECT w.startDate, w.workoutTypeId, wt.name AS workoutType
+		FROM workouts w
+		JOIN workout_types wt ON wt.id = w.workoutTypeId
+		WHERE w.id = ?;
+		`,
+		workoutId
+	);
+	if( !header ) {
+		throw new Error('Workout no encontrado');
+	}
+
+	const date = header.startDate.slice(0, 10);
+
+	const recs = await db.getAllAsync<{
+		exerciseRecordId: number;
+		exerciseId: number;
+		name: string;
+		code: string;
+	}>(
+		`
+		SELECT er.id AS exerciseRecordId, e.id AS exerciseId, e.name, e.code
+		FROM exercise_records er
+		JOIN exercises e ON e.id = er.exerciseId
+		WHERE er.workoutId = ?
+		ORDER BY er.id;
+		`,
+		workoutId
+	);
+
+	const exercises: EditableExercise[] = [];
+	if( recs.length ) {
+		const ids = recs.map(r => r.exerciseRecordId);
+		const placeholders = ids.map(() => '?').join(',');
+		const setsRows = await db.getAllAsync<{
+			exerciseRecordId: number;
+			weight: number;
+			reps: number;
+		}>(
+			`
+			SELECT s.exerciseRecordId, s.weight, s.reps
+			FROM sets s
+			WHERE s.exerciseRecordId IN (${placeholders})
+			ORDER BY s.id;
+			`,
+			...ids
+		);
+
+		for( const r of recs ) {
+			const mySets = setsRows
+				.filter(s => s.exerciseRecordId === r.exerciseRecordId)
+				.map(s => ({ weight: s.weight, reps: s.reps }));
+
+			exercises.push({
+				exerciseRecordId: r.exerciseRecordId,
+				exerciseId: r.exerciseId,
+				name: r.name,
+				code: r.code,
+				sets: mySets,
+			});
+		}
+	}
+	return {
+		id: workoutId,
+		date,
+		workoutTypeId: header.workoutTypeId,
+		workoutType: header.workoutType,
+		exercises,
+	};
+}
+
+export async function updateExerciseSets(params: { workoutId: number; exerciseId: number; sets: EditableSet[] }): Promise<void> {
+	const db = getDB();
+	await db.runAsync('BEGIN');
+
+	try {
+		// Encontrar exercise_record
+		const rec = await db.getFirstAsync<{ id: number }>(
+			`SELECT id FROM exercise_records WHERE workoutId = ? AND exerciseId = ?;`,
+			params.workoutId, params.exerciseId
+		);
+		if( !rec ) throw new Error('exercise_record no encontrado');
+
+		await db.runAsync(`DELETE FROM sets WHERE exerciseRecordId = ?;`, rec.id);
+
+		if( params.sets?.length ) {
+			const stmt = `INSERT INTO sets (exerciseRecordId, weight, reps) VALUES (?, ?, ?);`;
+			for( const s of params.sets ) {
+				await db.runAsync(stmt, rec.id, s.weight, s.reps);
+			}
+		}
+
+		await db.runAsync('COMMIT');
+	} catch (e) {
+		await db.runAsync('ROLLBACK');
+		throw e;
+	}
+}
+
+export async function deleteExerciseFromWorkout(params: { workoutId: number; exerciseId: number }): Promise<void> {
+	const db = getDB();
+	await db.runAsync('BEGIN');
+	try {
+		const rec = await db.getFirstAsync<{ id: number }>(
+			`SELECT id FROM exercise_records WHERE workoutId = ? AND exerciseId = ?;`,
+			params.workoutId, params.exerciseId
+		);
+		if( !rec ) {
+			await db.runAsync('COMMIT'); // nada para borrar
+			return;
+		}
+		await db.runAsync(`DELETE FROM sets WHERE exerciseRecordId = ?;`, rec.id);
+		await db.runAsync(`DELETE FROM exercise_records WHERE id = ?;`, rec.id);
+		await db.runAsync('COMMIT');
+	} catch (e) {
+		await db.runAsync('ROLLBACK');
+		throw e;
+	}
+}
+
+export async function fetchAddableExercisesForWorkout(params: { workoutTypeId: number; excludeIds: number[] }): Promise<AddableExercise[]> {
+	const db = getDB();
+
+	if( !params.excludeIds?.length ) {
+		return db.getAllAsync<AddableExercise>(
+			`
+			SELECT e.id, e.name, e.code
+			FROM exercises e
+			JOIN workout_type_exercises wte ON wte.exerciseId = e.id
+			WHERE wte.workoutTypeId = ?
+			ORDER BY e.muscleGroup, e.name;
+			`,
+			params.workoutTypeId
+		);
+	}
+
+	const placeholders = params.excludeIds.map(() => '?').join(',');
+	return db.getAllAsync<AddableExercise>(
+		`
+		SELECT e.id, e.name, e.code
+		FROM exercises e
+		JOIN workout_type_exercises wte ON wte.exerciseId = e.id
+		WHERE wte.workoutTypeId = ?
+		AND e.id NOT IN (${placeholders})
+		ORDER BY e.muscleGroup, e.name;
+		`,
+		params.workoutTypeId,
+		...params.excludeIds
+	);
+}
+
+export async function addExerciseToWorkout(params: { workoutId: number; exerciseId: number; sets: EditableSet[] }): Promise<void> {
+	const db = getDB();
+	await db.runAsync('BEGIN');
+	try {
+		// Evitar duplicado accidental del mismo exerciseId dentro del workout
+		const exists = await db.getFirstAsync<{ id: number }>(
+			`SELECT id FROM exercise_records WHERE workoutId = ? AND exerciseId = ?;`,
+			params.workoutId, params.exerciseId
+		);
+		if(exists) throw new Error('El ejercicio ya existe en este entrenamiento');
+
+		const ins = await db.runAsync(
+			`INSERT INTO exercise_records (workoutId, exerciseId) VALUES (?, ?);`,
+			params.workoutId, params.exerciseId
+		);
+		const exerciseRecordId = ins.lastInsertRowId!;
+
+		if (params.sets?.length) {
+			const stmt = `INSERT INTO sets (exerciseRecordId, weight, reps) VALUES (?, ?, ?);`;
+			for (const s of params.sets) {
+				await db.runAsync(stmt, exerciseRecordId, s.weight, s.reps);
+			}
+		}
+
+		await db.runAsync('COMMIT');
+	} catch (e) {
 		await db.runAsync('ROLLBACK');
 		throw e;
 	}

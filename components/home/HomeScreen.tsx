@@ -211,9 +211,9 @@ export default function HomeScreen() {
 									<TouchableOpacity
 										style={[modalUX.btn, modalUX.btnPrimary]}
 										onPress={() => {
-											// TODO -> Lógica de edición del entrenamiento pasado (lo implementamos luego)
-											// Podrías navegar a una pantalla de detalle/edición con la fecha:
-											// navigation.navigate('EditPastWorkout', { date: selectedDate })
+											navigation.navigate( 'EditWorkout', { date: selectedDate || undefined } );
+											setModalVisible(false);
+											setWorkoutDetail(null);
 										}}
 									>
 										<Text style={modalUX.btnTextPrimary}>Editar</Text>
