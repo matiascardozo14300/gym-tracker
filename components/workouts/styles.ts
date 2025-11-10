@@ -14,19 +14,21 @@ export default StyleSheet.create({
     marginBottom: 18,
     marginTop: 8,
   },
-  createButton: {
-    height: 48,
-    borderWidth: 2,
-    borderColor: '#4CAF50',
+createButtonWrapper: {
     borderRadius: 12,
+    overflow: 'hidden', // para que el gradiente respete el borde redondeado
+  },
+  createButtonGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+    height: 52,
+    borderRadius: 12,
   },
-  createButtonText: {
-    color: '#4CAF50',
+    createButtonText: {
+    color: '#fff',
     fontWeight: '700',
-    fontSize: 18,
+    fontSize: 17,
   },
 
   card: {
