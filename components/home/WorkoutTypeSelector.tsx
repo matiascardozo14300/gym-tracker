@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Modal } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, RootTabParamList } from '../../App';
-import { getWorkoutTypes, WorkoutType } from '../../services/database';
-import styles from './styles';
+import { getWorkoutIdForDate, getWorkoutTypes, WorkoutType } from '../../services/database';
+import {styles} from './styles';
+import { toLocalYYYYMMDD } from '../common/helper';
+
+import { modalStyles } from '../common/modalStyles';
 
 type TabNav = BottomTabNavigationProp<RootTabParamList, 'Inicio'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
@@ -17,6 +20,10 @@ const NUM_COLS = 3;
 
 export default function WorkoutTypeSelector() {
 	const [types, setTypes] = useState<WorkoutType[]>([]);
+	const [warnModalVisible, setWarnModalVisible] = useState(false);
+	const [todayWorkoutId, setTodayWorkoutId] = useState<number | null>(null);
+	const [pendingType, setPendingType] = useState<WorkoutType | null>(null);
+
 	const tabNav = useNavigation<TabNav>();
   	const stackNav = tabNav.getParent<StackNav>();
 
@@ -44,13 +51,33 @@ export default function WorkoutTypeSelector() {
 		return items;
 	}, [types] );
 
-	const handlePressType = ( t: WorkoutType ) => {
-		stackNav?.navigate( 'ExerciseSelection', { workoutTypeId: t.id } );
+	const handlePressType = async ( t: WorkoutType ) => {
+		const today = toLocalYYYYMMDD( new Date() );
+
+		const existingId = await getWorkoutIdForDate( today );
+		if( !existingId ) {
+			// No hay workout hoy -> empezar uno nuevo
+			stackNav?.navigate( 'ExerciseSelection', { workoutTypeId: t.id } );
+			return;
+		}
+
+		// Ya hay uno -> muestra modal de aviso con opciones
+		setPendingType(t);
+		setTodayWorkoutId(existingId);
+		setWarnModalVisible(true);
+
 	};
 
 	const handlePressAdd = () => {
 		stackNav?.navigate( 'WorkoutExerciseSelection', {} );
 	};
+
+	const goEditToday = () => {
+		if( !todayWorkoutId ) return;
+
+		setWarnModalVisible(false);
+		stackNav?.navigate('EditWorkout', { workoutId: todayWorkoutId });
+	}
 
 	const renderItem = ({ item }: { item: GridItem }) => {
 		if( item.kind === 'add' ) {
@@ -82,6 +109,50 @@ export default function WorkoutTypeSelector() {
 				scrollEnabled={false}
 				contentContainerStyle={gridStyles.gridContainer}
 			/>
+
+			{/* Modal de aviso si ya hay workout hoy */}
+			<Modal
+				transparent
+				animationType="fade"
+				visible={warnModalVisible}
+				onRequestClose={() => setWarnModalVisible(false)}
+			>
+				<View style={modalStyles.overlay}>
+					<View style={modalStyles.sheet}>
+						{/* Icono/Badge */}
+						<View style={modalStyles.iconWrap}>
+							<Text style={modalStyles.iconText}>⚠️</Text>
+						</View>
+
+						{/* Título y texto */}
+						<Text style={modalStyles.title}>Ya registraste un entrenamiento hoy</Text>
+						<Text style={[modalStyles.subtitle, { fontWeight: 'normal' }]}>
+							Podés editar el que hiciste o cancelar para evitar duplicados.
+						</Text>
+
+						<View style={modalStyles.divider} />
+
+						{/* Acciones */}
+						<View style={modalStyles.actions}>
+							<TouchableOpacity
+								style={[modalStyles.btn, modalStyles.btnGhost]}
+								onPress={() => setWarnModalVisible(false)}
+							>
+								<Text style={[modalStyles.btnText, modalStyles.btnGhostText]}>Cancelar</Text>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								style={[modalStyles.btn, modalStyles.btnPrimary]}
+								onPress={goEditToday}
+								activeOpacity={0.9}
+								hitSlop={10}
+							>
+								<Text style={[modalStyles.btnText, modalStyles.btnPrimaryText]}>Editar</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 }

@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export const styles = StyleSheet.create({
 	container: { flex: 1, backgroundColor: '#fff' },
 	scrollContent: { padding: 16, paddingBottom: 80 },
 
@@ -67,9 +67,10 @@ export default StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+	paddingHorizontal: 16
   },
   modalContainer: {
-    width: '85%',
+    width: '100%',
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
@@ -122,5 +123,78 @@ export default StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
+  },
+});
+
+export const modalUX = StyleSheet.create({
+  scrollArea: {
+    flexGrow: 1,
+    maxHeight: 350,           // ← altura fija razonable dentro del modal
+    paddingHorizontal: 16,
+    paddingVertical: 2,
+  },
+   detailRow: {
+    paddingVertical: 10,
+    //paddingHorizontal: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  exerciseName: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  setsRow: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 6
+  },
+  pill: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#F3F4F6',
+  },
+  pillText: { fontSize: 13, color: '#111827', fontWeight: '600' },
+
+  emptyWrap: { paddingVertical: 14, alignItems: 'center' },
+  emptyText: { color: '#6B7280' },
+});
+
+export const pickerUX = StyleSheet.create({
+  grid: {
+    paddingTop: 4,
+    paddingBottom: 6,
+  },
+
+  tile: {
+    flex: 1,
+    minHeight: 72,
+    borderWidth: 2,
+    borderRadius: 12,
+    padding: 10,
+    margin: 6,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  swatch: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  tileText: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });

@@ -1,12 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
 import { Exercise, ExerciseLastHistory, getExerciseByWorkoutType, getExerciseLastHistory, getExerciseNotes, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, saveExerciseNotes, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import styles from './styles';
+import {styles} from './styles';
+import {fakePickerStyles} from './styles';
 import { exerciseImageUrls } from '../common/allExercisesImages';
 import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
 import StarOutlineIcon from '../../assets/icons/favorite.svg';
@@ -31,11 +32,24 @@ const TimerDisplay: React.FC<{ seconds: number }> = ({ seconds }) => {
 	);
 };
 
+// Helper: arma un ISO local yyyy-MM-ddTHH:mm:ss de una fecha yyyy-MM-dd y hora/min
+function dateAtLocalTimeISO(dateYYYYMMDD: string, hours = 12, minutes = 0): string {
+	// Asumimos dateYYYYMMDD está en formato "YYYY-MM-DD"
+	const [y, m, d] = dateYYYYMMDD.split('-').map(Number);
+	const dt = new Date(y, (m - 1), d, hours, minutes, 0, 0);
+	// toISOString da UTC; queremos ISO "local" como el resto de tu app -> formateamos manual:
+	const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+	const isoLocal = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+	return isoLocal;
+}
+
 export default function ExerciseSelectionScreen() {
 	const navigation = useNavigation<ExSelNavProp>();
 	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
 	const route = useRoute<ExSelRouteProp>();
-  	const { workoutTypeId } = route.params;
+  	const { workoutTypeId, selectedDate } = route.params as ( ExSelRouteProp['params'] & { selectedDate?: string }) | any;
+
+	const isPastMode = useMemo( () => !!selectedDate, [ selectedDate ] );
 
 	const INITIAL_SETS = [
 		{ weight: '', reps: '' },
@@ -64,8 +78,19 @@ export default function ExerciseSelectionScreen() {
 	const [ originalNotes, setOriginalNotes ] = useState<string>("");
 	const [ notes, setNotes ] = useState<string>("");
 
-	// Start timmer
+	// PastMode -> Duración por defecto 00:45
+	const [ durHours, setDurHours ] = useState<number>(0);
+	const [ durMinutes, setDurMinutes ] = useState<number>(45);
+	const [durationModalVisible, setDurationModalVisible] = useState(false);
+	const [openSelector, setOpenSelector] = useState<null | 'hours' | 'minutes'>(null);
+
+	const HOUR_OPTIONS = [0,1,2,3,4,5,6];
+	const MINUTE_OPTIONS = [0,5,10,15,20,25,30,35,40,45,50,55];
+
+	// Start timmer -> SOLO si no es PastMode
 	useEffect( () => {
+		if( isPastMode ) return;
+
 		startTimeRef.current = Date.now();
 		intervalRef.current = setInterval(() => {
 			const diff = Date.now() - startTimeRef.current;
@@ -75,7 +100,7 @@ export default function ExerciseSelectionScreen() {
 		return () => {
 			if( intervalRef.current ) clearInterval( intervalRef.current );
 		};
-	}, [] );
+	}, [isPastMode] );
 
 	// Busca ejercicios
 	useEffect(() => {
@@ -193,16 +218,21 @@ export default function ExerciseSelectionScreen() {
 		);
 	}
 
-	// Maneja envío y cierre del modal
+	// Guarda los sets de un ejercicio
 	const handleSubmit = async () => {
-		if( selectedExercise == null ) return;
+		if( !selectedExercise ) return;
 
 		let currentWorkoutId = workoutId;
 		if( currentWorkoutId == null ) {
-			const now = getLocalISOString();
+			// En PastMode -> creo un workout con startDate en la fecha del parámetro
+			// En Hoy -> uso "ahora"
+			const startISO = isPastMode
+				? dateAtLocalTimeISO( selectedDate!, 12, 0 )
+				: getLocalISOString();
+
 			const newId = await insertNewWorkout({
-				startDate: now,
-				finishDate: now,
+				startDate: startISO,
+				finishDate: startISO,
 				workoutTypeId
 			} as NewWorkout );
 			setWorkoutId( newId );
@@ -231,6 +261,13 @@ export default function ExerciseSelectionScreen() {
 		setLastHistory( null );
 	}
 
+	// Guarda un entrenamiento pasado
+	const savePastWorkout = async ( params: { workoutId: number; startDateISO: string; finishDateISO: string  } ) => {
+		if( workoutId != null ) {
+			await updateWorkoutFinishDate( params.workoutId, params.finishDateISO );
+		}
+	}
+
 	const handleCancel = () => {
 		setExerciseModalVisible( false );
 		setSelectedExercise( null );
@@ -239,9 +276,7 @@ export default function ExerciseSelectionScreen() {
 		setLastHistory( null );
 	}
 
-	const handleFinishPress = () => {
-		setFinishModalVisible( true );
-	}
+	const handleFinishPress = () => setFinishModalVisible( true );
 
 	const isDirty = notes !== originalNotes;
 
@@ -257,7 +292,7 @@ export default function ExerciseSelectionScreen() {
 		setNotesModalVisible(false);
 	}
 
-	// Finalizar workout y volver al Inicio
+	// Finalizar workout y volver al Inicio (modo HOY)
 	const handleFinish = async () => {
 		if( intervalRef.current ) clearInterval( intervalRef.current );
 
@@ -269,6 +304,38 @@ export default function ExerciseSelectionScreen() {
 		tabNav?.navigate('Inicio');
 		navigation.navigate('Tabs', { screen: 'Inicio' });
 	};
+
+	const handleOpenDuration = () => setDurationModalVisible( true );
+
+	const handleConfirmDuration = async () => {
+		if( !workoutId ) {
+			Alert.alert( 'Atención', 'Primero agregá al menos un ejercicio para guardar el entrenamiento.' );
+			return;
+		}
+
+		// start ya fue creado a las 12:00 de selectedDate
+		const startISO = dateAtLocalTimeISO( selectedDate!, 12, 0 );
+		const totalMin = durHours * 60 + durMinutes;
+		const startDateObj = new Date(
+			parseInt(startISO.substring(0, 4)),
+			parseInt(startISO.substring(5, 7)) - 1,
+			parseInt(startISO.substring(8, 10)),
+			parseInt(startISO.substring(11, 13)),
+			parseInt(startISO.substring(14, 16)),
+			parseInt(startISO.substring(17, 19)),
+			0
+		);
+		const finishDateObj = new Date(startDateObj.getTime() + totalMin * 60000);
+		const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+		const finishISO = `${finishDateObj.getFullYear()}-${pad(finishDateObj.getMonth() + 1)}-${pad(finishDateObj.getDate())}T${pad(finishDateObj.getHours())}:${pad(finishDateObj.getMinutes())}:${pad(finishDateObj.getSeconds())}`;
+
+		await updateWorkoutFinishDate( workoutId, finishISO );
+		await savePastWorkout({ workoutId, startDateISO: startISO, finishDateISO: finishISO });
+
+		setDurationModalVisible( false );
+		tabNav?.navigate('Inicio');
+    	navigation.navigate('Tabs', { screen: 'Inicio' });
+	}
 
 	const renderItem = ({ item }: { item: Exercise }) => (
 		<TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
@@ -351,10 +418,18 @@ export default function ExerciseSelectionScreen() {
 
 			{/* Cronómetro y botón Finish */}
 			<View style={ styles.footer} >
-				<TimerDisplay seconds={ seconds } />
-				<TouchableOpacity style={ styles.finishButton } onPress={ workoutId != null ?  handleFinishPress : handleFinish }>
-					<Text style={ styles.finishButtonText }>Finalizar Entrenamiento</Text>
-				</TouchableOpacity>
+
+				{!isPastMode && <TimerDisplay seconds={ seconds } />}
+
+				{isPastMode ? (
+					<TouchableOpacity style={[styles.finishButton]} onPress={handleOpenDuration}>
+						<Text style={styles.finishButtonText}>Guardar Entrenamiento</Text>
+					</TouchableOpacity>
+				) : (
+					<TouchableOpacity style={ styles.finishButton } onPress={ workoutId != null ?  handleFinishPress : handleFinish }>
+						<Text style={ styles.finishButtonText }>Finalizar Entrenamiento</Text>
+					</TouchableOpacity>
+				)}
 			</View>
 
 			<Modal visible={exerciseModalVisible} transparent animationType="slide">
@@ -435,6 +510,94 @@ export default function ExerciseSelectionScreen() {
 						<TouchableOpacity onPress={handleFinish} style={styles.modalButton}>
 							<Text style={styles.modalButtonText}>Guardar</Text>
 						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
+
+			{/* Modal de duración (solo PASADO) */}
+			<Modal visible={durationModalVisible} transparent animationType="fade">
+				<View style={styles.modalOverlay}>
+					<View style={[styles.modalContainer, fakePickerStyles.sheet]}>
+						<Text style={[styles.modalTitle, { marginBottom: 12 }]}>Duración del entrenamiento</Text>
+
+						{/* “Inputs” fake que abren los selectores */}
+						<View style={fakePickerStyles.row}>
+							<TouchableOpacity
+								activeOpacity={0.8}
+								style={fakePickerStyles.fakeInput}
+								onPress={() => setOpenSelector(openSelector === 'hours' ? null : 'hours')}
+							>
+								<Text style={fakePickerStyles.fakeInputLabel}>{durHours === 1 ? 'Hora' : 'Horas'}</Text>
+								<Text style={fakePickerStyles.fakeInputValue}>{durHours}</Text>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								activeOpacity={0.8}
+								style={fakePickerStyles.fakeInput}
+								onPress={() => setOpenSelector(openSelector === 'minutes' ? null : 'minutes')}
+							>
+								<Text style={fakePickerStyles.fakeInputLabel}>Minutos</Text>
+								<Text style={fakePickerStyles.fakeInputValue}>{durMinutes}</Text>
+							</TouchableOpacity>
+						</View>
+
+						{/* Selector de HORAS */}
+						{openSelector === 'hours' && (
+							<View style={fakePickerStyles.selectorPanel}>
+								<Text style={fakePickerStyles.selectorTitle}>Elegí la cantidad de horas</Text>
+								<View style={fakePickerStyles.chipsWrap}>
+									{HOUR_OPTIONS.map(h => {
+										const selected = h === durHours;
+										return (
+											<TouchableOpacity
+												key={`h-${h}`}
+												onPress={() => { setDurHours(h); setOpenSelector(null); }}
+												activeOpacity={0.8}
+												style={[fakePickerStyles.chip, selected && fakePickerStyles.chipSelected]}
+											>
+												<Text style={[fakePickerStyles.chipText, selected && fakePickerStyles.chipTextSelected]}>
+													{h}
+												</Text>
+											</TouchableOpacity>
+										);
+									})}
+								</View>
+							</View>
+						)}
+
+						{/* Selector de MINUTOS */}
+						{openSelector === 'minutes' && (
+							<View style={fakePickerStyles.selectorPanel}>
+								<Text style={fakePickerStyles.selectorTitle}>Elegí la cantidad de minutos</Text>
+								<View style={fakePickerStyles.chipsWrap}>
+									{MINUTE_OPTIONS.map(m => {
+										const selected = m === durMinutes;
+										return (
+											<TouchableOpacity
+												key={`m-${m}`}
+												onPress={() => { setDurMinutes(m); setOpenSelector(null); }}
+												activeOpacity={0.8}
+												style={[fakePickerStyles.chip, selected && fakePickerStyles.chipSelected]}
+											>
+												<Text style={[fakePickerStyles.chipText, selected && fakePickerStyles.chipTextSelected]}>
+													{m}
+												</Text>
+											</TouchableOpacity>
+										);
+									})}
+								</View>
+							</View>
+						)}
+
+						{/* Acciones */}
+						<View style={fakePickerStyles.actions}>
+							<TouchableOpacity style={[styles.cancelButton, { flex: 1 }]} onPress={() => { setDurationModalVisible(false); setOpenSelector(null); }}>
+								<Text style={styles.cancelButtonText}>Atrás</Text>
+							</TouchableOpacity>
+							<TouchableOpacity style={[styles.modalButton, { flex: 1 }]} onPress={handleConfirmDuration}>
+								<Text style={styles.modalButtonText}>Guardar</Text>
+							</TouchableOpacity>
+						</View>
 					</View>
 				</View>
 			</Modal>

@@ -23,3 +23,29 @@ export function getLocalISOString( d = new Date() ): string {
 		':' + pad( d.getSeconds() )
 	);
 }
+
+export function isFutureDate( dateISO: string ): boolean {
+	const [y, m, d] = dateISO.split('-').map(Number);
+	const selected = new Date(y, (m ?? 1) - 1, d ?? 1);
+	const now = new Date();
+	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	return selected.getTime() > today.getTime();
+}
+
+export function isToday( dateISO: string ): boolean {
+	const [y, m, d] = dateISO.split('-').map(Number);
+	const selected = new Date(y, (m ?? 1) - 1, d ?? 1);
+	const now = new Date();
+	return (
+		selected.getFullYear() === now.getFullYear() &&
+		selected.getMonth() === now.getMonth() &&
+		selected.getDate() === now.getDate()
+	);
+}
+
+export function toLocalYYYYMMDD( d = new Date() ) {
+	const yyyy = d.getFullYear();
+	const mm = String(d.getMonth() + 1).padStart(2, '0');
+	const dd = String(d.getDate()).padStart(2, '0');
+	return `${yyyy}-${mm}-${dd}`; // local, sin TZ
+}
