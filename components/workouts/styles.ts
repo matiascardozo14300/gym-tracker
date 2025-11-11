@@ -14,7 +14,21 @@ export default StyleSheet.create({
     marginBottom: 18,
     marginTop: 8,
   },
-createButtonWrapper: {
+  createButton: {
+    height: 48,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  createButtonText: {
+    color: '#4CAF50',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+/* createButtonWrapper: {
     borderRadius: 12,
     overflow: 'hidden', // para que el gradiente respete el borde redondeado
   },
@@ -29,7 +43,7 @@ createButtonWrapper: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 17,
-  },
+  }, */
 
   card: {
     flexDirection: 'row',

@@ -12,7 +12,7 @@ import PaletteIcon from '../../assets/icons/palette.svg';
 import EditIcon from '../../assets/icons/edit.svg';
 import DeleteIcon from '../../assets/icons/delete.svg';
 import PlayArrow from '../../assets/icons/play_arrow_green.svg';
-import { LinearGradient } from 'expo-linear-gradient';
+/* import { LinearGradient } from 'expo-linear-gradient'; */
 
 type TabNav = BottomTabNavigationProp<RootTabParamList, 'Rutinas'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
@@ -157,7 +157,10 @@ export default function WorkoutScreen() {
 		<>
 			<Header title="Rutinas" />
 			<View style={styles.headerActions}>
-				<TouchableOpacity
+				<TouchableOpacity style={styles.createButton} onPress={handleCreateWorkout} activeOpacity={0.8}>
+					<Text style={styles.createButtonText}>Crear rutina</Text>
+				</TouchableOpacity>
+				{/* <TouchableOpacity
 					activeOpacity={0.85}
 					onPress={handleCreateWorkout}
 					style={styles.createButtonWrapper}
@@ -170,7 +173,7 @@ export default function WorkoutScreen() {
 					>
 					<Text style={styles.createButtonText}>+ Crear rutina</Text>
 					</LinearGradient>
-				</TouchableOpacity>
+				</TouchableOpacity> */}
 			</View>
 		</>
 	);
