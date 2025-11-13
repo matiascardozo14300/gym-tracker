@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Modal, FlatList
 import { getLast3Workouts, getWorkoutDatesForMonth, getWorkoutDetailByDate, getWorkoutTypes, LastWorkout, WorkoutDetail, WorkoutType } from '../../services/database/';
 import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelection';
 import LatestWorkouts from '../latestWorkouts/LatestWorkouts';
+import HomeWidgets from './HomeWidgets';
 import WorkoutTypeSelector from './WorkoutTypeSelector';
 import {styles, modalUX, pickerUX} from './styles';
 import HomeHeader from './HomeHeader';
@@ -138,11 +139,12 @@ export default function HomeScreen() {
 					}}
 					onMonthChanged={ (date) => handleMonthChange( date?.year, date?.month )}
 				/>
-				<LatestWorkouts workouts={ lastWorkouts } onWorkoutPress={ async ( workout ) => {
+				<HomeWidgets />
+				{/* <LatestWorkouts workouts={ lastWorkouts } onWorkoutPress={ async ( workout ) => {
 					const dateString = workout.startDate.includes( 'T' ) ? workout.startDate.split( 'T' )[0] : workout.startDate;
 					setSelectedDate( dateString );
 					setModalVisible( true );
-				} } />
+				} } /> */}
 
 				{/* MODAL VISUALIZACIÓN / ACCIONES DEL DÍA */}
 				<Modal

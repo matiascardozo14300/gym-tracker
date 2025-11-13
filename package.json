@@ -21,6 +21,7 @@
     "expo-sharing": "~13.1.5",
     "expo-sqlite": "~15.2.9",
     "expo-status-bar": "~2.2.3",
+    "lucide-react-native": "^0.553.0",
     "react": "19.0.0",
     "react-native": "0.79.2",
     "react-native-calendars": "^1.1312.0",
