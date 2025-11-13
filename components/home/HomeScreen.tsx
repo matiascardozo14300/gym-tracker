@@ -5,7 +5,7 @@ import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelectio
 import LatestWorkouts from '../latestWorkouts/LatestWorkouts';
 import WorkoutTypeSelector from './WorkoutTypeSelector';
 import {styles, modalUX, pickerUX} from './styles';
-import Header from '../header/Header';
+import HomeHeader from './HomeHeader';
 import { formateDateToLongText, isFutureDate, isToday } from '../common/helper';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -127,7 +127,7 @@ export default function HomeScreen() {
 	return (
 		<SafeAreaView style={ styles.container }>
 			<ScrollView contentContainerStyle={ styles.scrollContent }>
-				<Header title='Rackit' />
+				<HomeHeader />
 				<WorkoutTypeSelector />
 				<CalendarSection
 					markedDates={ markedDates }

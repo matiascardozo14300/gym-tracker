@@ -4,6 +4,19 @@ export const styles = StyleSheet.create({
 	container: { flex: 1, backgroundColor: '#fff' },
 	scrollContent: { padding: 16, paddingBottom: 80 },
 
+	header: {
+		marginTop: 20,
+        marginBottom: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+	},
+	headerLogo: {
+		width: 56,
+        height: 56,
+        marginRight: 5,
+	},
+	headerTitle: { fontSize: 32, fontWeight: 'bold' },
+
 	section: { marginBottom: 10 },
 	sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
 
