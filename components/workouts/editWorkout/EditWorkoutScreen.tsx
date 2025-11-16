@@ -1,21 +1,20 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, SafeAreaView, FlatList, TouchableOpacity, Alert, Modal, TextInput, Image } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../../App';
 import {editStyles} from './styles';
 import { imgStyles } from './styles';
-
 import EditIcon from '../../../assets/icons/edit.svg';
 import DeleteIcon from '../../../assets/icons/delete.svg';
 import AddIcon from '../../../assets/icons/add.svg';
 import ImageIcon from '../../../assets/icons/image.svg';
-
 import { formateDateToLongText } from '../../common/helper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { deleteExerciseFromWorkout, EditableExercise, EditableSet, EditableWorkout, Exercise, fetchWorkoutForEdit, updateExerciseSets } from '../../../services/database';
+import { deleteExerciseFromWorkout, EditableExercise, EditableSet, EditableWorkout, fetchWorkoutForEdit, updateExerciseSets, fetchAddableExercisesForWorkout } from '../../../services/database';
 import { exerciseImageUrls } from '../../common/allExercisesImages';
+import { modalStyles } from '../../common/modalStyles';
 
 const INITIAL_SETS = [
 	{ weight: '', reps: '' },
@@ -45,6 +44,8 @@ export default function EditWorkoutScreen() {
 
 	const [imageModalVisible, setImageModalVisible] = useState(false);
 	const [imageExercise, setImageExercise] = useState<string | null>(null);
+
+	const [allExercisesAddedModalVisible, setAllExercisesAddedModalVisible] = useState(false);
 
 	// Cargar entrenamiento
 	const load = useCallback( async () => {
@@ -168,15 +169,35 @@ export default function EditWorkoutScreen() {
 		);
 	};
 
-	const goToAddExercise = () => {
+	const goToAddExercise = async () => {
 		if( !workout ) return;
 
-		// Navegá pasando ids ya usados para filtrar
-		navigation.navigate('AddExerciseToWorkout', {
-			workoutId: workout.id,
-			workoutTypeId: workout.workoutTypeId,
-			usedExerciseIds: workout.exercises.map(e => e.exerciseId)
-		});
+        try {
+            // 1. Obtener los IDs de los ejercicios ya en uso
+            const usedExerciseIds = workout.exercises.map( e => e.exerciseId );
+
+            // 2. Llamar a la DB para ver si quedan ejercicios
+            const addableExercises = await fetchAddableExercisesForWorkout({
+                workoutTypeId: workout.workoutTypeId,
+                excludeIds: usedExerciseIds
+            });
+
+            // 3. Lógica condicional
+            if( addableExercises.length > 0 ) {
+                // Si hay ejercicios, navegar como antes
+                navigation.navigate('AddExerciseToWorkout', {
+                    workoutId: workout.id,
+                    workoutTypeId: workout.workoutTypeId,
+                    usedExerciseIds: usedExerciseIds
+                });
+            } else {
+                // Si no hay ejercicios, mostrar el nuevo modal
+                setAllExercisesAddedModalVisible(true);
+            }
+        } catch (error) {
+            console.error("Error al verificar ejercicios disponibles:", error);
+            Alert.alert("Error", "No se pudo verificar los ejercicios disponibles.");
+        }
 	};
 
 	const openImageModal = (ex: string) => {
@@ -343,6 +364,39 @@ export default function EditWorkoutScreen() {
 								</View>
 							)}
 						</View>
+					</View>
+				</View>
+			</Modal>
+			<Modal
+				visible={allExercisesAddedModalVisible}
+				transparent
+				animationType='fade'
+				onRequestClose={ () => setAllExercisesAddedModalVisible(false) }
+			>
+				<View style={modalStyles.overlay}>
+					<View style={modalStyles.sheet}>
+
+						<View style={modalStyles.iconWrap}>
+							<Text style={modalStyles.iconText}>🏋</Text>
+						</View>
+
+						<Text style={modalStyles.title}>Ejercicios completos</Text>
+
+						<View style={modalStyles.divider} />
+
+						<Text style={modalStyles.subtitle}>
+							Ya agregaste todos los ejercicios de esta rutina a tu entrenamiento.
+						</Text>
+
+						<View style={modalStyles.actions}>
+							<TouchableOpacity
+								style={[modalStyles.btn, modalStyles.btnGhost]}
+								onPress={ () => setAllExercisesAddedModalVisible(false) }
+							>
+								<Text style={[modalStyles.btnText, modalStyles.btnGhostText]}>Atrás</Text>
+							</TouchableOpacity>
+						</View>
+
 					</View>
 				</View>
 			</Modal>
