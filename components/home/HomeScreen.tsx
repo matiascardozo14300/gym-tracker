@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Modal, FlatList
 import { getLast3Workouts, getWorkoutDatesForMonth, getWorkoutDetailByDate, getWorkoutTypes, LastWorkout, WorkoutDetail, WorkoutType } from '../../services/database/';
 import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelection';
 import LatestWorkouts from '../latestWorkouts/LatestWorkouts';
-import HomeWidgets from './HomeWidgets';
+import {HomeWidgets} from './widgets/HomeWidgets';
 import WorkoutTypeSelector from './WorkoutTypeSelector';
 import {styles, modalUX, pickerUX} from './styles';
 import HomeHeader from './HomeHeader';
