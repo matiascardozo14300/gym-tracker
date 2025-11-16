@@ -5,17 +5,30 @@ export const styles = StyleSheet.create({
 	scrollContent: { padding: 16, paddingBottom: 80 },
 
 	header: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between'
+	},
+	logoContainer: {
 		marginTop: 20,
-        marginBottom: 14,
-        flexDirection: 'row',
-        alignItems: 'center',
+		marginBottom: 14,
+		flexDirection: 'row',
+		alignItems: 'center',
 	},
 	headerLogo: {
 		width: 56,
         height: 56,
-        marginRight: 5,
+		marginLeft: -5
 	},
-	headerTitle: { fontSize: 32, fontWeight: 'bold' },
+	headerLogoText: {
+        width: 120,
+        height: 40,
+        resizeMode: 'contain',
+		marginLeft: -13
+    },
+	profileButton: {
+
+	},
 
 	section: { marginBottom: 10 },
 	sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },

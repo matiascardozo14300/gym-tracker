@@ -16,7 +16,7 @@ export default ({ config }) => ({
 		userInterfaceStyle: "light",
 		newArchEnabled: true,
 
-		icon: './assets/logo.png',
+		icon: './assets/rackit-logo.png',
 
 		splash: {
 			image: "./assets/splash-icon.png",
@@ -33,10 +33,10 @@ export default ({ config }) => ({
 			package: "com.tudominio.gymtracker",
 			versionCode: 1,
 			adaptiveIcon: {
-				foregroundImage: "./assets/logo-foreground.png",
+				foregroundImage: "./assets/rackit-logo-foreground.png",
 				backgroundColor: "#ffffff"
 			},
-			icon: './assets/logo.png',
+			icon: './assets/rackit-logo.png',
 		},
 		web: {
 			favicon: "./assets/favicon.png"
