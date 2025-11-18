@@ -18,6 +18,8 @@ import WorkoutScreen from './components/workouts/WorkoutScreen';
 import WorkoutExerciseSelectionScreen from './components/workouts/workoutExerciseSelection/WorkoutExerciseSelection';
 import EditWorkoutScreen from './components/workouts/editWorkout/EditWorkoutScreen';
 import AddExerciseToWorkoutScreen from './components/workouts/editWorkout/AddExerciseToWorkoutScreen';
+import AppLoadingScreen from './components/app/AppLoadingScreen';
+import { OnboardingScreen } from './components/onBoarding/OnboardingScreen';
 import { initDatabase } from './services/database';
 
 import HomeIcon from './assets/icons/home.svg';
@@ -28,10 +30,12 @@ import { LocaleConfig } from 'react-native-calendars';
 
 export type RootStackParamList = {
 	Tabs: { screen: keyof RootTabParamList };
+	Onboarding: undefined;
 	ExerciseSelection: { workoutTypeId: number };
 	WorkoutExerciseSelection: { workoutTypeId?: number };
 	EditWorkout: { workoutId?: number; date?: string };
 	AddExerciseToWorkout: { workoutId: number; workoutTypeId: number; usedExerciseIds: number[] };
+	AppLoading: undefined;
 };
 
 export type RootTabParamList = {
@@ -112,7 +116,20 @@ export default function App() {
 
 	return (
 		<NavigationContainer>
-			<Stack.Navigator screenOptions={{ headerShown: false }}>
+			<Stack.Navigator
+				screenOptions={{ headerShown: false }}
+				initialRouteName='AppLoading'
+			>
+
+				<Stack.Screen
+                    name='AppLoading'
+                    component={AppLoadingScreen}
+                    options={{ headerShown: false }}
+                />
+				<Stack.Screen
+                    name="Onboarding"
+                    component={OnboardingScreen}
+                />
 
 				<Stack.Screen name="Tabs" component={MainTabs} />
 
