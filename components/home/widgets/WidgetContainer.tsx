@@ -1,18 +1,19 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { LucideProps, Dumbbell, Flame, Trophy, BarChart3 } from 'lucide-react-native';
 import { WidgetDisplay } from './WidgetDisplay';
 import { WidgetSkeleton } from './WidgetSkeleton';
+import { RingProgress } from './RingProgress';
 import {
     useActiveStreak,
     useMaxStreak,
     useWeeklyVolume,
-    useRecentPR,
+	useWeeklyGoalProgress,
     type UseWidgetDataHook,
     type ActiveStreakData,
     type MaxStreakData,
     type WeeklyVolumeData,
-    type RecentPRData
+	WeeklyGoalProgressData
 } from './widgetHooks';
 import { WidgetId } from './HomeWidgets';
 import { widgetStyles } from './styles';
@@ -20,7 +21,8 @@ import { widgetStyles } from './styles';
 // Tipo para las props dinámicas que genera processData
 type DynamicWidgetProps = {
     title?: string;
-    description: string | React.ReactNode;
+    description?: string | React.ReactNode;
+	customContent?: React.ReactNode;
 };
 
 // Tipo para la configuración de un solo widget
@@ -38,7 +40,26 @@ type WidgetConfigMap = {
     activeStreak: WidgetConfig<ActiveStreakData>;
     maxStreak: WidgetConfig<MaxStreakData>;
     weeklyVolume: WidgetConfig<WeeklyVolumeData>;
-    recentPR: WidgetConfig<RecentPRData>;
+	weeklyGoal: WidgetConfig<WeeklyGoalProgressData>;
+};
+
+const getVolumeComparisonMessage = (kg: number): string => {
+    if (kg < 200) {
+        return "Buen arranque, es como levantar varias mochilas cargadas 🎒";
+    }
+
+    if (kg < 1000) {
+        const people = Math.max(1, Math.round(kg / 70)); // ~70kg por persona
+        return `Equivale más o menos al peso de ${people} persona${people > 1 ? "s" : ""} adulta${people > 1 ? "s" : ""} 🧍‍♂️`;
+    }
+
+    if (kg < 5000) {
+        const cars = Math.max(1, Math.round(kg / 1200)); // ~1200kg por auto chico
+        return `Es casi como levantar ${cars} auto${cars > 1 ? "s" : ""} chico${cars > 1 ? "s" : ""} en toda la semana 🚗`;
+    }
+
+    const elephants = Math.max(1, Math.round(kg / 4000)); // ~4.000kg por elefante
+    return `Eso es como ${elephants} elefante${elephants > 1 ? "s" : ""} adulto${elephants > 1 ? "s" : ""} 🐘`;
 };
 
 /**
@@ -119,36 +140,124 @@ const WIDGET_CONFIG: WidgetConfigMap = {
         iconBg: "rgba(245, 183, 0, 0.15)",
         defaultTitle: "Récord de racha",
         processData: (data): DynamicWidgetProps => {
-            if (!data || data.maxStreak === 0) {
-                return { description: "Aún no tenés un récord. ¡Este es el comienzo!" };
+			const maxStreak = data?.maxStreak ?? 0;
+
+            if (maxStreak === 0) {
+                return { description: "Todavía no tenés un récord de racha. Cada semana cuenta para empezar uno 💪" };
             }
-            return { description: `Tu mejor racha fue de ${data.maxStreak} semanas.` };
+
+			if( maxStreak === 1 ) {
+				return {
+					description: (
+						<>
+							Tu mejor racha fue de{" "}
+							<Text style={widgetStyles.descriptionMaxStreakHighlight}>1 semana</Text>.
+							Buen punto de partida para superarte.
+						</>
+					)
+				}
+			}
+
+			if (maxStreak <= 3) {
+				return {
+					description: (
+						<>
+							Tu mejor racha es de{" "}
+							<Text style={widgetStyles.descriptionMaxStreakHighlight}>
+								{maxStreak} semanas
+							</Text>.
+							¡Nuevo objetivo: romper ese récord!
+						</>
+					),
+				};
+        	}
+
+			if (maxStreak <= 7) {
+				return {
+					description: (
+						<>
+							Tremendo récord:{" "}
+							<Text style={widgetStyles.descriptionMaxStreakHighlight}>
+								{maxStreak} semanas seguidas
+							</Text>.
+							¿Te animás a ir por más?
+						</>
+					),
+				};
+			}
+
+			return {
+				description: (
+					<>
+						Récord épico:{" "}
+						<Text style={widgetStyles.descriptionMaxStreakHighlight}>
+							{maxStreak} semanas consecutivas
+						</Text>.
+						Sos sinónimo de constancia 🏆
+					</>
+				),
+			};
         }
     },
     weeklyVolume: {
         useDataHook: useWeeklyVolume,
         icon: BarChart3,
-        iconColor: "#007AFF",
-        iconBg: "rgba(0, 122, 255, 0.15)",
+        iconColor: "#10B981",
+        iconBg: "rgba(16, 185, 129, 0.15)",
         defaultTitle: "Volumen semanal",
         processData: (data): DynamicWidgetProps => {
-            const volumeInKg = (data?.volume || 0).toLocaleString('es-ES');
-            return { description: `Esta semana levantaste ${volumeInKg} kg.` };
+			const rawTotal = data?.totalKg ?? 0;
+
+			if (rawTotal === 0) {
+				return {
+					description: "Todavía no registraste entrenos esta semana.",
+				};
+			}
+
+			const rounded = Math.ceil(rawTotal);
+			const formatted = rounded.toLocaleString("es-AR");
+			const comparisonMessage = getVolumeComparisonMessage(rounded);
+
+			return {
+				description: (
+					<>
+						Esta semana llevás{" "}
+						<Text style={widgetStyles.descriptionVolumeHighlight}>
+							{formatted} kg levantados
+						</Text>
+						.{" "}
+						<Text style={widgetStyles.descriptionVolumeSecondary}>
+							{comparisonMessage}
+						</Text>
+					</>
+				),
+			};
         }
     },
-    recentPR: {
-        useDataHook: useRecentPR,
+	weeklyGoal: {
+        useDataHook: useWeeklyGoalProgress,
         icon: Dumbbell,
-        iconColor: "#34C759",
-        iconBg: "rgba(52, 199, 89, 0.15)",
-        defaultTitle: "PR reciente",
+        iconColor: "#007AFF",
+        iconBg: "rgba(0, 122, 255, 0.15",
+        defaultTitle: "Objetivo semanal",
         processData: (data): DynamicWidgetProps => {
-            if (!data || !data.exercise) {
-                return { description: "Sigue entrenando para marcar un nuevo PR." };
-            }
-            return { description: `¡Nuevo récord en ${data.exercise}: ${data.weight} kg x ${data.reps} reps!` };
-        }
-    }
+            const completed = data?.completed ?? 0;
+            const goal = data?.goal ?? 0;
+            const progress = goal > 0 ? completed / goal : 0;
+
+            return {
+                customContent: (
+                    <View style={widgetStyles.ringRow}>
+                        <RingProgress
+                            progress={progress}
+                            completed={completed}
+                            goal={goal}
+                        />
+                    </View>
+                ),
+            };
+        },
+    },
 };
 
 type WidgetContainerProps = {
@@ -188,6 +297,7 @@ export const WidgetContainer = ( { widgetId }: WidgetContainerProps) => {
         iconBg: config.iconBg,
         title: dynamicProps.title || config.defaultTitle,
         description: dynamicProps.description,
+		customContent: dynamicProps.customContent,
     };
 
     return <WidgetDisplay {...finalProps} />;

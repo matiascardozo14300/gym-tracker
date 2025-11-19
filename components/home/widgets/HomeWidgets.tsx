@@ -3,7 +3,7 @@ import { FlatList, ListRenderItemInfo  } from "react-native";
 import { WidgetContainer } from './WidgetContainer';
 import { widgetStyles } from './styles';
 
-export type WidgetId = 'activeStreak' | 'maxStreak' | 'weeklyVolume' | 'recentPR';
+export type WidgetId = 'activeStreak' | 'maxStreak' | 'weeklyVolume' | 'weeklyGoal';
 
 type WidgetListItem = {
     id: WidgetId;
@@ -12,9 +12,9 @@ type WidgetListItem = {
 // Define qué widgets mostrar y en qué orden.
 const enabledWidgets: WidgetListItem[] = [
     { id: 'activeStreak' },
+	{ id: 'weeklyGoal' },
     { id: 'maxStreak' },
     { id: 'weeklyVolume' },
-    { id: 'recentPR' },
 ];
 
 /**

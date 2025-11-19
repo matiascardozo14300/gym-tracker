@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getActiveStreak } from '../../../services/database/workouts/streak';
+import { getActiveStreak, getMaxHistoricStreak, getWeeklyGoalProgress  } from '../../../services/database/workouts/streak';
+import { getCurrentWeekVolume } from '../../../services/database/workouts/volume';
 
 // --- MOCKUP DE SERVICIOS ---
 // Simula una llamada a la API/base de datos
@@ -8,8 +9,11 @@ const fakeApi = <T,>(data: T, delay = 500): Promise<T> =>
 
 export type ActiveStreakData = { streak: number };
 export type MaxStreakData = { maxStreak: number };
-export type WeeklyVolumeData = { volume: number };
-export type RecentPRData = { exercise: string; weight: number; reps: number };
+export type WeeklyVolumeData = { totalKg: number };
+export type WeeklyGoalProgressData = {
+	completed: number;
+	goal: number;
+};
 
 // Tipo de retorno genérico para nuestros hooks
 export type UseWidgetDataHook<T> = {
@@ -63,20 +67,27 @@ export const useMaxStreak = (): UseWidgetDataHook<MaxStreakData> => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // LLAMADA REAL: const result = await StreakService.getMaxStreak();
-                const result = await fakeApi<MaxStreakData>({ maxStreak: 8 });
-                setData(result);
-            } catch (e) {
-                setError(e as Error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+	useEffect(() => {
+		let isMounted = true;
+
+		(async () => {
+			try {
+				const maxStreak = await getMaxHistoricStreak();
+				if (!isMounted) return;
+				setData({ maxStreak });
+			} catch (e) {
+				if (!isMounted) return;
+				setError(e as Error);
+			} finally {
+				if (!isMounted) return;
+				setIsLoading(false);
+			}
+		})();
+
+		return () => {
+		isMounted = false;
+		};
+	}, []);
 
     return { data, isLoading, error };
 };
@@ -87,42 +98,66 @@ export const useWeeklyVolume = (): UseWidgetDataHook<WeeklyVolumeData> => {
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // LLAMADA REAL: const result = await VolumeService.getThisWeekVolume();
-                const result = await fakeApi<WeeklyVolumeData>({ volume: 12400 });
-                setData(result);
-            } catch (e) {
-                setError(e as Error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
+		let isMounted = true;
+
+		const fetchData = async () => {
+			try {
+				const result = await getCurrentWeekVolume();
+
+				if (!isMounted) return;
+
+				setData({ totalKg: result.totalVolumeKg });
+			} catch (e) {
+				if (!isMounted) return;
+				setError(e as Error);
+			} finally {
+				if (!isMounted) return;
+				setIsLoading(false);
+			}
+		};
+
+		fetchData();
+
+		return () => {
+			isMounted = false;
+		};
     }, []);
 
     return { data, isLoading, error };
 };
 
-export const useRecentPR = (): UseWidgetDataHook<RecentPRData> => {
-    const [data, setData] = useState<RecentPRData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+export const useWeeklyGoalProgress = (): UseWidgetDataHook<WeeklyGoalProgressData> => {
+  const [data, setData] = useState<WeeklyGoalProgressData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // LLAMADA REAL: const result = await PRService.getMostRecentPR();
-                const result = await fakeApi<RecentPRData>({ exercise: 'Press Banca', weight: 90, reps: 5 });
-                setData(result);
-            } catch (e) {
-                setError(e as Error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+  useEffect(() => {
+    let isMounted = true;
 
-    return { data, isLoading, error };
+    const fetchData = async () => {
+		try {
+			const result = await getWeeklyGoalProgress();
+			if (!isMounted) return;
+
+			setData({
+				completed: result.completed,
+				goal: result.goal,
+			});
+		} catch (e) {
+			if (!isMounted) return;
+			setError(e as Error);
+		} finally {
+			if (!isMounted) return;
+			setIsLoading(false);
+		}
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { data, isLoading, error };
 };

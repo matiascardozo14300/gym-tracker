@@ -49,12 +49,25 @@ export const widgetStyles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "600",
     },
+	customContentContainer: {
+    marginTop: 4,
+},
     description: {
         color: "#4B5563", // gray-600
         fontSize: 13,
         lineHeight: 18,
         marginTop: 2,
     },
+
+	ringRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+	justifyContent: 'center'
+},
+ringTextBlock: {
+    flex: 1,
+    marginLeft: 12,
+},
 
     // --- Skeleton ---
     skeletonCard: {
@@ -79,5 +92,18 @@ export const widgetStyles = StyleSheet.create({
 	descriptionStreakActiveHighlight: {
     	fontWeight: '700',
 		color: '#FF6B00',
+	},
+	descriptionMaxStreakHighlight: {
+    	fontWeight: '700',
+		color: '#F5B700',
+	},
+	descriptionVolumeHighlight: {
+    	fontWeight: '700',
+		color: '#0ea371ff',
+	},
+	descriptionVolumeSecondary: {
+		color: "#4B5563", // gray-600
+        fontSize: 13,
+        lineHeight: 18,
 	},
 });

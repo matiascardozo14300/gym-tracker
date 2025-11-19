@@ -7,6 +7,7 @@ type WidgetDisplayProps = {
     icon: React.ComponentType<LucideProps>;
     title: string;
     description: string | React.ReactNode;
+	customContent?: React.ReactNode;
     iconColor: string;
     iconBg: string;
 };
@@ -19,6 +20,7 @@ export const WidgetDisplay: React.FC<WidgetDisplayProps> = ({
     icon: IconComponent,
     title,
     description,
+	customContent,
     iconColor,
     iconBg
 }) => {
@@ -37,13 +39,21 @@ export const WidgetDisplay: React.FC<WidgetDisplayProps> = ({
                 </Text>
             </View>
 
-            <Text
-                style={widgetStyles.description}
-                numberOfLines={4}
-                ellipsizeMode="tail"
-            >
-                {typeof description === 'string' ? description : description}
-            </Text>
+            {customContent ? (
+                // Para layouts complejos (anillo, gráficos, etc.)
+                <View style={widgetStyles.customContentContainer}>
+                    {customContent}
+                </View>
+            ) : (
+                // Para widgets clásicos de texto
+                <Text
+                    style={widgetStyles.description}
+                    numberOfLines={5}
+                    ellipsizeMode="tail"
+                >
+                    {typeof description === 'string' ? description : description}
+                </Text>
+            )}
         </View>
     );
 };

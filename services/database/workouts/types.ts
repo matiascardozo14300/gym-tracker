@@ -82,3 +82,18 @@ export type ActiveStreakResult = {
 	streak: number;        // semanas activas consecutivas
 	weeklyGoal: number;    // objetivo semanal (1–7)
 };
+
+export type StreaksResult = {
+  activeStreak: number;       // racha activa (en semanas)
+  maxHistoricStreak: number;  // racha histórica máxima (en semanas)
+  weeklyGoal: number;         // objetivo semanal (1–7)
+};
+
+export type CountRow = {
+  count: number | null;
+};
+
+export type WeeklyGoalProgress = {
+  completed: number; // entrenos realizados esta semana
+  goal: number;      // objetivo semanal (1–7)
+};
