@@ -1,72 +1,83 @@
 import { StyleSheet } from 'react-native';
 
 export const widgetStyles = StyleSheet.create({
-    container: {
+	container: {
         paddingHorizontal: 0,
-        marginTop: 5
+        marginTop: 5,
     },
     row: {
         justifyContent: "space-between",
-        gap: 10
+        gap: 10,
     },
     card: {
         flex: 1,
-        flexDirection: "row",
-        alignItems: "flex-start",
-        backgroundColor: "#fff", // Asumiendo light mode
+        backgroundColor: "#fff",
         borderRadius: 14,
-        padding: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
         marginBottom: 12,
         marginHorizontal: 4,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.1, // Reducido para un look más sutil
+        shadowOpacity: 0.08,
         shadowRadius: 5,
-        elevation: 3,
+        elevation: 2,
         borderColor: "#eee",
-        minHeight: 80, // Añadido para que los skeletons tengan altura
-    },
-    iconContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 10,
-    },
-    textContainer: {
-        flex: 1, // Cambiado de flexShrink a flex para que ocupe el espacio
-    },
-    title: {
-        color: "#222",
-        fontSize: 16,
-        fontWeight: "600",
-        marginBottom: 2,
-    },
-    description: {
-        color: "#666",
-        fontSize: 13,
-        lineHeight: 18, // Añadido para mejor legibilidad
+        borderWidth: 1,
+        minHeight: 90,
     },
 
-    // --- Skeleton Styles ---
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 4,
+    },
+    iconContainer: {
+        width: 35,
+        height: 35,
+        borderRadius: 999,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 8,
+    },
+    textContainer: {
+        flex: 1,
+    },
+    title: {
+        flex: 1,
+        color: "#111827", // gray-900
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    description: {
+        color: "#4B5563", // gray-600
+        fontSize: 13,
+        lineHeight: 18,
+        marginTop: 2,
+    },
+
+    // --- Skeleton ---
     skeletonCard: {
-        backgroundColor: '#f3f3f3',
+        backgroundColor: "#f3f3f3",
     },
     skeletonIcon: {
-        backgroundColor: '#e0e0e0',
+        backgroundColor: "#e0e0e0",
     },
     skeletonTitle: {
-        width: '70%',
-        height: 16,
-        backgroundColor: '#e0e0e0',
+        width: "70%",
+        height: 14,
+        backgroundColor: "#e0e0e0",
         borderRadius: 4,
-        marginBottom: 6, // Un poco más de espacio
+        marginBottom: 4,
     },
     skeletonDescription: {
-        width: '100%',
-        height: 13,
-        backgroundColor: '#e0e0e0',
+        width: "100%",
+        height: 12,
+        backgroundColor: "#e0e0e0",
         borderRadius: 4,
     },
+	descriptionStreakActiveHighlight: {
+    	fontWeight: '700',
+		color: '#FF6B00',
+	},
 });

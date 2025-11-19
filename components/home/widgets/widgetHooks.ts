@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getActiveStreak } from '../../../services/database/workouts/streak';
 
 // --- MOCKUP DE SERVICIOS ---
 // Simula una llamada a la API/base de datos
@@ -27,18 +28,31 @@ export const useActiveStreak = (): UseWidgetDataHook<ActiveStreakData> => {
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // LLAMADA REAL: const result = await StreakService.getActiveStreak();
-                const result = await fakeApi<ActiveStreakData>({ streak: 4 });
-                setData(result);
-            } catch (e) {
-                setError(e as Error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchData();
+		let isMounted = true;
+
+		const fetchData = async () => {
+			try {
+				// Llamada REAL al servicio
+				const result = await getActiveStreak();
+
+				if (!isMounted) return;
+
+				// Solo exponemos lo que el widget necesita
+				setData({ streak: result.streak });
+			} catch (e) {
+				if (!isMounted) return;
+				setError(e as Error);
+			} finally {
+				if (!isMounted) return;
+				setIsLoading(false);
+			}
+		};
+
+		fetchData();
+
+		return () => {
+			isMounted = false;
+		};
     }, []);
 
     return { data, isLoading, error };

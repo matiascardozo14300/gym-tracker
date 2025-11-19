@@ -6,7 +6,7 @@ import { LucideProps } from 'lucide-react-native';
 type WidgetDisplayProps = {
     icon: React.ComponentType<LucideProps>;
     title: string;
-    description: string;
+    description: string | React.ReactNode;
     iconColor: string;
     iconBg: string;
 };
@@ -23,14 +23,27 @@ export const WidgetDisplay: React.FC<WidgetDisplayProps> = ({
     iconBg
 }) => {
     return (
-        <View style={widgetStyles.card}>
-            <View style={[widgetStyles.iconContainer, { backgroundColor: iconBg }]}>
-                {IconComponent && <IconComponent size={24} color={iconColor} />}
+		<View style={widgetStyles.card}>
+            <View style={widgetStyles.header}>
+                <View style={[widgetStyles.iconContainer, { backgroundColor: iconBg }]}>
+                    {IconComponent && <IconComponent size={20} color={iconColor} />}
+                </View>
+                <Text
+                    style={widgetStyles.title}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                >
+                    {title}
+                </Text>
             </View>
-            <View style={widgetStyles.textContainer}>
-                <Text style={widgetStyles.title}>{title}</Text>
-                <Text style={widgetStyles.description}>{description}</Text>
-            </View>
+
+            <Text
+                style={widgetStyles.description}
+                numberOfLines={4}
+                ellipsizeMode="tail"
+            >
+                {typeof description === 'string' ? description : description}
+            </Text>
         </View>
     );
 };

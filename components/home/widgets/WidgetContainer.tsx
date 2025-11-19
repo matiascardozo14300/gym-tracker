@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { LucideProps, Dumbbell, Flame, Trophy, BarChart3 } from 'lucide-react-native';
 import { WidgetDisplay } from './WidgetDisplay';
 import { WidgetSkeleton } from './WidgetSkeleton';
@@ -14,11 +15,12 @@ import {
     type RecentPRData
 } from './widgetHooks';
 import { WidgetId } from './HomeWidgets';
+import { widgetStyles } from './styles';
 
 // Tipo para las props dinámicas que genera processData
 type DynamicWidgetProps = {
     title?: string;
-    description: string;
+    description: string | React.ReactNode;
 };
 
 // Tipo para la configuración de un solo widget
@@ -53,15 +55,61 @@ const WIDGET_CONFIG: WidgetConfigMap = {
         iconColor: "#FF6B00",
         iconBg: "rgba(255, 107, 0, 0.15)",
         defaultTitle: "Racha activa",
-        // 'data' está fuertemente tipado como 'ActiveStreakData | null'
         processData: (data): DynamicWidgetProps => {
-            if (!data || data.streak === 0) {
-                return { description: "¡Empezá una nueva racha esta semana!" };
-            }
-            if (data.streak === 1) {
-                return { description: "¡Súper! Llevás 1 semana entrenando." };
-            }
-            return { description: `Entrenaste ${data.streak} semanas seguidas. ¡Seguí así!` };
+            const streak = data?.streak ?? 0;
+
+			if (streak === 0) {
+				return {
+					description: "Todavía no tenés una racha activa. Empezá sumando entrenos esta semana 💪",
+				};
+			}
+
+			if (streak === 1) {
+				return {
+					description: (
+						<>
+							Llevás{" "}
+								<Text style={widgetStyles.descriptionStreakActiveHighlight}>1 semana</Text>
+							{" "}cumpliendo tu objetivo. ¡Buen comienzo!
+						</>
+					),
+				};
+			}
+
+			if (streak <= 3) {
+				return {
+					description: (
+						<>
+							Muy bien, llevás{" "}
+								<Text style={widgetStyles.descriptionStreakActiveHighlight}>{streak} semanas</Text>
+							{" "}seguidas entrenando.
+						</>
+					),
+				};
+			}
+
+			if (streak <= 7) {
+				return {
+					description: (
+						<>
+							🔥 Estás on fire:{" "}
+								<Text style={widgetStyles.descriptionStreakActiveHighlight}>{streak} semanas</Text>
+							{" "}consecutivas. ¡Que no se corte!
+						</>
+					),
+				};
+			}
+
+			// rachas bien largas
+			return {
+				description: (
+					<>
+						Leyenda de la constancia:{" "}
+							<Text style={widgetStyles.descriptionStreakActiveHighlight}>{streak} semanas</Text>
+						{" "}seguidas cumpliendo tus objetivos 👑
+					</>
+				),
+			};
         }
     },
     maxStreak: {

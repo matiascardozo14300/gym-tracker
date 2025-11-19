@@ -69,3 +69,16 @@ export type AddableExercise = {
 	name: string;
 	code: string;
 };
+
+export type UserProfileRow = {
+  objetivo_semanal: number;
+};
+
+export type WorkoutRow = {
+  startDate: string;
+};
+
+export type ActiveStreakResult = {
+	streak: number;        // semanas activas consecutivas
+	weeklyGoal: number;    // objetivo semanal (1–7)
+};
