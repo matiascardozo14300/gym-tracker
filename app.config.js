@@ -16,7 +16,7 @@ export default ({ config }) => ({
 		userInterfaceStyle: "light",
 		newArchEnabled: true,
 
-		icon: './assets/rackit-logo.png',
+		icon: './assets/logo.png',
 
 		splash: {
 			image: "./assets/splash-icon.png",
