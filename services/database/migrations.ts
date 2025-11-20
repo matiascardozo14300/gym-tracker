@@ -112,5 +112,25 @@ export const migrations: Migration[] = [
 
 			CREATE INDEX IF NOT EXISTS idx_workout_types_isArchived_sortOrder ON workout_types(isArchived, sortOrder);
     	`
+	},
+	{
+		id: 5,
+		up: `
+			CREATE TABLE IF NOT EXISTS user_profile (
+				id INTEGER PRIMARY KEY DEFAULT 1,
+				nombre TEXT,
+				objetivo_semanal INTEGER,
+				recordatorios_activos INTEGER NOT NULL DEFAULT 0,
+				peso_kg REAL,
+				edad INTEGER,
+				altura_m REAL,
+				genero TEXT
+			);
+
+			CREATE TABLE IF NOT EXISTS settings (
+				key TEXT PRIMARY KEY NOT NULL,
+				value TEXT
+			);
+    	`
 	}
 ];

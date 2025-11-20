@@ -3,9 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Modal, FlatList
 import { getLast3Workouts, getWorkoutDatesForMonth, getWorkoutDetailByDate, getWorkoutTypes, LastWorkout, WorkoutDetail, WorkoutType } from '../../services/database/';
 import CalendarSection, { CustomMarkedDates } from '../calendar/CalendarSelection';
 import LatestWorkouts from '../latestWorkouts/LatestWorkouts';
+import {HomeWidgets} from './widgets/HomeWidgets';
 import WorkoutTypeSelector from './WorkoutTypeSelector';
 import {styles, modalUX, pickerUX} from './styles';
-import Header from '../header/Header';
+import HomeHeader from './HomeHeader';
 import { formateDateToLongText, isFutureDate, isToday } from '../common/helper';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -127,7 +128,7 @@ export default function HomeScreen() {
 	return (
 		<SafeAreaView style={ styles.container }>
 			<ScrollView contentContainerStyle={ styles.scrollContent }>
-				<Header title='Rackit' />
+				<HomeHeader />
 				<WorkoutTypeSelector />
 				<CalendarSection
 					markedDates={ markedDates }
@@ -138,11 +139,12 @@ export default function HomeScreen() {
 					}}
 					onMonthChanged={ (date) => handleMonthChange( date?.year, date?.month )}
 				/>
-				<LatestWorkouts workouts={ lastWorkouts } onWorkoutPress={ async ( workout ) => {
+				<HomeWidgets />
+				{/* <LatestWorkouts workouts={ lastWorkouts } onWorkoutPress={ async ( workout ) => {
 					const dateString = workout.startDate.includes( 'T' ) ? workout.startDate.split( 'T' )[0] : workout.startDate;
 					setSelectedDate( dateString );
 					setModalVisible( true );
-				} } />
+				} } /> */}
 
 				{/* MODAL VISUALIZACIÓN / ACCIONES DEL DÍA */}
 				<Modal
