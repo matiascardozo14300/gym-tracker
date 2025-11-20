@@ -16,7 +16,7 @@ export async function upsertUserProfileFromOnboarding( data: OnboardingData ): P
 	await getDB().runAsync(
 		`INSERT OR REPLACE INTO user_profile
 		(id, nombre, objetivo_semanal, recordatorios_activos, peso_kg, edad, altura_m, genero)
-		VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		VALUES (1, ?, ?, ?, ?, ?, ?, ?)`,
 		payload.nombre,
 		payload.objetivo_semanal,
 		payload.recordatorios_activos,

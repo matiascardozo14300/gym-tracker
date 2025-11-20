@@ -15,31 +15,31 @@ const SLIDES = [
         id: 'workout',
         title: 'Creá y editá tus rutinas',
         description: 'Armá tus entrenamientos a tu manera, organizá ejercicios y ajustá cada detalle.',
-        image: require('../../../assets/onboarding/workout.png'),
+        image: require('../../../assets/onboarding/workout.jpg'),
     },
 	{
         id: 'exercise',
         title: 'Registrá tu entrenamiento en tiempo real',
         description: 'Cargá tus pesos y repeticiones para tener un registro de tu progreso.',
-        image: require('../../../assets/onboarding/exercise.png'),
+        image: require('../../../assets/onboarding/exercise.jpg'),
     },
     {
         id: 'calendar',
         title: 'Seguí tu progreso en el calendario',
         description: 'Visualizá tus días entrenados y mantené tu constancia.',
-        image: require('../../../assets/onboarding/calendar.png'),
+        image: require('../../../assets/onboarding/calendar.jpg'),
     },
     {
         id: 'widgets',
         title: 'Completá tus objetivos',
         description: 'Aumentá tu motivación cumpliendo metas semanales y mensuales.',
-        image: require('../../../assets/onboarding/widgets.png'),
+        image: require('../../../assets/onboarding/widgets.jpg'),
     },
     {
         id: 'graph',
         title: 'Mirá tu progreso en detalle',
         description: 'Visualizá tus avances con gráficos e indicadores.',
-        image: require('../../../assets/onboarding/graph.png'),
+        image: require('../../../assets/onboarding/graph.jpg'),
     },
 ];
 
