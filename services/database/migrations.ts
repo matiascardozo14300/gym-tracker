@@ -120,7 +120,6 @@ export const migrations: Migration[] = [
 				id INTEGER PRIMARY KEY DEFAULT 1,
 				nombre TEXT,
 				objetivo_semanal INTEGER,
-				racha_activa INTEGER DEFAULT 0,
 				recordatorios_activos INTEGER NOT NULL DEFAULT 0,
 				peso_kg REAL,
 				edad INTEGER,

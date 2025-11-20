@@ -6,7 +6,6 @@ export async function upsertUserProfileFromOnboarding( data: OnboardingData ): P
 	const payload: UserProfilePayload = {
 		nombre: data.name || null,
 		objetivo_semanal: data.frequency ?? 3,
-		racha_activa: 0,
 		recordatorios_activos: data.notificationsEnabled ? 1 : 0,
 		peso_kg: data.weight ? Number(data.weight) : null,
 		edad: data.age ? Number(data.age) : null,
@@ -16,11 +15,10 @@ export async function upsertUserProfileFromOnboarding( data: OnboardingData ): P
 
 	await getDB().runAsync(
 		`INSERT OR REPLACE INTO user_profile
-		(id, nombre, objetivo_semanal, racha_activa, recordatorios_activos, peso_kg, edad, altura_m, genero)
+		(id, nombre, objetivo_semanal, recordatorios_activos, peso_kg, edad, altura_m, genero)
 		VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		payload.nombre,
 		payload.objetivo_semanal,
-		payload.racha_activa,
 		payload.recordatorios_activos,
 		payload.peso_kg,
 		payload.edad,
@@ -34,7 +32,6 @@ export async function getUserData(): Promise<UserProfilePayload | null> {
 		id: number;
 		nombre: string;
 		objetivo_semanal: number;
-		racha_activa: number;
 		recordatorios_activos: number;
 		peso_kg: number;
 		edad: number;
