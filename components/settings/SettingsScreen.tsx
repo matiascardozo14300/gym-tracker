@@ -1,10 +1,44 @@
 import React from 'react';
-import { View, SafeAreaView } from 'react-native';
-import Header from '../header/Header';
+import { View, SafeAreaView, Alert } from 'react-native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import ComingSoonCard from '../common/comingSoonCard/ComingSoonCard';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styles from './styles';
+import { RootStackParamList } from '../../App';
+import { saveSetting } from '../../services/database/settings/settings';
+import { ONBOARDING_COMPLETED_KEY } from '../onBoarding/OnboardingScreen';
 
 export default function SettingsScreen() {
+
+	const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+	const handleResetOnboarding = async () => {
+        Alert.alert(
+            "Reiniciar Onboarding",
+            "Esto te llevará de vuelta al inicio como si fueras un usuario nuevo. ¿Continuar?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Reiniciar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await saveSetting( ONBOARDING_COMPLETED_KEY, 'false' );
+
+                            navigation.dispatch(
+                                CommonActions.reset({
+                                    index: 0,
+                                    routes: [{ name: 'Onboarding' }],
+                                })
+                            );
+                        } catch (error) {
+                            console.error("Error al resetear onboarding:", error);
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -22,9 +56,9 @@ export default function SettingsScreen() {
 					'Elegir kg / lbs y formato de fecha',
 					'Exportar / importar datos',
 				]}
-				ctaText="Muy pronto"
-				onPressCta={() => {}}
-				ctaDisabled
+				ctaText="Reiniciar Onboarding (Test)"
+				onPressCta={handleResetOnboarding}
+				ctaDisabled={false}
 				accentColor="#4F46E5"
 				backgroundColor="#fff"
 			/>

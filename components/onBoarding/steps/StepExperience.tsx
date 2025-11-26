@@ -89,6 +89,7 @@ const experienceStyles = StyleSheet.create({
     optionsContainer: {
         width: '100%',
         paddingHorizontal: 10,
+		marginBottom: 30
     },
     optionCard: {
         backgroundColor: '#f9f9f9', // Un gris muy claro

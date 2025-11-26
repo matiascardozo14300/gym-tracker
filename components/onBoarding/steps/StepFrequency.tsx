@@ -100,7 +100,8 @@ export const StepFrequency = ({ data, updateData }: StepProps) => {
 const frequencyStyles = StyleSheet.create({
     optionsContainer: {
         width: '100%',
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+		marginBottom: 30
     },
     optionCard: {
 		flexDirection: 'row',

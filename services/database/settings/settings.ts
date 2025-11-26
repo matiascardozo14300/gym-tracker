@@ -16,7 +16,7 @@ export async function hasCompletedOnboarding(): Promise<boolean> {
 		ONBOARDING_COMPLETED_KEY
 	);
 
-	return row ? true : false;
+	return row && row.value === 'true' ? true : false;
 }
 
 export async function saveSetting( key: string, value: string ): Promise<void> {
