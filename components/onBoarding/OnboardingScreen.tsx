@@ -6,10 +6,11 @@ import {
     Dimensions,
     SafeAreaView,
     Alert,
-    NativeSyntheticEvent,
-    NativeScrollEvent,
 	Modal,
-	TouchableOpacity
+	TouchableOpacity,
+	KeyboardAvoidingView,
+	Platform,
+	ScrollView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,7 +41,7 @@ const STEPS = [
     { id: 'ready', component: StepReady },
 ];
 
-const ONBOARDING_COMPLETED_KEY = 'ONBOARDING_COMPLETED';
+export const ONBOARDING_COMPLETED_KEY = 'ONBOARDING_COMPLETED';
 const { width } = Dimensions.get('window');
 
 export const OnboardingScreen = () => {
@@ -60,15 +61,11 @@ export const OnboardingScreen = () => {
     }, []);
 
     const handleNext = () => {
-        if(currentIndex < STEPS.length - 1) {
-            listRef.current?.scrollToIndex({ index: currentIndex + 1 });
-        }
+        if (currentIndex < STEPS.length - 1) setCurrentIndex(prev => prev + 1);
     };
 
 	const handleBack = () => {
-        if (currentIndex > 0) {
-            listRef.current?.scrollToIndex({ index: currentIndex - 1 });
-        }
+        if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
     };
 
 	const goHome = async () => {
@@ -77,13 +74,6 @@ export const OnboardingScreen = () => {
 			routes: [{	name: 'Tabs', params: { screen: 'Inicio' }}]
 		});
 	}
-
-    const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const newIndex = Math.round(event.nativeEvent.contentOffset.x / width);
-        if (newIndex !== currentIndex) {
-            setCurrentIndex(newIndex);
-        }
-    };
 
 	const handleConfirmFinish = async () => {
 		try {
@@ -101,33 +91,24 @@ export const OnboardingScreen = () => {
 		}
 	}
 
+	const CurrentStepComponent = STEPS[currentIndex].component;
+
 	return (
         <SafeAreaView style={styles.screen}>
             {/* Barra de Progreso */}
             <ProgressBar current={currentIndex + 1} total={STEPS.length} />
 
-            {/* El Swiper */}
-            <FlatList
-                ref={listRef}
-                data={STEPS}
-                horizontal
-                pagingEnabled
-                scrollEnabled={false} // Navegación solo con botones
-                keyExtractor={item => item.id}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => {
-                    const StepComponent = item.component;
-                    return (
-                        <View style={{ width: width, flex: 1 }}>
-                            <StepComponent data={formData} updateData={updateData} />
-                        </View>
-                    );
-                }}
-                onScroll={onScroll} // Actualiza el índice
-                scrollEventThrottle={16}
-            />
+			<KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
 
-            {/* Botones de Navegación */}
+				<ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+					<View style={{ flex: 1, width: width }}>
+                        <CurrentStepComponent data={formData} updateData={updateData} />
+                    </View>
+				</ScrollView>
+
+			</KeyboardAvoidingView>
+
+			{/* Botones de Navegación */}
             <OnboardingFooter
                 currentIndex={currentIndex}
                 totalSteps={STEPS.length}
