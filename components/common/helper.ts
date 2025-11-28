@@ -49,3 +49,12 @@ export function toLocalYYYYMMDD( d = new Date() ) {
 	const dd = String(d.getDate()).padStart(2, '0');
 	return `${yyyy}-${mm}-${dd}`; // local, sin TZ
 }
+
+// Formatea segundos a "MM:SS"
+export const formatSeconds = (seconds: number): string => {
+	const minutes = Math.floor(seconds / 60);
+	const secs = seconds % 60;
+	const mm = minutes < 10 ? `0${minutes}` : `${minutes}`;
+	const ss = secs < 10 ? `0${secs}` : `${secs}`;
+	return `${mm}:${ss}`;
+};
