@@ -39,6 +39,15 @@ export default function HomeScreen() {
 	const tabNav = useNavigation<TabNav>();
 	const stackNav = tabNav.getParent<StackNav>();
 
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+		// Evita que la pantalla se vaya
+		e.preventDefault();
+	});
+
+	return unsubscribe;
+	}, [navigation]);
+
 	const load = useCallback( async ( year: number, month: number ) => {
 		const [ last3, items ] = await Promise.all([
 			getLast3Workouts(),

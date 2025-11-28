@@ -8,6 +8,7 @@ import {
 	TextInput,
 	SectionList,
 	Alert,
+	FlatList,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
@@ -36,6 +37,8 @@ import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
 import StarOutlineIcon from '../../assets/icons/favorite.svg';
 import { getLocalISOString } from '../common/helper';
 import ExerciseSetEditor, { SimpleSet } from './ExerciseSetEditor';
+import { modalStyles } from '../common/modalStyles';
+import { modalUX } from '../home/styles';
 
 type ExSelRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
 type ExSelNavProp = CompositeNavigationProp<
@@ -114,6 +117,33 @@ export default function ExerciseSelectionScreen() {
 
 	const HOUR_OPTIONS = [0, 1, 2, 3, 4, 5, 6];
 	const MINUTE_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+			// Siempre prevenimos el pop automático
+			e.preventDefault();
+
+			// 1) Si está abierto el editor de sets, lo cerramos
+			if (exerciseModalVisible) {
+				setExerciseModalVisible(false);
+				setSelectedExercise(null);
+				setLastHistory(null);
+				return;
+			}
+
+			// 2) Si NO hay workout creado todavía, ir directo al Home
+			if (workoutId == null) {
+				goHome();
+				return;
+			}
+
+			// 3) Si hay workout, editor cerrado -> mostramos el modal de confirmación
+			setFinishModalVisible(true);
+		});
+
+		return unsubscribe;
+	}, [navigation, tabNav, exerciseModalVisible, workoutId]);
+
 
 	// timer sólo en modo "ahora"
 	useEffect(() => {
@@ -236,6 +266,18 @@ export default function ExerciseSelectionScreen() {
 
 	const handleFinishPress = () => setFinishModalVisible(true);
 
+	const handleConfirmFinishFromModal = async () => {
+		if (isPastMode) {
+			// Cerrar el modal de confirmación y seguir el mismo flujo
+			// que si hubieras tocado "Guardar Entrenamiento"
+			setFinishModalVisible(false);
+			handleOpenDuration();
+		} else {
+			// En modo "ahora" hacemos exactamente lo mismo que el footer:
+			await handleFinish();
+		}
+	};
+
 	const isDirty = notes !== originalNotes;
 
 	const saveNotesHandler = async () => {
@@ -258,8 +300,7 @@ export default function ExerciseSelectionScreen() {
 			await updateWorkoutFinishDate(workoutId, now);
 		}
 		setFinishModalVisible(false);
-		tabNav?.navigate('Inicio');
-		navigation.navigate('Tabs', { screen: 'Inicio' });
+		goHome();
 	};
 
 	const handleOpenDuration = () => setDurationModalVisible(true);
@@ -303,9 +344,13 @@ export default function ExerciseSelectionScreen() {
 		});
 
 		setDurationModalVisible(false);
+		goHome();
+	};
+
+	const goHome = () => {
 		tabNav?.navigate('Inicio');
 		navigation.navigate('Tabs', { screen: 'Inicio' });
-	};
+	}
 
 	const onFavoritePress = async (exercise: Exercise) => {
 		try {
@@ -317,6 +362,12 @@ export default function ExerciseSelectionScreen() {
 	};
 
 	const favoriteExercises = exercises.filter(e => e.favorite === 1);
+
+
+	const pendingExercises = useMemo(
+		() => exercises.filter((e) => !completedExercises[e.id]),
+		[exercises, completedExercises]
+	);
 
 	const categoryOrder = [
 		'Chest',
@@ -429,7 +480,7 @@ export default function ExerciseSelectionScreen() {
 						{isPastMode ? (
 							<TouchableOpacity
 								style={styles.finishButton}
-								onPress={handleOpenDuration}
+								onPress={() => workoutId == null ? goHome() : handleOpenDuration()}
 							>
 								<Text style={styles.finishButtonText}>
 									Guardar Entrenamiento
@@ -452,25 +503,69 @@ export default function ExerciseSelectionScreen() {
 			)}
 
 			{/* Modal confirmar finalización (modo hoy) */}
-			<Modal visible={finishModalVisible} transparent animationType="slide">
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContainer}>
-						<Text style={styles.modalTitle}>
-							¿Estás seguro de finalizar el entrenamiento?
-						</Text>
-						<TouchableOpacity
-							style={styles.cancelButton}
-							onPress={() => setFinishModalVisible(false)}
-						>
-							<Text style={styles.cancelButtonText}>Atrás</Text>
-						</TouchableOpacity>
+			<Modal
+				visible={finishModalVisible}
+				transparent
+				animationType="slide"
+			>
+				<View style={modalStyles.overlay}>
+					<View style={modalStyles.sheet}>
 
-						<TouchableOpacity
-							onPress={handleFinish}
-							style={styles.modalButton}
-						>
-							<Text style={styles.modalButtonText}>Guardar</Text>
-						</TouchableOpacity>
+						<View style={modalStyles.iconWrap}>
+							<Text style={modalStyles.iconText}>🏋</Text>
+						</View>
+
+						<Text style={modalStyles.title}>
+							¿Estás seguro de finalizar tu entrenamiento?
+						</Text>
+						<Text style={modalStyles.subtitle}>
+							Tu progreso actual quedará guardado y podrás editarlo si así lo deseas
+						</Text>
+
+						<View style={modalStyles.divider} />
+
+						{pendingExercises.length > 0 ? (
+							<View style={modalUX.scrollArea}>
+								<Text style={{ fontSize: 14, fontWeight: '600', marginBottom: 6 }}>
+									Te faltan estos ejercicios:
+								</Text>
+								<FlatList
+									showsVerticalScrollIndicator
+									contentContainerStyle={{ paddingBottom: 0 }}
+									data={pendingExercises}
+									keyExtractor={(ex) => ex.name}
+									renderItem={({item}) => (
+										<Text
+											key={item.id}
+											style={{ fontSize: 14, marginVertical: 2 }}
+										>
+										• {item.name}
+										</Text>
+									)}
+								/>
+							</View>
+						) : (
+							<Text style={{ fontSize: 14, marginTop: 12 }}>
+								Ya completaste todos los ejercicios de tu rutina.
+							</Text>
+						)}
+
+						<View style={modalStyles.actions}>
+							<TouchableOpacity
+								style={[modalStyles.btn, modalStyles.btnGhost]}
+								onPress={() => setFinishModalVisible(false)}
+							>
+								<Text style={[modalStyles.btnText, modalStyles.btnGhostText]}>Cancelar</Text>
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								style={[modalStyles.btn, modalStyles.btnPrimary]}
+								onPress={handleConfirmFinishFromModal}
+							>
+								<Text style={[modalStyles.btnText, modalStyles.btnPrimaryText]}>Finalizar</Text>
+							</TouchableOpacity>
+						</View>
+
 					</View>
 				</View>
 			</Modal>

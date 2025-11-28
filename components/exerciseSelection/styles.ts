@@ -297,6 +297,8 @@ export const setEditorStyles = StyleSheet.create({
 
 	// Header solo con título
 	editorHeader: {
+		display: 'flex',
+		alignItems: 'center',
 		marginBottom: 12,
 	},
 	editorTitle: {
