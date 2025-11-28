@@ -297,8 +297,9 @@ export const setEditorStyles = StyleSheet.create({
 
 	// Header solo con título
 	editorHeader: {
-		display: 'flex',
+		flexDirection: 'row',
 		alignItems: 'center',
+		justifyContent: 'space-between',
 		marginBottom: 12,
 	},
 	editorTitle: {
@@ -613,4 +614,54 @@ export const setEditorStyles = StyleSheet.create({
 	modalButtonTextDisabled: {
 		color: '#666',
 	},
+	helpButton: {
+	marginLeft: 8,
+	padding: 4,
+},
+
+helpModalOverlay: {
+	flex: 1,
+	backgroundColor: 'rgba(0,0,0,0.5)',
+	justifyContent: 'center',
+	alignItems: 'center',
+},
+helpModalContainer: {
+	width: '90%',
+	maxHeight: '80%',
+	backgroundColor: '#FFFFFF',
+	borderRadius: 16,
+	padding: 16,
+},
+helpModalTitle: {
+	fontSize: 18,
+	fontWeight: '700',
+	marginBottom: 8,
+},
+helpModalScroll: {
+	maxHeight: 260,
+},
+helpModalContent: {
+	paddingVertical: 4,
+},
+helpModalSectionTitle: {
+	fontSize: 14,
+	fontWeight: '600',
+	marginTop: 8,
+},
+helpModalText: {
+	fontSize: 13,
+	color: '#4B5563',
+	marginTop: 2,
+},
+helpModalCloseButton: {
+	marginTop: 12,
+	backgroundColor: '#007AFF',
+	borderRadius: 10,
+	paddingVertical: 10,
+	alignItems: 'center',
+},
+helpModalCloseButtonText: {
+	color: '#FFFFFF',
+	fontWeight: '600',
+},
 });

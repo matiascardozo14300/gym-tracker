@@ -9,12 +9,13 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	Keyboard,
+	Modal
 } from 'react-native';
 import { setEditorStyles } from './styles';
 import { exerciseImageUrls } from '../common/allExercisesImages';
 import type { Exercise, ExerciseLastHistory } from '../../services/database';
 import RestCountdown from './RestCountdown';
-import { StickyNote } from 'lucide-react-native';
+import { StickyNote, HelpCircle } from 'lucide-react-native';
 import { formatSeconds } from '../common/helper';
 
 export type SimpleSet = { weight: string; reps: string };
@@ -44,6 +45,8 @@ const ExerciseSetEditor: React.FC<Props> = ({
 		],
 		[]
 	);
+
+	const [helpVisible, setHelpVisible] = useState(false);
 
 	const [sets, setSets] = useState<SetRow[]>(INITIAL_ROWS);
 	const [replicateWeight, setReplicateWeight] = useState(false);
@@ -227,6 +230,12 @@ const ExerciseSetEditor: React.FC<Props> = ({
 					<Text style={setEditorStyles.editorTitle} numberOfLines={2}>
 						{exercise.name}
 					</Text>
+					<TouchableOpacity
+						style={setEditorStyles.helpButton}
+						onPress={() => setHelpVisible(true)}
+					>
+						<HelpCircle size={25} color="#007AFF" />
+					</TouchableOpacity>
 				</View>
 
 				{/* Imagen */}
@@ -484,6 +493,88 @@ const ExerciseSetEditor: React.FC<Props> = ({
 					</TouchableOpacity>
 				</View>
 			)}
+
+			<Modal
+				visible={helpVisible}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setHelpVisible(false)}
+			>
+				<View style={setEditorStyles.helpModalOverlay}>
+					<View style={setEditorStyles.helpModalContainer}>
+						<Text style={setEditorStyles.helpModalTitle}>
+							¿Cómo registrar tu serie?
+						</Text>
+
+						<ScrollView
+							style={setEditorStyles.helpModalScroll}
+							contentContainerStyle={setEditorStyles.helpModalContent}
+							showsVerticalScrollIndicator={false}
+						>
+							<Text style={setEditorStyles.helpModalSectionTitle}>
+								1. Nombre e imagen del ejercicio
+							</Text>
+							<Text style={setEditorStyles.helpModalText}>
+								Verificá que estás cargando el ejercicio correcto mirando
+								el nombre y la ilustración de referencia.
+							</Text>
+
+							<Text style={setEditorStyles.helpModalSectionTitle}>
+								2. Notas del ejercicio
+							</Text>
+							<Text style={setEditorStyles.helpModalText}>
+								Usá "Ver / editar notas" para guardar configuraciones de
+								máquina, postura, molestias o cualquier detalle que quieras
+								recordar la próxima vez.
+							</Text>
+
+							<Text style={setEditorStyles.helpModalSectionTitle}>
+								3. Mismo peso
+							</Text>
+							<Text style={setEditorStyles.helpModalText}>
+								Activá "Mismo peso" si todas tus series usan el mismo peso.
+								Escribís una sola vez y se copia al resto de las filas.
+							</Text>
+
+							<Text style={setEditorStyles.helpModalSectionTitle}>
+								4. Descanso
+							</Text>
+							<Text style={setEditorStyles.helpModalText}>
+								Configurá cuántos segundos querés descansar entre series.
+								Cuando marcás una serie como completada, se inicia un
+								contador regresivo con ese tiempo.
+							</Text>
+
+							<Text style={setEditorStyles.helpModalSectionTitle}>
+								5. Tabla de series
+							</Text>
+							<Text style={setEditorStyles.helpModalText}>
+								En cada fila cargás el peso (kg) y las repeticiones. El botón
+								con el tilde marca la serie como hecha y dispara el descanso.
+								Podés agregar todas las series que necesites.
+							</Text>
+
+							<Text style={setEditorStyles.helpModalSectionTitle}>
+								6. Guardar tus datos
+							</Text>
+							<Text style={setEditorStyles.helpModalText}>
+								Sólo se guardan las filas que tengan peso y repeticiones
+								completas. Las filas incompletas se descartan automáticamente,
+								así que no pasa nada si dejás alguna a medias.
+							</Text>
+						</ScrollView>
+
+						<TouchableOpacity
+							style={setEditorStyles.helpModalCloseButton}
+							onPress={() => setHelpVisible(false)}
+						>
+							<Text style={setEditorStyles.helpModalCloseButtonText}>
+								Entendido
+							</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
 		</KeyboardAvoidingView>
 	);
 };
