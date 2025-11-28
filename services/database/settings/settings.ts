@@ -1,7 +1,9 @@
 import { getDB } from '../db';
 import { Setting } from './types';
 
-const ONBOARDING_COMPLETED_KEY = 'ONBOARDING_COMPLETED';
+export const ONBOARDING_COMPLETED_KEY = 'ONBOARDING_COMPLETED';
+export const REST_SETTING_KEY = "REST_SETTING_KEY";
+export const DEFAULT_REST_SECONDS = 90;
 
 export async function hasCompletedOnboarding(): Promise<boolean> {
 	const row: Setting | null = await getDB().getFirstAsync<{
@@ -27,4 +29,13 @@ export async function saveSetting( key: string, value: string ): Promise<void> {
 		key,
 		value
 	);
+}
+
+export async function getSetting( key: string ): Promise<string | null> {
+	const db = getDB();
+	const row = await db.getFirstAsync<{value: string }>(
+		'SELECT value FROM settings WHERE key = ?',
+		key
+	);
+	return row?.value ?? null;
 }

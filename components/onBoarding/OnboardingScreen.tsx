@@ -29,7 +29,7 @@ import { StepFrequency } from './steps/StepFrequency';
 import { StepReady } from './steps/StepReady';
 import { modalStyles } from '../common/modalStyles';
 
-import { saveSetting } from '../../services/database/settings/settings';
+import { ONBOARDING_COMPLETED_KEY, saveSetting } from '../../services/database/settings/settings';
 import { upsertUserProfileFromOnboarding } from '../../services/database/user_profile/user_profile';
 
 const STEPS = [
@@ -41,7 +41,6 @@ const STEPS = [
     { id: 'ready', component: StepReady },
 ];
 
-export const ONBOARDING_COMPLETED_KEY = 'ONBOARDING_COMPLETED';
 const { width } = Dimensions.get('window');
 
 export const OnboardingScreen = () => {

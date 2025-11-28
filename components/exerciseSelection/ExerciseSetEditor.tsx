@@ -17,6 +17,7 @@ import type { Exercise, ExerciseLastHistory } from '../../services/database';
 import RestCountdown from './RestCountdown';
 import { StickyNote, HelpCircle } from 'lucide-react-native';
 import { formatSeconds } from '../common/helper';
+import { DEFAULT_REST_SECONDS, getSetting, REST_SETTING_KEY, saveSetting } from '../../services/database/settings/settings';
 
 export type SimpleSet = { weight: string; reps: string };
 
@@ -56,7 +57,7 @@ const ExerciseSetEditor: React.FC<Props> = ({
 		() => Array.from({ length: 20 }, (_, i) => (i + 1) * 15),
 		[]
 	);
-	const [restSeconds, setRestSeconds] = useState<number>(60);
+	const [restSeconds, setRestSeconds] = useState<number>(DEFAULT_REST_SECONDS);
 	const [showRestSelector, setShowRestSelector] = useState(false);
 
 	const [restRemaining, setRestRemaining] = useState<number | null>(null);
@@ -65,6 +66,29 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
 	const repsRefs = useRef<Array<TextInput | null>>([]);
+
+	// Carga el tiempo de descanso de la base de datos
+	useEffect(() => {
+		(async () => {
+			try {
+				const stored = await getSetting(REST_SETTING_KEY);
+				if (stored != null) {
+					const num = parseInt(stored, 10);
+					if (!Number.isNaN(num) && num > 0) {
+						setRestSeconds(num);
+					} else {
+						setRestSeconds(DEFAULT_REST_SECONDS);
+					}
+				} else {
+					// No hay setting guardado -> usamos el default
+					setRestSeconds(DEFAULT_REST_SECONDS);
+				}
+			} catch (error) {
+				console.error('Error leyendo configuración de descanso', error);
+				setRestSeconds(DEFAULT_REST_SECONDS);
+			}
+		})();
+	}, []);
 
 	// limpiar intervalo al desmontar
 	useEffect(() => {
@@ -317,9 +341,16 @@ const ExerciseSetEditor: React.FC<Props> = ({
 														setEditorStyles.restChip,
 														selected && setEditorStyles.restChipSelected,
 													]}
-													onPress={() => {
+													onPress={async () => {
 														setRestSeconds(sec);
 														setShowRestSelector(false);
+
+														try {
+															// Persistimos la elección del usuario
+															await saveSetting(REST_SETTING_KEY, String(sec));
+														} catch (error) {
+															console.error('Error guardando configuración de descanso', error);
+														}
 													}}
 												>
 													<Text
