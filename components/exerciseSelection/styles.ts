@@ -564,9 +564,6 @@ export const setEditorStyles = StyleSheet.create({
 		borderRadius: 8,
 		marginBottom: 16,
 	},
-	addSetButtonDisabled: {
-		backgroundColor: '#ccc',
-	},
 	addSetText: {
 		fontSize: 16,
 		color: '#007AFF',

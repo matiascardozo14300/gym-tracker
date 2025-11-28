@@ -61,6 +61,8 @@ const ExerciseSetEditor: React.FC<Props> = ({
 
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
+	const repsRefs = useRef<Array<TextInput | null>>([]);
+
 	// limpiar intervalo al desmontar
 	useEffect(() => {
 		return () => {
@@ -113,21 +115,48 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	};
 
 	const handleWeightChange = (idx: number, value: string) => {
+		// Reemplazar coma por punto
+		let cleaned = value.replace(',', '.');
+
+		// Permitir vacío
+		if (cleaned === '') {
+			setSets(prev => {
+				const next = [...prev];
+				next[idx].weight = '';
+				if (replicateWeight && idx === 0) {
+					return next.map(s => ({ ...s, weight: '' }));
+				}
+				return next;
+			});
+			return;
+		}
+
+		// Aceptar sólo números con como máximo 1 punto y 2 decimales
+		const validPattern = /^\d*\.?\d{0,2}$/;
+
+		if (!validPattern.test(cleaned)) {
+			// Si no matchea, ignoramos el cambio (no se actualiza el estado)
+			return;
+		}
+
 		setSets(prev => {
 			const next = [...prev];
-			next[idx].weight = value;
+			next[idx].weight = cleaned;
 
 			if (replicateWeight && idx === 0) {
-				return next.map(s => ({ ...s, weight: value }));
+				return next.map(s => ({ ...s, weight: cleaned }));
 			}
 			return next;
 		});
 	};
 
 	const handleRepsChange = (idx: number, value: string) => {
+		// Mantener sólo dígitos, quitar puntos, comas y cualquier otro carácter
+		const numeric = value.replace(/[^0-9]/g, '');
+
 		setSets(prev => {
 			const next = [...prev];
-			next[idx].reps = value;
+			next[idx].reps = numeric;
 			return next;
 		});
 	};
@@ -151,20 +180,18 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	};
 
 	const addSet = () => {
-		setSets(prev =>
-			prev.length < 5
-				? [...prev, { weight: prev[0]?.weight ?? '', reps: '', completed: false }]
-				: prev
-		);
+		setSets(prev => [
+			...prev,
+			{ weight: prev[0]?.weight ?? '', reps: '', completed: false },
+		]);
 	};
 
 	const hasComplete = sets.some(
 		s => s.weight.trim() !== '' && s.reps.trim() !== ''
 	);
-	const hasPartial = sets.some(
-		s => (s.weight.trim() === '') !== (s.reps.trim() === '')
-	);
-	const isSubmitDisabled = !hasComplete || hasPartial;
+
+	// El botón solo se deshabilita si NO hay ni un set completo
+	const isSubmitDisabled = !hasComplete;
 
 	const handleSave = async () => {
 		if (isSubmitDisabled) return;
@@ -363,14 +390,35 @@ const ExerciseSetEditor: React.FC<Props> = ({
 							value={s.weight}
 							onChangeText={v => handleWeightChange(i, v)}
 							placeholderTextColor="#6B7280"
+							returnKeyType="next"
+							blurOnSubmit={false}
+							onSubmitEditing={() => {
+								const ref = repsRefs.current[i];
+								ref?.focus();
+							}}
 						/>
 						<TextInput
+							ref={ref => {
+								repsRefs.current[i] = ref;
+							}}
 							style={setEditorStyles.setInput}
 							placeholder="Reps"
 							keyboardType="numeric"
 							value={s.reps}
 							onChangeText={v => handleRepsChange(i, v)}
 							placeholderTextColor="#6B7280"
+							returnKeyType="done"
+							onSubmitEditing={() => {
+								const hasWeight = sets[i]?.weight.trim() !== '';
+								const hasReps = sets[i]?.reps.trim() !== '';
+								const alreadyCompleted = sets[i]?.completed;
+
+								// Si tiene peso + reps y aún no estaba marcado, lo marcamos como completado,
+								// lo que a su vez dispara el RestCountdown (vía handleToggleCompleted)
+								if (hasWeight && hasReps && !alreadyCompleted) {
+									handleToggleCompleted(i);
+								}
+							}}
 						/>
 
 						<TouchableOpacity
@@ -396,17 +444,10 @@ const ExerciseSetEditor: React.FC<Props> = ({
 				{/* Agregar set */}
 				<View style={setEditorStyles.editorAddSetRow}>
 					<TouchableOpacity
-						style={[
-							setEditorStyles.addSetButton,
-							sets.length >= 5 &&
-								setEditorStyles.addSetButtonDisabled,
-						]}
+						style={setEditorStyles.addSetButton}
 						onPress={addSet}
-						disabled={sets.length >= 5}
 					>
-						<Text style={setEditorStyles.addSetText}>
-							+ Agregar set
-						</Text>
+						<Text style={setEditorStyles.addSetText}>+ Agregar set</Text>
 					</TouchableOpacity>
 				</View>
 
