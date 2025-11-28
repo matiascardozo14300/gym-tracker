@@ -6,6 +6,7 @@ import { LineChart } from 'react-native-chart-kit';
 import styles from './styles';
 import { Exercise, getExerciseByWorkoutType, getExerciseRecords, WeightPoint, getWorkoutTypes, WorkoutType } from '../../services/database';
 import HelpIcon from '../../assets/icons/help.svg';
+import ComingSoonCard from '../common/comingSoonCard/ComingSoonCard';
 
 const screenWidth = Dimensions.get('window').width - 32;
 
@@ -25,7 +26,33 @@ export default function StatisticsScreen() {
 
 	const [helpModalVisible, setHelpModalVisible] = useState(false);
 
-	useEffect( () => {
+	return (
+		<SafeAreaView style={styles.container}>
+
+		<View style={styles.wrap}>
+			<ComingSoonCard
+				title="Próximamente"
+				subtitle="Estamos trabajando en esta sección para que puedas analizar tu progreso de manera más visual."
+				icon="🛠️"
+				progress={0.80}
+				progressLabel="En desarrollo"
+				chips={['Gráficos', 'Progreso', 'Sugerencias', 'Motivación']}
+				bullets={[
+					'Ver tu evolución en los ejercicios',
+					'Metas sugeridas',
+					'PRs y compartir estadísiticas',
+				]}
+				ctaText="Muy pronto"
+				ctaDisabled={true}
+				accentColor="#4F46E5"
+				backgroundColor="#fff"
+			/>
+		</View>
+
+		</SafeAreaView>
+	);
+
+	/* useEffect( () => {
 		getWorkoutTypes().then( activeTypes => {
 			setWorkoutTypes( activeTypes );
 			if( activeTypes.length > 0 ) {
@@ -237,16 +264,16 @@ export default function StatisticsScreen() {
 				</Modal>
 			</ScrollView>
 		</SafeAreaView>
-	);
+	); */
 }
 
 const gridStyles = StyleSheet.create({
-  gridContainer: {
+/*   gridContainer: {
     paddingTop: 4,
   },
   row: {
     justifyContent: 'space-between',
     marginBottom: 10,
 	gap: 5
-  },
+  }, */
 });
