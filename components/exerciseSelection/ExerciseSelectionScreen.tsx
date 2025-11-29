@@ -1,321 +1,324 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList, Alert } from 'react-native';
+import {
+	View,
+	Text,
+	TouchableOpacity,
+	Image,
+	Modal,
+	TextInput,
+	SectionList,
+	Alert,
+	FlatList,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
-import { Exercise, ExerciseLastHistory, getExerciseByWorkoutType, getExerciseLastHistory, getExerciseNotes, insertExerciseRecord, insertNewWorkout, insertSetRecord, NewExerciseRecord, NewSetRecord, NewWorkout, saveExerciseNotes, toggleExerciseFavorite, updateWorkoutFinishDate } from '../../services/database/';
+import {
+	Exercise,
+	ExerciseLastHistory,
+	getExerciseByWorkoutType,
+	getExerciseLastHistory,
+	getExerciseNotes,
+	insertExerciseRecord,
+	insertNewWorkout,
+	insertSetRecord,
+	MuscleGroup,
+	NewExerciseRecord,
+	NewSetRecord,
+	NewWorkout,
+	saveExerciseNotes,
+	toggleExerciseFavorite,
+	updateWorkoutFinishDate,
+} from '../../services/database/';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import {styles} from './styles';
-import {fakePickerStyles} from './styles';
+import { styles, fakePickerStyles } from './styles';
 import { exerciseImageUrls } from '../common/allExercisesImages';
 import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
 import StarOutlineIcon from '../../assets/icons/favorite.svg';
 import { getLocalISOString } from '../common/helper';
+import { getExerciseNameEs, getMuscleGroupLabelEs } from '../common/diccionario';
+import ExerciseSetEditor, { SimpleSet } from './ExerciseSetEditor';
+import { modalStyles } from '../common/modalStyles';
+import { modalUX } from '../home/styles';
 
 type ExSelRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
 type ExSelNavProp = CompositeNavigationProp<
-  NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>,
-  BottomTabNavigationProp<RootTabParamList>
+	NativeStackNavigationProp<RootStackParamList, 'ExerciseSelection'>,
+	BottomTabNavigationProp<RootTabParamList>
 >;
 
-// TimerDisplay component reused inside and outside modal
-const TimerDisplay: React.FC<{ seconds: number }> = ({ seconds }) => {
-	const minutes = Math.floor( seconds / 60 );
+// helper para mostrar MM:SS
+const formatSeconds = (seconds: number): string => {
+	const minutes = Math.floor(seconds / 60);
 	const secs = seconds % 60;
-	const mm = minutes < 10 ? `0${minutes}` : minutes;
-	const ss = secs < 10 ? `0${secs}` : secs;
-	return (
-		<View style={ styles.timerContainer }>
-			<Text style={ styles.timerText }>{`${mm}:${ss}`}</Text>
-		</View>
-	);
+	const mm = minutes < 10 ? `0${minutes}` : `${minutes}`;
+	const ss = secs < 10 ? `0${secs}` : `${secs}`;
+	return `${mm}:${ss}`;
 };
 
-// Helper: arma un ISO local yyyy-MM-ddTHH:mm:ss de una fecha yyyy-MM-dd y hora/min
+// Timer general del workout (footer)
+const TimerDisplay: React.FC<{ seconds: number }> = ({ seconds }) => (
+	<View style={styles.timerContainer}>
+		<Text style={styles.timerText}>{formatSeconds(seconds)}</Text>
+	</View>
+);
+
+// Helper: ISO local yyyy-MM-ddTHH:mm:ss a partir de yyyy-MM-dd + hora/min
 function dateAtLocalTimeISO(dateYYYYMMDD: string, hours = 12, minutes = 0): string {
-	// Asumimos dateYYYYMMDD está en formato "YYYY-MM-DD"
 	const [y, m, d] = dateYYYYMMDD.split('-').map(Number);
-	const dt = new Date(y, (m - 1), d, hours, minutes, 0, 0);
-	// toISOString da UTC; queremos ISO "local" como el resto de tu app -> formateamos manual:
+	const dt = new Date(y, m - 1, d, hours, minutes, 0, 0);
 	const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-	const isoLocal = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
-	return isoLocal;
+	return (
+		`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}` +
+		`T${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`
+	);
 }
 
 export default function ExerciseSelectionScreen() {
 	const navigation = useNavigation<ExSelNavProp>();
 	const tabNav = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
 	const route = useRoute<ExSelRouteProp>();
-  	const { workoutTypeId, selectedDate } = route.params as ( ExSelRouteProp['params'] & { selectedDate?: string }) | any;
 
-	const isPastMode = useMemo( () => !!selectedDate, [ selectedDate ] );
+	const { workoutTypeId, selectedDate } =
+		(route.params as ExSelRouteProp['params'] & { selectedDate?: string }) || {};
 
-	const INITIAL_SETS = [
-		{ weight: '', reps: '' },
-		{ weight: '', reps: '' },
-		{ weight: '', reps: '' }
-	];
+	const isPastMode = useMemo(() => !!selectedDate, [selectedDate]);
 
-	const [ exercises, setExercises ] = useState<Exercise[]>([]);
-	const [ workoutId, setWorkoutId ] = useState<number | null>(null);
-	const [ refreshFlag, setRefreshFlag ] = useState(false);
+	const [exercises, setExercises] = useState<Exercise[]>([]);
+	const [workoutId, setWorkoutId] = useState<number | null>(null);
+	const [refreshFlag, setRefreshFlag] = useState(false);
 
-	// Timer state
+	// timer de sesión (modo tiempo real)
 	const [seconds, setSeconds] = useState(0);
 	const startTimeRef = useRef<number>(Date.now());
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-	// Estados para modal e inputs
-	const [ exerciseModalVisible, setExerciseModalVisible] = useState(false);
-	const [ notesModalVisible, setNotesModalVisible ] = useState(false);
-	const [ finishModalVisible, setFinishModalVisible] = useState(false);
-	const [ selectedExercise, setSelectedExercise ] = useState<Exercise | null>(null);
+	// estado de pantalla de sets / modales
+	const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
+	const [notesModalVisible, setNotesModalVisible] = useState(false);
+	const [finishModalVisible, setFinishModalVisible] = useState(false);
+	const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+	const [lastHistory, setLastHistory] = useState<ExerciseLastHistory | null>(null);
 
-	const [ sets, setSets ] = useState<{ weight: string; reps: string }[]>( INITIAL_SETS );
-	const [ replicateWeight, setReplicateWeight ] = useState( false );
-	const [ lastHistory, setLastHistory ] = useState<ExerciseLastHistory | null>(null);
-	const [ originalNotes, setOriginalNotes ] = useState<string>("");
-	const [ notes, setNotes ] = useState<string>("");
+	const [originalNotes, setOriginalNotes] = useState<string>('');
+	const [notes, setNotes] = useState<string>('');
 
-	// PastMode -> Duración por defecto 00:45
-	const [ durHours, setDurHours ] = useState<number>(0);
-	const [ durMinutes, setDurMinutes ] = useState<number>(45);
+	// ejercicios ya cargados en este workout (marca "Completado" en card)
+	const [completedExercises, setCompletedExercises] = useState<
+		Record<number, boolean>
+	>({});
+
+	// PastMode -> duración por defecto
+	const [durHours, setDurHours] = useState<number>(0);
+	const [durMinutes, setDurMinutes] = useState<number>(45);
 	const [durationModalVisible, setDurationModalVisible] = useState(false);
-	const [openSelector, setOpenSelector] = useState<null | 'hours' | 'minutes'>(null);
+	const [openSelector, setOpenSelector] = useState<null | 'hours' | 'minutes'>(
+		null
+	);
 
-	const HOUR_OPTIONS = [0,1,2,3,4,5,6];
-	const MINUTE_OPTIONS = [0,5,10,15,20,25,30,35,40,45,50,55];
+	const HOUR_OPTIONS = [0, 1, 2, 3, 4, 5, 6];
+	const MINUTE_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
-	// Start timmer -> SOLO si no es PastMode
-	useEffect( () => {
-		if( isPastMode ) return;
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+			// Siempre prevenimos el pop automático
+			e.preventDefault();
+
+			// 1) Si está abierto el editor de sets, lo cerramos
+			if (exerciseModalVisible) {
+				setExerciseModalVisible(false);
+				setSelectedExercise(null);
+				setLastHistory(null);
+				return;
+			}
+
+			// 2) Si NO hay workout creado todavía, ir directo al Home
+			if (workoutId == null) {
+				goHome();
+				return;
+			}
+
+			// 3) Si hay workout, editor cerrado -> mostramos el modal de confirmación
+			setFinishModalVisible(true);
+		});
+
+		return unsubscribe;
+	}, [navigation, tabNav, exerciseModalVisible, workoutId]);
+
+
+	// timer sólo en modo "ahora"
+	useEffect(() => {
+		if (isPastMode) return;
 
 		startTimeRef.current = Date.now();
 		intervalRef.current = setInterval(() => {
 			const diff = Date.now() - startTimeRef.current;
-			setSeconds( Math.floor( diff / 1000 ) );
-		}, 1000 );
+			setSeconds(Math.floor(diff / 1000));
+		}, 1000);
 
 		return () => {
-			if( intervalRef.current ) clearInterval( intervalRef.current );
+			if (intervalRef.current) clearInterval(intervalRef.current);
 		};
-	}, [isPastMode] );
+	}, [isPastMode]);
 
-	// Busca ejercicios
+	// cargar ejercicios
 	useEffect(() => {
-		getExerciseByWorkoutType( workoutTypeId )
-			.then( setExercises )
-			.catch( console.error );
-	}, [ workoutTypeId, refreshFlag ]);
+		getExerciseByWorkoutType(workoutTypeId)
+			.then(setExercises)
+			.catch(console.error);
+	}, [workoutTypeId, refreshFlag]);
 
-	// Se abre el modal
-	useEffect( () => {
-		if( exerciseModalVisible && selectedExercise ) {
-			( async () => {
+	// cuando se abre el editor de sets, obtenemos el último historial
+	useEffect(() => {
+		if (exerciseModalVisible && selectedExercise) {
+			(async () => {
 				try {
-					const hist = await getExerciseLastHistory( selectedExercise.id );
-					setLastHistory( hist );
-				} catch( error ) {
-					console.error( 'Error al obtener el último registro para el ejercicio: ', error );
-					setLastHistory( null );
+					const hist = await getExerciseLastHistory(selectedExercise.id);
+					setLastHistory(hist);
+				} catch (error) {
+					console.error('Error al obtener el último registro para el ejercicio: ', error);
+					setLastHistory(null);
 				}
 			})();
 		} else {
-			setLastHistory( null );
+			setLastHistory(null);
 		}
-	}, [ exerciseModalVisible, selectedExercise ]);
+	}, [exerciseModalVisible, selectedExercise]);
 
-	// Se abre el modal de notas
-	useEffect( () => {
-		if( notesModalVisible && selectedExercise ) {
-			( async () => {
+	// modal de notas -> carga/limpia notas
+	useEffect(() => {
+		if (notesModalVisible && selectedExercise) {
+			(async () => {
 				try {
-					const exerciseNotes = await getExerciseNotes( selectedExercise.id );
-					setNotes( exerciseNotes );
-					setOriginalNotes( exerciseNotes );
-				} catch( error ) {
-					console.error( 'Error al obtener las notas del ejercicio' );
-					setNotes( "" );
-					setOriginalNotes("");
+					const exerciseNotes = await getExerciseNotes(selectedExercise.id);
+					setNotes(exerciseNotes);
+					setOriginalNotes(exerciseNotes);
+				} catch (error) {
+					console.error('Error al obtener las notas del ejercicio');
+					setNotes('');
+					setOriginalNotes('');
 				}
 			})();
 		} else {
-			setNotes( "" );
-			setOriginalNotes("");
+			setNotes('');
+			setOriginalNotes('');
 		}
-	}, [ notesModalVisible, selectedExercise ]);
+	}, [notesModalVisible, selectedExercise]);
 
-	// Botón de replicar peso
-	useEffect(() => {
-		if( replicateWeight ) {
-			setSets( ( prev ) => {
-				const firstWeight = prev[0]?.weight ?? '';
-				return prev.map( (s) => ({ ...s, weight: firstWeight }));
-			});
-		}
-	}, [ replicateWeight, sets[0]?.weight ]);
-
-	// Maneja selección de ejercicio: abre modal
-	const handleCardPress = ( item: Exercise ) => {
-		setSelectedExercise( item );
-		setExerciseModalVisible( true );
+	const handleCardPress = (item: Exercise) => {
+		setSelectedExercise(item);
+		setExerciseModalVisible(true);
 	};
 
-	// Texto del record
-	const getRecordText = (): string => {
-		if( !lastHistory ) return "Última sesión: sin datos";
-
-		const grupos: Map<number, number[]> = new Map();
-
-		for( const set of lastHistory.sets ) {
-			if( !grupos.has( set.weight ) ) {
-				grupos.set( set.weight, [] );
-			}
-			grupos.get( set.weight )!.push( set.reps );
-		}
-
-		const partes: string[] = [];
-		for( const [ peso, repsList ] of grupos.entries() ) {
-			partes.push( `${peso}kg x ${repsList.join(", ")}` );
-		}
-
-		const d = new Date( lastHistory.date );
-		const dd = String( d.getDate() ).padStart( 2, '0' );
-		const mm = String( d.getMonth() + 1 ).padStart( 2, '0' );
-
-		return `Última sesión: ${partes.join(", ")} · ${dd}/${mm}`;
-	}
-
-	// Al cambiar el peso de un set
-	const handleWeightChange = ( idx: number, value: string ) => {
-		setSets( prev => {
-			const next = [ ...prev ];
-			next[idx].weight = value;
-
-			// si replicar está activo y es el primero, copio a todos
-			if( replicateWeight && idx === 0 ) {
-				return next.map( s => ({ ...s, weight: value }));
-			}
-			return next;
-		});
-	}
-
-	// Al cambiar las repeticiones de un set
-	const handleRepsChange = ( idx: number, value: string ) => {
-		setSets( prev => {
-			const next = [...prev];
-			next[idx].reps = value;
-			return next;
-		});
-	}
-
-	// Botón "+ Add set"
-	const addSet = () => {
-		setSets( prev => prev.length < 5
-			? [...prev, { weight: prev[0].weight, reps: '' }]
-			: prev
-		);
-	}
-
-	// Guarda los sets de un ejercicio
-	const handleSubmit = async () => {
-		if( !selectedExercise ) return;
-
+	// callback que recibe sets desde ExerciseSetEditor
+	const handleSubmitSets = async (setsToSave: SimpleSet[], exercise: Exercise) => {
 		let currentWorkoutId = workoutId;
-		if( currentWorkoutId == null ) {
-			// En PastMode -> creo un workout con startDate en la fecha del parámetro
-			// En Hoy -> uso "ahora"
+		if (currentWorkoutId == null) {
 			const startISO = isPastMode
-				? dateAtLocalTimeISO( selectedDate!, 12, 0 )
+				? dateAtLocalTimeISO(selectedDate!, 12, 0)
 				: getLocalISOString();
 
 			const newId = await insertNewWorkout({
 				startDate: startISO,
 				finishDate: startISO,
-				workoutTypeId
-			} as NewWorkout );
-			setWorkoutId( newId );
+				workoutTypeId,
+			} as NewWorkout);
+
+			setWorkoutId(newId);
 			currentWorkoutId = newId;
 		}
 
-		// 1) Insertar ExerciseRecord
 		const exerciseRecordId = await insertExerciseRecord({
 			workoutId: currentWorkoutId,
-			exerciseId: selectedExercise.id
-		} as NewExerciseRecord );
+			exerciseId: exercise.id,
+		} as NewExerciseRecord);
 
-		for( const s of sets ) {
+		for (const s of setsToSave) {
 			await insertSetRecord({
 				exerciseRecordId,
-				weight: parseFloat( s.weight ),
-				reps: parseInt( s.reps, 10 )
-			} as NewSetRecord );
+				weight: parseFloat(s.weight),
+				reps: parseInt(s.reps, 10),
+			} as NewSetRecord);
 		}
 
-		// Reset modal inputs
-		setExerciseModalVisible( false );
-		setSelectedExercise( null );
-		setSets( INITIAL_SETS );
-		setReplicateWeight( false );
-		setLastHistory( null );
-	}
+		// marcar la card como completada
+		setCompletedExercises(prev => ({ ...prev, [exercise.id]: true }));
 
-	// Guarda un entrenamiento pasado
-	const savePastWorkout = async ( params: { workoutId: number; startDateISO: string; finishDateISO: string  } ) => {
-		if( workoutId != null ) {
-			await updateWorkoutFinishDate( params.workoutId, params.finishDateISO );
+		setExerciseModalVisible(false);
+		setSelectedExercise(null);
+		setLastHistory(null);
+	};
+
+	const savePastWorkout = async (params: {
+		workoutId: number;
+		startDateISO: string;
+		finishDateISO: string;
+	}) => {
+		if (workoutId != null) {
+			await updateWorkoutFinishDate(params.workoutId, params.finishDateISO);
 		}
-	}
+	};
 
-	const handleCancel = () => {
-		setExerciseModalVisible( false );
-		setSelectedExercise( null );
-		setSets( INITIAL_SETS );
-		setReplicateWeight( false );
-		setLastHistory( null );
-	}
+	const handleCancelEditor = () => {
+		setExerciseModalVisible(false);
+		setSelectedExercise(null);
+		setLastHistory(null);
+	};
 
-	const handleFinishPress = () => setFinishModalVisible( true );
+	const handleFinishPress = () => setFinishModalVisible(true);
+
+	const handleConfirmFinishFromModal = async () => {
+		if (isPastMode) {
+			// Cerrar el modal de confirmación y seguir el mismo flujo
+			// que si hubieras tocado "Guardar Entrenamiento"
+			setFinishModalVisible(false);
+			handleOpenDuration();
+		} else {
+			// En modo "ahora" hacemos exactamente lo mismo que el footer:
+			await handleFinish();
+		}
+	};
 
 	const isDirty = notes !== originalNotes;
 
-	const saveNotes = async () => {
+	const saveNotesHandler = async () => {
 		if (!isDirty) return;
 
-		if( selectedExercise ) {
-			await saveExerciseNotes( selectedExercise.id, notes );
+		if (selectedExercise) {
+			await saveExerciseNotes(selectedExercise.id, notes);
 		} else {
-			console.error( "No se pudieron guardar las notas" );
+			console.error('No se pudieron guardar las notas');
 		}
 
 		setNotesModalVisible(false);
-	}
-
-	// Finalizar workout y volver al Inicio (modo HOY)
-	const handleFinish = async () => {
-		if( intervalRef.current ) clearInterval( intervalRef.current );
-
-		if( workoutId != null ) {
-			const now = getLocalISOString();
-			await updateWorkoutFinishDate( workoutId, now );
-		}
-		setFinishModalVisible( false );
-		tabNav?.navigate('Inicio');
-		navigation.navigate('Tabs', { screen: 'Inicio' });
 	};
 
-	const handleOpenDuration = () => setDurationModalVisible( true );
+	const handleFinish = async () => {
+		if (intervalRef.current) clearInterval(intervalRef.current);
+
+		if (workoutId != null) {
+			const now = getLocalISOString();
+			await updateWorkoutFinishDate(workoutId, now);
+		}
+		setFinishModalVisible(false);
+		goHome();
+	};
+
+	const handleOpenDuration = () => setDurationModalVisible(true);
 
 	const handleConfirmDuration = async () => {
-		if( !workoutId ) {
-			Alert.alert( 'Atención', 'Primero agregá al menos un ejercicio para guardar el entrenamiento.' );
+		if (!workoutId) {
+			Alert.alert(
+				'Atención',
+				'Primero agregá al menos un ejercicio para guardar el entrenamiento.'
+			);
 			return;
 		}
 
-		// start ya fue creado a las 12:00 de selectedDate
-		const startISO = dateAtLocalTimeISO( selectedDate!, 12, 0 );
+		const startISO = dateAtLocalTimeISO(selectedDate!, 12, 0);
 		const totalMin = durHours * 60 + durMinutes;
+
 		const startDateObj = new Date(
 			parseInt(startISO.substring(0, 4)),
 			parseInt(startISO.substring(5, 7)) - 1,
@@ -327,235 +330,319 @@ export default function ExerciseSelectionScreen() {
 		);
 		const finishDateObj = new Date(startDateObj.getTime() + totalMin * 60000);
 		const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-		const finishISO = `${finishDateObj.getFullYear()}-${pad(finishDateObj.getMonth() + 1)}-${pad(finishDateObj.getDate())}T${pad(finishDateObj.getHours())}:${pad(finishDateObj.getMinutes())}:${pad(finishDateObj.getSeconds())}`;
+		const finishISO =
+			`${finishDateObj.getFullYear()}-${pad(finishDateObj.getMonth() + 1)}-${pad(
+				finishDateObj.getDate()
+			)}` +
+			`T${pad(finishDateObj.getHours())}:${pad(
+				finishDateObj.getMinutes()
+			)}:${pad(finishDateObj.getSeconds())}`;
 
-		await updateWorkoutFinishDate( workoutId, finishISO );
-		await savePastWorkout({ workoutId, startDateISO: startISO, finishDateISO: finishISO });
+		await updateWorkoutFinishDate(workoutId, finishISO);
+		await savePastWorkout({
+			workoutId,
+			startDateISO: startISO,
+			finishDateISO: finishISO,
+		});
 
-		setDurationModalVisible( false );
+		setDurationModalVisible(false);
+		goHome();
+	};
+
+	const goHome = () => {
 		tabNav?.navigate('Inicio');
-    	navigation.navigate('Tabs', { screen: 'Inicio' });
+		navigation.navigate('Tabs', { screen: 'Inicio' });
 	}
 
-	const renderItem = ({ item }: { item: Exercise }) => (
-		<TouchableOpacity style={styles.card} onPress={() => handleCardPress(item)}>
-			<TouchableOpacity style={ styles.favoriteIconContainer } onPress={ () => onFavoritePress( item ) }>
-				{ item.favorite === 1 ? (
-					<StarFilledIcon width={20} height={20} fill={'#007AFF'} />
-				) : (
-					<StarOutlineIcon width={20} height={20} />
-				)}
-			</TouchableOpacity>
-			<Image
-				source={{ uri: exerciseImageUrls[item.code] }}
-				style={styles.image}
-			/>
-			<Text style={styles.cardText}>{item.name}</Text>
-		</TouchableOpacity>
+	const onFavoritePress = async (exercise: Exercise) => {
+		try {
+			await toggleExerciseFavorite(exercise.id, exercise.favorite === 1 ? 0 : 1);
+			setRefreshFlag(f => !f);
+		} catch (error) {
+			console.error('No se pudo cambiar favorito:', error);
+		}
+	};
+
+	const favoriteExercises = exercises.filter(e => e.favorite === 1);
+
+
+	const pendingExercises = useMemo(
+		() => exercises.filter((e) => !completedExercises[e.id]),
+		[exercises, completedExercises]
 	);
 
-	// ¿Hay al menos un set completamente lleno?
-	const hasComplete = sets.some( s => s.weight.trim() !== '' && s.reps.trim() !== '' );
-
-	// ¿Hay algún set parcialmente lleno (peso **o** reps, pero no ambos)?
-	const hasPartial = sets.some( s => ( s.weight.trim() === '' ) !== ( s.reps.trim() === '' ) );
-
-	const isSubmitDisabled = !hasComplete || hasPartial;
-
-	const onFavoritePress = async ( exercise: Exercise ) => {
-		try {
-			await toggleExerciseFavorite( exercise.id, exercise.favorite === 1 ? 0 : 1 );
-			setRefreshFlag( f => !f );
-		} catch( error ) {
-			console.error( 'No se pudo cambiar favorito:', error );
-			console.log( 'No se pudo cambiar favorito:', error );
-		}
-	}
-
-	const favoriteExercises = exercises.filter( e => e.favorite === 1 );
-
-	const categoryOrder = [
-		'Chest','Back','Shoulders','Biceps','Triceps',
-		'Cuadriceps','Hamstrings','Gluts','Abductors','Adductors','Calves','Abs'
+	const categoryOrder: MuscleGroup[] = [
+		'Chest',
+		'Back',
+		'Shoulders',
+		'Biceps',
+		'Triceps',
+		'Cuadriceps',
+		'Hamstrings',
+		'Gluts',
+		'Abductors',
+		'Adductors',
+		'Calves',
+		'Abs',
 	];
+
 	const groupSections = categoryOrder
-		.map( group => ({
-			title: group,
-			data: exercises.filter( e => e.muscleGroup === group && e.favorite === 0 )
+		.map(group => ({
+			title: group as MuscleGroup,
+			data: exercises.filter(
+				e => e.muscleGroup === group && e.favorite === 0
+			),
 		}))
-		.filter( section => section.data.length > 0 );
+		.filter(section => section.data.length > 0);
 
 	const sections = [
-		{
-			title: 'Favoritos',
-			data: favoriteExercises
-		},
-		...groupSections
+		{ title: 'Favoritos', data: favoriteExercises },
+		...groupSections,
 	];
+
+	const renderCard = ({ item }: { item: Exercise }) => {
+		const isCompleted = completedExercises[item.id];
+
+		return (
+			<TouchableOpacity
+				style={[
+					styles.card,
+					isCompleted && styles.cardCompleted,
+				]}
+				onPress={() => handleCardPress(item)}
+			>
+				<TouchableOpacity
+					style={styles.favoriteIconContainer}
+					onPress={() => onFavoritePress(item)}
+				>
+					{item.favorite === 1 ? (
+						<StarFilledIcon width={20} height={20} fill={'#007AFF'} />
+					) : (
+						<StarOutlineIcon width={20} height={20} />
+					)}
+				</TouchableOpacity>
+
+				{isCompleted && (
+					<View style={styles.completedBadge}>
+						<Text style={styles.completedBadgeText}>Completado</Text>
+					</View>
+				)}
+
+				<Image
+					source={{ uri: exerciseImageUrls[item.code] }}
+					style={styles.image}
+				/>
+				<Text style={styles.cardText}>{getExerciseNameEs(item.code, item.name)}</Text>
+			</TouchableOpacity>
+		);
+	};
 
 	return (
 		<View style={styles.container}>
-			<SectionList
-				sections={sections}
-				keyExtractor={(item) => item.id.toString()}
-				renderSectionHeader={({ section: { title } }) => (
-					<Text style={ styles.sectionHeader }>{ title }</Text>
-				)}
-				renderItem={({ item, index, section }) => {
-					if( index % 2 !== 0 ) return null;
-					const first = item;
-					const second = section.data[ index + 1 ];
-					return (
-						<View style={styles.row}>
-							{renderItem({ item: first })}
-							{second ? renderItem({ item: second }) : <View style={[styles.card, { opacity: 0 }]} />}
+			{/* Si está activo el editor, mostramos esa “pantalla”; sino, el listado */}
+			{exerciseModalVisible && selectedExercise ? (
+				<ExerciseSetEditor
+					exercise={selectedExercise}
+					lastHistory={lastHistory}
+					onCancel={handleCancelEditor}
+					onSubmit={handleSubmitSets}
+					onOpenNotes={() => setNotesModalVisible(true)}
+				/>
+			) : (
+				<>
+					<SectionList
+						sections={sections}
+						keyExtractor={item => item.id.toString()}
+						renderSectionHeader={({ section: { title } }) => (
+							<Text style={styles.sectionHeader}>
+								{title === 'Favoritos'
+								? title
+								: getMuscleGroupLabelEs(title as MuscleGroup)}
+							</Text>
+						)}
+						renderItem={({ item, index, section }) => {
+							if (index % 2 !== 0) return null;
+							const first = item;
+							const second = section.data[index + 1];
+							return (
+								<View style={styles.row}>
+									{renderCard({ item: first })}
+									{second ? (
+										renderCard({ item: second })
+									) : (
+										<View style={[styles.card, { opacity: 0 }]} />
+									)}
+								</View>
+							);
+						}}
+						contentContainerStyle={styles.list}
+						stickySectionHeadersEnabled={false}
+					/>
+
+					{/* footer con cronómetro y botón de fin */}
+					<View style={styles.footer}>
+						{!isPastMode && <TimerDisplay seconds={seconds} />}
+
+						{isPastMode ? (
+							<TouchableOpacity
+								style={styles.finishButton}
+								onPress={() => workoutId == null ? goHome() : handleOpenDuration()}
+							>
+								<Text style={styles.finishButtonText}>
+									Guardar Entrenamiento
+								</Text>
+							</TouchableOpacity>
+						) : (
+							<TouchableOpacity
+								style={styles.finishButton}
+								onPress={
+									workoutId != null ? handleFinishPress : handleFinish
+								}
+							>
+								<Text style={styles.finishButtonText}>
+									Finalizar Entrenamiento
+								</Text>
+							</TouchableOpacity>
+						)}
+					</View>
+				</>
+			)}
+
+			{/* Modal confirmar finalización (modo hoy) */}
+			<Modal
+				visible={finishModalVisible}
+				transparent
+				animationType="slide"
+			>
+				<View style={modalStyles.overlay}>
+					<View style={modalStyles.sheet}>
+
+						<View style={modalStyles.iconWrap}>
+							<Text style={modalStyles.iconText}>🏋</Text>
 						</View>
-					);
-				}}
-				contentContainerStyle={styles.list}
-				stickySectionHeadersEnabled={false}
-			/>
 
-			{/* Cronómetro y botón Finish */}
-			<View style={ styles.footer} >
-
-				{!isPastMode && <TimerDisplay seconds={ seconds } />}
-
-				{isPastMode ? (
-					<TouchableOpacity style={[styles.finishButton]} onPress={handleOpenDuration}>
-						<Text style={styles.finishButtonText}>Guardar Entrenamiento</Text>
-					</TouchableOpacity>
-				) : (
-					<TouchableOpacity style={ styles.finishButton } onPress={ workoutId != null ?  handleFinishPress : handleFinish }>
-						<Text style={ styles.finishButtonText }>Finalizar Entrenamiento</Text>
-					</TouchableOpacity>
-				)}
-			</View>
-
-			<Modal visible={exerciseModalVisible} transparent animationType="slide">
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContainer}>
-						<Text style={styles.modalTitle}>
-							{selectedExercise?.name || 'Agregar series'}
+						<Text style={modalStyles.title}>
+							¿Estás seguro de finalizar tu entrenamiento?
+						</Text>
+						<Text style={modalStyles.subtitle}>
+							Tu progreso actual quedará guardado y podrás editarlo si así lo deseas
 						</Text>
 
-						{/* Inputs dinámicos de Peso i y Reps i */}
-						{sets.map( (s, i) => (
-							<View key={i} style={ styles.fieldRow }>
-								<TextInput
-									style={styles.fieldInput}
-									placeholder={`Peso ${i + 1}`}
-									keyboardType="numeric"
-									value={s.weight}
-									onChangeText={v => handleWeightChange(i, v)}
-									placeholderTextColor="#000"
-								/>
-								<TextInput
-									style={styles.fieldInput}
-									placeholder={`Reps ${i + 1}`}
-									keyboardType="numeric"
-									value={s.reps}
-									onChangeText={v => handleRepsChange(i, v)}
-									placeholderTextColor="#000"
+						<View style={modalStyles.divider} />
+
+						{pendingExercises.length > 0 ? (
+							<View style={modalUX.scrollArea}>
+								<Text style={{ fontSize: 14, fontWeight: '600', marginBottom: 6 }}>
+									Te faltan estos ejercicios:
+								</Text>
+								<FlatList
+									showsVerticalScrollIndicator
+									contentContainerStyle={{ paddingBottom: 0 }}
+									data={pendingExercises}
+									keyExtractor={(ex) => ex.name}
+									renderItem={({item}) => (
+										<Text
+											key={item.id}
+											style={{ fontSize: 14, marginVertical: 2 }}
+										>
+										• {getExerciseNameEs(item.code, item.name)}
+										</Text>
+									)}
 								/>
 							</View>
-						))}
+						) : (
+							<Text style={{ fontSize: 14, marginTop: 12 }}>
+								Ya completaste todos los ejercicios de tu rutina.
+							</Text>
+						)}
 
-						{/* Casilla “usar mismo peso para todas” */}
-						<TouchableOpacity style={styles.checkboxRow} onPress={() => setReplicateWeight(f => !f)}>
-							<View style={styles.checkboxBox}>
-								{replicateWeight && <View style={styles.checkboxChecked} />}
-							</View>
-							<Text style={styles.checkboxLabel}>Mismo peso</Text>
-						</TouchableOpacity>
-
-						{/* Fila de botones: Add set --- Notes */}
-						<View style={ styles.buttonsRow }>
+						<View style={modalStyles.actions}>
 							<TouchableOpacity
-								style={[ styles.addSetButton, sets.length >= 5 && styles.addSetButtonDisabled ]}
-								onPress={addSet}
-								disabled={ sets.length >= 5 }
+								style={[modalStyles.btn, modalStyles.btnGhost]}
+								onPress={() => setFinishModalVisible(false)}
 							>
-								<Text style={styles.addSetText}>+ Agregar set</Text>
+								<Text style={[modalStyles.btnText, modalStyles.btnGhostText]}>Cancelar</Text>
 							</TouchableOpacity>
 
 							<TouchableOpacity
-								style={styles.addNotesButton}
-								onPress={() => setNotesModalVisible( true )}
+								style={[modalStyles.btn, modalStyles.btnPrimary]}
+								onPress={handleConfirmFinishFromModal}
 							>
-								<Text style={styles.addNotesText}>Notas</Text>
+								<Text style={[modalStyles.btnText, modalStyles.btnPrimaryText]}>Finalizar</Text>
 							</TouchableOpacity>
 						</View>
 
-						<Text style={ styles.recordText }>{ getRecordText() }</Text>
-
-						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-							<Text style={styles.cancelButtonText}>Cancelar</Text>
-						</TouchableOpacity>
-
-						<TouchableOpacity onPress={handleSubmit} disabled={isSubmitDisabled} style={[styles.modalButton, isSubmitDisabled && styles.modalButtonDisabled]}>
-							<Text style={[styles.modalButtonText, isSubmitDisabled && styles.modalButtonTextDisabled]}>Guardar</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</Modal>
-			<Modal visible={ finishModalVisible } transparent animationType="slide">
-				<View style={ styles.modalOverlay }>
-					<View style={ styles.modalContainer }>
-						<Text style={ styles.modalTitle }>¿Estás seguro de finalizar el entrenamiento?</Text>
-						<TouchableOpacity style={styles.cancelButton} onPress={() => setFinishModalVisible( false )}>
-							<Text style={styles.cancelButtonText}>Atrás</Text>
-						</TouchableOpacity>
-
-						<TouchableOpacity onPress={handleFinish} style={styles.modalButton}>
-							<Text style={styles.modalButtonText}>Guardar</Text>
-						</TouchableOpacity>
 					</View>
 				</View>
 			</Modal>
 
-			{/* Modal de duración (solo PASADO) */}
+			{/* Modal de duración (modo pasado) */}
 			<Modal visible={durationModalVisible} transparent animationType="fade">
 				<View style={styles.modalOverlay}>
 					<View style={[styles.modalContainer, fakePickerStyles.sheet]}>
-						<Text style={[styles.modalTitle, { marginBottom: 12 }]}>Duración del entrenamiento</Text>
+						<Text style={[styles.modalTitle, { marginBottom: 12 }]}>
+							Duración del entrenamiento
+						</Text>
 
-						{/* “Inputs” fake que abren los selectores */}
 						<View style={fakePickerStyles.row}>
 							<TouchableOpacity
 								activeOpacity={0.8}
 								style={fakePickerStyles.fakeInput}
-								onPress={() => setOpenSelector(openSelector === 'hours' ? null : 'hours')}
+								onPress={() =>
+									setOpenSelector(openSelector === 'hours' ? null : 'hours')
+								}
 							>
-								<Text style={fakePickerStyles.fakeInputLabel}>{durHours === 1 ? 'Hora' : 'Horas'}</Text>
+								<Text style={fakePickerStyles.fakeInputLabel}>
+									{durHours === 1 ? 'Hora' : 'Horas'}
+								</Text>
 								<Text style={fakePickerStyles.fakeInputValue}>{durHours}</Text>
 							</TouchableOpacity>
 
 							<TouchableOpacity
 								activeOpacity={0.8}
 								style={fakePickerStyles.fakeInput}
-								onPress={() => setOpenSelector(openSelector === 'minutes' ? null : 'minutes')}
+								onPress={() =>
+									setOpenSelector(
+										openSelector === 'minutes' ? null : 'minutes'
+									)
+								}
 							>
 								<Text style={fakePickerStyles.fakeInputLabel}>Minutos</Text>
-								<Text style={fakePickerStyles.fakeInputValue}>{durMinutes}</Text>
+								<Text style={fakePickerStyles.fakeInputValue}>
+									{durMinutes}
+								</Text>
 							</TouchableOpacity>
 						</View>
 
-						{/* Selector de HORAS */}
 						{openSelector === 'hours' && (
 							<View style={fakePickerStyles.selectorPanel}>
-								<Text style={fakePickerStyles.selectorTitle}>Elegí la cantidad de horas</Text>
+								<Text style={fakePickerStyles.selectorTitle}>
+									Elegí la cantidad de horas
+								</Text>
 								<View style={fakePickerStyles.chipsWrap}>
 									{HOUR_OPTIONS.map(h => {
 										const selected = h === durHours;
 										return (
 											<TouchableOpacity
 												key={`h-${h}`}
-												onPress={() => { setDurHours(h); setOpenSelector(null); }}
+												onPress={() => {
+													setDurHours(h);
+													setOpenSelector(null);
+												}}
 												activeOpacity={0.8}
-												style={[fakePickerStyles.chip, selected && fakePickerStyles.chipSelected]}
+												style={[
+													fakePickerStyles.chip,
+													selected &&
+														fakePickerStyles.chipSelected,
+												]}
 											>
-												<Text style={[fakePickerStyles.chipText, selected && fakePickerStyles.chipTextSelected]}>
+												<Text
+													style={[
+														fakePickerStyles.chipText,
+														selected &&
+															fakePickerStyles.chipTextSelected,
+													]}
+												>
 													{h}
 												</Text>
 											</TouchableOpacity>
@@ -565,21 +652,35 @@ export default function ExerciseSelectionScreen() {
 							</View>
 						)}
 
-						{/* Selector de MINUTOS */}
 						{openSelector === 'minutes' && (
 							<View style={fakePickerStyles.selectorPanel}>
-								<Text style={fakePickerStyles.selectorTitle}>Elegí la cantidad de minutos</Text>
+								<Text style={fakePickerStyles.selectorTitle}>
+									Elegí la cantidad de minutos
+								</Text>
 								<View style={fakePickerStyles.chipsWrap}>
 									{MINUTE_OPTIONS.map(m => {
 										const selected = m === durMinutes;
 										return (
 											<TouchableOpacity
 												key={`m-${m}`}
-												onPress={() => { setDurMinutes(m); setOpenSelector(null); }}
+												onPress={() => {
+													setDurMinutes(m);
+													setOpenSelector(null);
+												}}
 												activeOpacity={0.8}
-												style={[fakePickerStyles.chip, selected && fakePickerStyles.chipSelected]}
+												style={[
+													fakePickerStyles.chip,
+													selected &&
+														fakePickerStyles.chipSelected,
+												]}
 											>
-												<Text style={[fakePickerStyles.chipText, selected && fakePickerStyles.chipTextSelected]}>
+												<Text
+													style={[
+														fakePickerStyles.chipText,
+														selected &&
+															fakePickerStyles.chipTextSelected,
+													]}
+												>
 													{m}
 												</Text>
 											</TouchableOpacity>
@@ -589,12 +690,20 @@ export default function ExerciseSelectionScreen() {
 							</View>
 						)}
 
-						{/* Acciones */}
 						<View style={fakePickerStyles.actions}>
-							<TouchableOpacity style={[styles.cancelButton, { flex: 1 }]} onPress={() => { setDurationModalVisible(false); setOpenSelector(null); }}>
+							<TouchableOpacity
+								style={[styles.cancelButton, { flex: 1 }]}
+								onPress={() => {
+									setDurationModalVisible(false);
+									setOpenSelector(null);
+								}}
+							>
 								<Text style={styles.cancelButtonText}>Atrás</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={[styles.modalButton, { flex: 1 }]} onPress={handleConfirmDuration}>
+							<TouchableOpacity
+								style={[styles.modalButton, { flex: 1 }]}
+								onPress={handleConfirmDuration}
+							>
 								<Text style={styles.modalButtonText}>Guardar</Text>
 							</TouchableOpacity>
 						</View>
@@ -626,13 +735,20 @@ export default function ExerciseSelectionScreen() {
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={[
-                  				styles.modalButton,
-                  				!isDirty && styles.modalButtonDisabled
+								styles.modalButton,
+								!isDirty && styles.modalButtonDisabled,
 							]}
-							onPress={saveNotes}
+							onPress={saveNotesHandler}
 							disabled={!isDirty}
 						>
-							<Text style={[ styles.modalButtonText, !isDirty && styles.modalButtonTextDisabled ]}>Guardar</Text>
+							<Text
+								style={[
+									styles.modalButtonText,
+									!isDirty && styles.modalButtonTextDisabled,
+								]}
+							>
+								Guardar
+							</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

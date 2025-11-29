@@ -1,7 +1,14 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-	container: { flex: 1, backgroundColor: '#fff' },
+	container: { flex: 1, backgroundColor: '#F7F9FC' },
+	wrap: {
+		flex: 1,
+		paddingHorizontal: 16,
+		paddingTop: 8,
+		alignItems: 'center',
+	},
+	/* container: { flex: 1, backgroundColor: '#fff' },
 	content: { padding: 16, paddingBottom: 32 },
 
 	sectionTitle: {
@@ -134,5 +141,5 @@ helpModalCloseText: {
   color: '#fff',
   fontWeight: '600',
   fontSize: 16,
-},
+}, */
 });

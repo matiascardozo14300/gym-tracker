@@ -108,5 +108,48 @@ modalOverlay: {
   },
   modalButtonTextDisabled: {
     color: '#eee'
-  }
+  },
+  muscleFilterContainer: {
+ paddingTop: 12,
+ paddingBottom: 8,
+ backgroundColor: '#ffffff',
+ },
+ muscleFilterTitle: {
+ fontSize: 14,
+ fontWeight: '600',
+ color: '#333',
+ marginBottom: 8,
+ paddingHorizontal: 16,
+ },
+ muscleFilterScrollContent: {
+ paddingHorizontal: 16,
+ },
+ muscleFilterItem: {
+ marginRight: 12,
+ alignItems: 'center',
+ },
+ muscleFilterItemSelected: {
+ transform: [{ scale: 1.03 }],
+ },
+ muscleFilterImage: {
+ width: 72,
+ height: 72,
+ borderRadius: 18,
+ borderWidth: 2,
+ borderColor: '#e0e0e0',
+ backgroundColor: '#f7f7f7',
+ },
+ muscleFilterImageSelected: {
+ borderColor: '#007AFF',
+ backgroundColor: '#E6F0FF',
+ },
+ muscleFilterLabel: {
+ marginTop: 6,
+ fontSize: 12,
+ color: '#555',
+ },
+ muscleFilterLabelSelected: {
+ color: '#007AFF',
+ fontWeight: '600',
+ },
 });

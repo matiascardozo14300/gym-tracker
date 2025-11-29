@@ -8,6 +8,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AddableExercise, addExerciseToWorkout, EditableSet, fetchAddableExercisesForWorkout } from '../../../services/database';
 import { exerciseImageUrls } from '../../common/allExercisesImages';
+import { getExerciseNameEs } from '../../common/diccionario';
 
 type AdExWkRouteProp = RouteProp<RootStackParamList, 'AddExerciseToWorkout'>;
 type AdExWkNavProp = CompositeNavigationProp<NativeStackNavigationProp<RootStackParamList, 'AddExerciseToWorkout'>,BottomTabNavigationProp<RootTabParamList>>;
@@ -105,7 +106,7 @@ export default function AddExerciseToWorkoutScreen() {
 				renderItem={({ item }) => (
 					<TouchableOpacity style={addStyles.card} onPress={() => openModal(item)}>
 						<Image source={{ uri: exerciseImageUrls[item.code] }} style={addStyles.image} />
-						<Text style={addStyles.cardText} numberOfLines={1}>{item.name}</Text>
+						<Text style={addStyles.cardText} numberOfLines={1}>{getExerciseNameEs(item.code, item.name)}</Text>
 					</TouchableOpacity>
 				)}
 			/>
@@ -113,7 +114,7 @@ export default function AddExerciseToWorkoutScreen() {
 			<Modal visible={modalVisible} transparent animationType="slide">
 				<View style={addStyles.modalOverlay}>
 					<View style={addStyles.modalContainer}>
-						<Text style={addStyles.modalTitle}>{target?.name ?? 'Nuevo ejercicio'}</Text>
+						<Text style={addStyles.modalTitle}>{target ? getExerciseNameEs(target.code, target.name) : 'Nuevo ejercicio'}</Text>
 
 						{sets.map((s, i) => (
 							<View key={i} style={addStyles.fieldRow}>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect  } from 'react';
 import {
     View,
 	Text,
@@ -29,7 +29,7 @@ import { StepFrequency } from './steps/StepFrequency';
 import { StepReady } from './steps/StepReady';
 import { modalStyles } from '../common/modalStyles';
 
-import { saveSetting } from '../../services/database/settings/settings';
+import { ONBOARDING_COMPLETED_KEY, saveSetting } from '../../services/database/settings/settings';
 import { upsertUserProfileFromOnboarding } from '../../services/database/user_profile/user_profile';
 
 const STEPS = [
@@ -41,7 +41,6 @@ const STEPS = [
     { id: 'ready', component: StepReady },
 ];
 
-export const ONBOARDING_COMPLETED_KEY = 'ONBOARDING_COMPLETED';
 const { width } = Dimensions.get('window');
 
 export const OnboardingScreen = () => {
@@ -53,12 +52,18 @@ export const OnboardingScreen = () => {
 
 	const [currentIndex, setCurrentIndex] = useState(0);
     const listRef = useRef<FlatList>(null);
+	const scrollRef = useRef<ScrollView | null>(null);
 
 	const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const updateData = useCallback(<K extends keyof OnboardingData>(key: K, value: OnboardingData[K]) => {
         setFormData(prev => ({ ...prev, [key]: value }));
     }, []);
+
+	useEffect(() => {
+		// Cada vez que cambia de step, vuelve el scroll arriba
+		scrollRef.current?.scrollTo({ y: 0, animated: false });
+	}, [currentIndex]);
 
     const handleNext = () => {
         if (currentIndex < STEPS.length - 1) setCurrentIndex(prev => prev + 1);
@@ -100,7 +105,7 @@ export const OnboardingScreen = () => {
 
 			<KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
 
-				<ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+				<ScrollView ref={scrollRef} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
 					<View style={{ flex: 1, width: width }}>
                         <CurrentStepComponent data={formData} updateData={updateData} />
                     </View>

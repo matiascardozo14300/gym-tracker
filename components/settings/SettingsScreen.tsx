@@ -5,8 +5,7 @@ import ComingSoonCard from '../common/comingSoonCard/ComingSoonCard';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styles from './styles';
 import { RootStackParamList } from '../../App';
-import { saveSetting } from '../../services/database/settings/settings';
-import { ONBOARDING_COMPLETED_KEY } from '../onBoarding/OnboardingScreen';
+import { ONBOARDING_COMPLETED_KEY, saveSetting } from '../../services/database/settings/settings';
 
 export default function SettingsScreen() {
 

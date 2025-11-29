@@ -1,0 +1,133 @@
+import { MuscleGroup } from '../../services/database';
+
+export const MUSCLE_GROUP_LABEL_ES: Record<MuscleGroup, string> = {
+	Chest: "Pecho",
+	Shoulders: "Hombros",
+	Triceps: "Tríceps",
+	Back: "Espalda",
+	Biceps: "Bíceps",
+	Forearms: "Antebrazos",
+	Cuadriceps: "Cuádriceps",
+	Hamstrings: "Isquios",
+	Gluts: "Glúteos",
+	Calves: "Gemelos",
+	Abductors: "Abductores",
+	Adductors: "Aductores",
+	Abs: "Abdominales",
+};
+
+export const getMuscleGroupLabelEs = (group: MuscleGroup): string =>
+  MUSCLE_GROUP_LABEL_ES[group] ?? group;
+
+export const getExerciseNameEs = (code: string, fallback?: string) =>
+  EXERCISE_NAME_ES[code] ?? fallback ?? code;
+
+export const EXERCISE_NAME_ES: Record<string, string> = {
+  'close-grip-lat-pulldown': 'Jalón al pecho agarre cerrado',
+  'bayesian-cable-curl': 'Curl de bíceps en polea (Bayesian)',
+  'ez-bar-curl': 'Curl con barra Z',
+  'chest-supported-row': 'Remo pecho apoyado',
+  'cable-row': 'Remo sentado agarre cerrado',
+  'preacher-hammer-curl': 'Curl martillo en banco Scott',
+  'cross-body-lat-pullaround': 'Pull-around de dorsales',
+  'wide-grip-lat-pulldown': 'Jalón al pecho agarre amplio',
+  '1-arm-dumbbell-row': 'Remo con mancuerna a 1 brazo',
+  'standing-hammer-curl': 'Curl martillo de pie',
+  'pull-ups': 'Dominadas agarre amplio',
+
+  'bench-press': 'Press banca con barra',
+  'cable-lateral-raise': 'Elevaciones laterales en polea',
+  'standing-dumbbell-lateral-raise': 'Elevaciones laterales con mancuernas',
+  'incline-bench-press': 'Press inclinado con barra',
+  'triceps-pressdown-bar': 'Extensión de tríceps en polea (barra)',
+  'overhead-cable-triceps-extension': 'Extensión de tríceps por encima de la cabeza en polea',
+  'pec-deck': 'Aperturas en máquina (Pec Deck)',
+  'cable-triceps-kickback': 'Patada de tríceps en polea',
+  'machine-chest-press': 'Press de pecho en máquina',
+  'smith-flat-bench-press': 'Press banca plano en máquina Smith',
+  'smith-incline-bench-press': 'Press banca inclinado en máquina Smith',
+  'flat-dumbbell-press': 'Press plano con mancuernas',
+  'incline-dumbbell-press': 'Press inclinado con mancuernas',
+  'smith-machine-jm-press': 'JM press en máquina Smith',
+  'push-ups': 'Flexiones de brazos',
+
+  'seated-leg-curl': 'Curl femoral sentado',
+  'lying-leg-curl': 'Curl femoral tumbado',
+  'leg-press': 'Prensa de piernas',
+  'leg-extension': 'Extensión de cuádriceps en máquina',
+  'machine-leg-press': 'Prensa de piernas en máquina',
+  'hip-adduction': 'Aductores en máquina (aducción de cadera)',
+  'standing-calf-raise': 'Elevación de talones en máqina',
+  'seated-calf-raise': 'Elevación de talones sentado',
+  'lever-standing-calf-raise': 'Elevación de talones de pie',
+
+  'lever-seated-crunch': 'Crunch abdominal en máquina sentado',
+  'straight-leg-raise': 'Elevación de piernas estiradas',
+  'cable-crunch': 'Crunch en polea',
+
+  'bent-over-row': 'Remo con barra inclinado',
+  'cable-standing-lat-pushdown': 'Pulldown de dorsales de pie en polea',
+  'shrug': 'Encogimientos de hombros',
+  'lever-lying-t-bar-row': 'Remo en T tumbado en máquina',
+  'assisted-pull-ups': 'Dominadas asistidas',
+  '45-degree-hyperextension': 'Hipertensiones 45° (espalda baja)',
+  'seated-wide-grip-row': 'Remo sentado agarre amplio',
+  'lever-front-pulldown': 'Jalón al pecho en máquina',
+  'cable-wide-neutral-grip-pulldown': 'Jalón al pecho agarre neutro',
+  'lever-bent-over-row': 'Remo inclinado barra apoyada',
+  'incline-dumbbell-row': 'Remo con mancuernas en banco inclinado',
+
+  'biceps-curl': 'Curl de bíceps de pie',
+  'dumbbell-incline-curl': 'Curl de bíceps inclinado con mancuernas',
+  'lever-preacher-curl': 'Curl Scott en máquina',
+  'cable-biceps-curl': 'Curl de bíceps en polea',
+  'barbell-preacher-curl': 'Curl Scott con barra',
+  'dumbbell-preacher-curl': 'Curl Scott con mancuerna',
+  'concentration-curl': 'Curl de concentración',
+
+  'lever-seated-fly': 'Aperturas en máquina sentado',
+  'dumbbell-shoulder-press': 'Press hombros con mancuernas',
+  'machine-shoulder-press': 'Press hombros en máquina',
+  'lever-seated-reverse-fly': 'Vuelos posteriores en máquina sentado',
+  'front-raise': 'Elevaciones frontales',
+  'barbell-shoulder-press': 'Press militar con barra',
+  'lever-lateral-raise': 'Elevaciones laterales en máquina',
+  'cable-face-pull': 'Face pull en polea',
+  'smith-shoulder-press': 'Press hombros en máquina Smith',
+  'cross-over-reverse-fly': 'Vuelos posteriores en polea',
+
+  'cable-standing-fly': 'Aperturas en polea de pie',
+  'chest-dip': 'Fondos para pecho',
+  'fly': 'Aperturas con mancuernas',
+  'incline-fly': 'Aperturas inclinadas con mancuernas',
+  'cable-middle-fly': 'Aperturas en polea a la altura del pecho',
+  'cable-seated-chest-fly': 'Aperturas en polea sentado',
+
+  'pulley-overhead-tricep-extension': 'Extensión de tríceps inclinado en polea',
+  'lever-seated-dip': 'Fondos en máquina sentado',
+  'seated-bench-extension': 'Extensión de tríceps sentado en banco',
+  'triceps-dip': 'Fondos para tríceps',
+  'assisted-triceps-dip': 'Fondos para tríceps asistidos',
+
+  'deadlift': 'Peso muerto convencional',
+  'romanian-deadlift': 'Peso muerto rumano',
+  'good-morning': 'Buenos días con barra',
+
+  'barbell-squat': 'Sentadilla con barra',
+  'hack-squat': 'Sentadilla hack',
+  'smith-squat': 'Sentadilla en máquina Smith',
+  'dumbbell-bulgarian-split-squat': 'Sentadilla búlgara con mancuernas',
+  'dumbbell-squat': 'Sentadilla con mancuernas',
+  'dumbbell-lunges': 'Zancadas con mancuernas',
+  'kettlebell-goblet-squat': 'Sentadilla goblet con kettlebell',
+  'smith-bulgarian-split-squat': 'Sentadilla búlgara en máquina Smith',
+  'smith-lunges': 'Zancadas en máquina Smith',
+
+  'hip-abduction': 'Abductores en máquina (abducción de cadera)',
+  'hip-thrust': 'Hip thrust con barra',
+  'smith-hip-thrust': 'Hip thrust en máquina Smith',
+
+  'cable-pushdown-rope': 'Extensión de tríceps en polea (soga)',
+  'barbell-skullcrusher': 'Press francés con barra (skullcrusher)',
+  'dumbbell-skullcrusher': 'Press francés con mancuernas (skullcrusher)',
+};

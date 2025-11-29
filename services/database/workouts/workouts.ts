@@ -156,10 +156,11 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 	const { id: workoutId, workoutType, isArchived } = workoutRow;
 
 	// Recuperar todos los registros de sets junto con el nombre del ejercicio
-	const rows = await db.getAllAsync<{ exerciseName: string; weight: number; reps: number; }>(
+	const rows = await db.getAllAsync<{ exerciseName: string; code: string; weight: number; reps: number; }>(
 		`
 		SELECT
 			e.name AS exerciseName,
+			e.code,
 			s.weight,
 			s.reps
 		FROM exercise_records er
@@ -175,6 +176,7 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 	string,
 		{
 			name: string;
+			code: string;
 			sets: { weight: number; reps: number }[];
 		}
 	> = {};
@@ -183,6 +185,7 @@ export async function getWorkoutDetailByDate( dateString: string ): Promise<Work
 		if( !map[row.exerciseName] ) {
 			map[row.exerciseName] = {
 				name: row.exerciseName,
+				code: row.code,
 				sets: [],
 			};
 		}
