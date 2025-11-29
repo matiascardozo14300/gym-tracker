@@ -8,6 +8,7 @@ import WorkoutTypeSelector from './WorkoutTypeSelector';
 import {styles, modalUX, pickerUX} from './styles';
 import HomeHeader from './HomeHeader';
 import { formateDateToLongText, isFutureDate, isToday } from '../common/helper';
+import { getExerciseNameEs } from '../common/diccionario';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, RootTabParamList } from '../../App';
@@ -195,7 +196,7 @@ export default function HomeScreen() {
 										keyExtractor={(item) => item.name}
 										renderItem={({ item }) => (
 											<View style={modalUX.detailRow}>
-												<Text style={modalUX.exerciseName}>{item.name}</Text>
+												<Text style={modalUX.exerciseName}>{getExerciseNameEs(item.code, item.name)}</Text>
 												<View style={modalUX.setsRow}>
 													{item.sets.map((s, idx) => (
 														<View key={idx} style={modalUX.pill}>

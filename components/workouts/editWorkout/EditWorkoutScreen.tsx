@@ -15,6 +15,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { deleteExerciseFromWorkout, EditableExercise, EditableSet, EditableWorkout, fetchWorkoutForEdit, updateExerciseSets, fetchAddableExercisesForWorkout } from '../../../services/database';
 import { exerciseImageUrls } from '../../common/allExercisesImages';
 import { modalStyles } from '../../common/modalStyles';
+import { getExerciseNameEs } from '../../common/diccionario';
 
 const INITIAL_SETS = [
 	{ weight: '', reps: '' },
@@ -146,7 +147,7 @@ export default function EditWorkoutScreen() {
 	};
 
 	const confirmDeleteExercise = (ex: EditableExercise) => {
-		Alert.alert( 'Eliminar registro', `¿Eliminar "${ex.name}" de este entrenamiento?`,
+		Alert.alert( 'Eliminar registro', `¿Eliminar "${getExerciseNameEs(ex.code, ex.name)}" de este entrenamiento?`,
 			[
 				{
 					text: 'Cancelar',
@@ -243,7 +244,7 @@ export default function EditWorkoutScreen() {
 				renderItem={({ item }) => (
 					<View style={editStyles.card}>
 						<View style={editStyles.cardHeader}>
-							<Text style={editStyles.exerciseName} numberOfLines={1}>{item.name}</Text>
+							<Text style={editStyles.exerciseName} numberOfLines={2}>{getExerciseNameEs(item.code, item.name)}</Text>
 							<View style={editStyles.actionsRow}>
 								<TouchableOpacity style={editStyles.iconBtn} onPress={() => openImageModal(item.code)} hitSlop={10}>
 									<ImageIcon width={20} height={20} fill={'#6B7280'} />
@@ -283,7 +284,7 @@ export default function EditWorkoutScreen() {
 			<Modal visible={exerciseModalVisible} transparent animationType="slide">
 				<View style={editStyles.modalOverlay}>
 					<View style={editStyles.modalContainer}>
-						<Text style={editStyles.modalTitle}>{selectedExercise?.name || 'Editar ejercicio'}</Text>
+						<Text style={editStyles.modalTitle}>{selectedExercise ? getExerciseNameEs(selectedExercise.code, selectedExercise.name) : 'Editar ejercicio'}</Text>
 
 						{sets.map((s, i) => (
 							<View key={i} style={editStyles.fieldRow}>

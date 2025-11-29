@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import {View, Text, TouchableOpacity, Image, Modal, TextInput, SectionList, Alert, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../../App';
@@ -10,7 +10,8 @@ import { exerciseImageUrls } from '../../common/allExercisesImages';
 import AddIcon from '../../../assets/icons/add.svg';
 import RemoveIcon from '../../../assets/icons/remove.svg';
 import { createWorkoutType, Exercise, getAllExercises, getExerciseByWorkoutType, getWorkoutTypeNameById, updateWorkoutTypeAndExercises } from '../../../services/database';
-
+import { getExerciseNameEs, getMuscleGroupLabelEs } from '../../common/diccionario';
+type MuscleGroup = Exercise['muscleGroup'];
 type WkExSelRouteProp = RouteProp<RootStackParamList, 'WorkoutExerciseSelection'>;
 type WkExSelNavProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, 'WorkoutExerciseSelection'>,
@@ -29,6 +30,21 @@ export default function WorkoutExerciseSelectionScreen() {
 	const [ addedExercises, setAddedExercises ] = useState<Exercise[]>([]);
 	const [ notAddedExercises, setNotAddedExercises ] = useState<Exercise[]>([]);
 	const [ finishModalVisible, setFinishModalVisible ] = useState(false);
+
+	const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<MuscleGroup | null>(null);
+
+	const [muscleFilterScrollX, setMuscleFilterScrollX] = useState(0);
+	const muscleFilterScrollRef = useRef<ScrollView | null>(null);
+
+	useEffect(() => {
+		if( muscleFilterScrollRef.current ) {
+			muscleFilterScrollRef.current.scrollTo({
+				x: muscleFilterScrollX,
+				y: 0,
+				animated: false
+			});
+		}
+	}, [selectedMuscleGroup]);
 
 	useEffect( () => {
 		(async () => {
@@ -125,6 +141,40 @@ export default function WorkoutExerciseSelectionScreen() {
 		return exFound ? true : false;
 	}
 
+	const handleMuscleGroupPress = (group: MuscleGroup) => {
+		setSelectedMuscleGroup(prev => (prev === group) ? null : group);
+	}
+
+	const renderMuscleFilter = () => (
+		<View style={styles.muscleFilterContainer}>
+			<Text style={styles.muscleFilterTitle}>Filtrar por grupo muscular</Text>
+
+			<ScrollView
+				ref={muscleFilterScrollRef}
+				horizontal
+				showsHorizontalScrollIndicator={false}
+				contentContainerStyle={styles.muscleFilterScrollContent}
+				onScroll={e => {
+					setMuscleFilterScrollX(e.nativeEvent.contentOffset.x);
+				}}
+				scrollEventThrottle={16}
+			>
+				{categoryOrder.map(group => {
+					const isSelected = selectedMuscleGroup === group;
+
+					return (
+						<TouchableOpacity key={group} style={[styles.muscleFilterItem, isSelected && styles.muscleFilterItemSelected,]} onPress={() => handleMuscleGroupPress(group)}>
+							<Image source={muscleGroupImages[group]} style={[styles.muscleFilterImage, isSelected && styles.muscleFilterImageSelected,]} />
+							<Text style={[styles.muscleFilterLabel, isSelected && styles.muscleFilterLabelSelected,]}>
+								{getMuscleGroupLabelEs(group)}
+							</Text>
+						</TouchableOpacity>
+					);
+				})}
+			</ScrollView>
+		</View>
+	);
+
 	const renderItem = ({ item }: { item: Exercise }) => (
 		<TouchableOpacity style={ styles.card } onPress={ () => onAddPress( item ) }>
 			<TouchableOpacity style={ styles.addIconContainer } onPress={ () => onAddPress( item ) }>
@@ -138,20 +188,41 @@ export default function WorkoutExerciseSelectionScreen() {
 				source={{ uri: exerciseImageUrls[item.code] }}
 				style={styles.image}
 			/>
-			<Text style={styles.cardText}>{item.name}</Text>
+			<Text style={styles.cardText}>{getExerciseNameEs(item.code, item.name)}</Text>
 		</TouchableOpacity>
 	);
 
 	const isFinishDisabled = addedExercises.length === 0;
 	const isSaveDisabled = workoutTypeName.trim() === '';
 
-	const categoryOrder = [
+	const muscleGroupImages: Record<MuscleGroup, any> = {
+		Chest: require('../../../assets/muscleGroups/chest.png'),
+		Back: require('../../../assets/muscleGroups/back.png'),
+		Shoulders: require('../../../assets/muscleGroups/shoulders.png'),
+		Biceps: require('../../../assets/muscleGroups/biceps.png'),
+		Triceps: require('../../../assets/muscleGroups/triceps.png'),
+		Forearms: require('../../../assets/muscleGroups/biceps.png'),
+		Cuadriceps: require('../../../assets/muscleGroups/cuadriceps.png'),
+		Hamstrings: require('../../../assets/muscleGroups/hamstrings.png'),
+		Gluts: require('../../../assets/muscleGroups/gluts.png'),
+		Calves: require('../../../assets/muscleGroups/calves.png'),
+		Abductors: require('../../../assets/muscleGroups/abductors.png'),
+		Adductors: require('../../../assets/muscleGroups/adductors.png'),
+		Abs: require('../../../assets/muscleGroups/abs.png'),
+	};
+
+	const categoryOrder: MuscleGroup[] = [
 		'Chest','Back','Shoulders','Biceps','Triceps',
 		'Cuadriceps','Hamstrings','Gluts','Abductors','Adductors','Calves','Abs'
 	];
-	const groupSections = categoryOrder.map( group => ({
+
+	const visibleCategoryOrder = selectedMuscleGroup
+		? categoryOrder.filter(group => group === selectedMuscleGroup)
+		: categoryOrder;
+
+	const groupSections = visibleCategoryOrder.map(group => ({
 		title: group,
-		data: notAddedExercises.filter( e => e.muscleGroup === group )
+		data: notAddedExercises.filter(e => e.muscleGroup === group),
 	}));
 
 	const sections = [
@@ -161,11 +232,13 @@ export default function WorkoutExerciseSelectionScreen() {
 
 	return (
 		<View style={styles.container}>
+			{renderMuscleFilter()}
 			<SectionList
 				sections={sections}
 				keyExtractor={(item, index) => `${item.id}-${index}`}
 				renderSectionHeader={({ section }) => (
-					<Text style={ styles.sectionHeader }>{section.title}</Text>
+					<Text style={ styles.sectionHeader }>{
+					section.title === 'Añadidos' ? 'Añadidos' : getMuscleGroupLabelEs(section.title as MuscleGroup)}</Text>
 				)}
 				renderItem={({ item, index, section }) => {
 					if( index % 2 !== 0 ) return null;

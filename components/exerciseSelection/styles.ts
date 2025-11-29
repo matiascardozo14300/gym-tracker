@@ -305,6 +305,8 @@ export const setEditorStyles = StyleSheet.create({
 	editorTitle: {
 		fontSize: 20,
 		fontWeight: '700',
+		flex: 1,
+		marginRight: 8
 	},
 
 	editorImage: {
@@ -615,7 +617,6 @@ export const setEditorStyles = StyleSheet.create({
 		color: '#666',
 	},
 	helpButton: {
-	marginLeft: 8,
 	padding: 4,
 },
 
@@ -627,7 +628,7 @@ helpModalOverlay: {
 },
 helpModalContainer: {
 	width: '90%',
-	maxHeight: '80%',
+	height: 550,
 	backgroundColor: '#FFFFFF',
 	borderRadius: 16,
 	padding: 16,
@@ -638,7 +639,7 @@ helpModalTitle: {
 	marginBottom: 8,
 },
 helpModalScroll: {
-	maxHeight: 260,
+	maxHeight: '100%',
 },
 helpModalContent: {
 	paddingVertical: 4,

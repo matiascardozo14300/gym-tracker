@@ -21,6 +21,7 @@ export interface WorkoutDetail {
 	workoutType: string;
 	exercises: {
 		name: string;
+		code: string;
 		sets: { weight: number; reps: number }[];
 	}[];
 }

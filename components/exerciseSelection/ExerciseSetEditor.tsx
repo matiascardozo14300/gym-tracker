@@ -18,6 +18,7 @@ import RestCountdown from './RestCountdown';
 import { StickyNote, HelpCircle } from 'lucide-react-native';
 import { formatSeconds } from '../common/helper';
 import { DEFAULT_REST_SECONDS, getSetting, REST_SETTING_KEY, saveSetting } from '../../services/database/settings/settings';
+import { getExerciseNameEs } from '../common/diccionario';
 
 export type SimpleSet = { weight: string; reps: string };
 
@@ -252,7 +253,7 @@ const ExerciseSetEditor: React.FC<Props> = ({
 				{/* Header solo con el nombre del ejercicio */}
 				<View style={setEditorStyles.editorHeader}>
 					<Text style={setEditorStyles.editorTitle} numberOfLines={2}>
-						{exercise.name}
+						{getExerciseNameEs(exercise.code, exercise.name)}
 					</Text>
 					<TouchableOpacity
 						style={setEditorStyles.helpButton}

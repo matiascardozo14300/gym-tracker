@@ -22,6 +22,7 @@ import {
 	insertExerciseRecord,
 	insertNewWorkout,
 	insertSetRecord,
+	MuscleGroup,
 	NewExerciseRecord,
 	NewSetRecord,
 	NewWorkout,
@@ -36,6 +37,7 @@ import { exerciseImageUrls } from '../common/allExercisesImages';
 import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
 import StarOutlineIcon from '../../assets/icons/favorite.svg';
 import { getLocalISOString } from '../common/helper';
+import { getExerciseNameEs, getMuscleGroupLabelEs } from '../common/diccionario';
 import ExerciseSetEditor, { SimpleSet } from './ExerciseSetEditor';
 import { modalStyles } from '../common/modalStyles';
 import { modalUX } from '../home/styles';
@@ -369,7 +371,7 @@ export default function ExerciseSelectionScreen() {
 		[exercises, completedExercises]
 	);
 
-	const categoryOrder = [
+	const categoryOrder: MuscleGroup[] = [
 		'Chest',
 		'Back',
 		'Shoulders',
@@ -386,7 +388,7 @@ export default function ExerciseSelectionScreen() {
 
 	const groupSections = categoryOrder
 		.map(group => ({
-			title: group,
+			title: group as MuscleGroup,
 			data: exercises.filter(
 				e => e.muscleGroup === group && e.favorite === 0
 			),
@@ -430,7 +432,7 @@ export default function ExerciseSelectionScreen() {
 					source={{ uri: exerciseImageUrls[item.code] }}
 					style={styles.image}
 				/>
-				<Text style={styles.cardText}>{item.name}</Text>
+				<Text style={styles.cardText}>{getExerciseNameEs(item.code, item.name)}</Text>
 			</TouchableOpacity>
 		);
 	};
@@ -452,7 +454,11 @@ export default function ExerciseSelectionScreen() {
 						sections={sections}
 						keyExtractor={item => item.id.toString()}
 						renderSectionHeader={({ section: { title } }) => (
-							<Text style={styles.sectionHeader}>{title}</Text>
+							<Text style={styles.sectionHeader}>
+								{title === 'Favoritos'
+								? title
+								: getMuscleGroupLabelEs(title as MuscleGroup)}
+							</Text>
 						)}
 						renderItem={({ item, index, section }) => {
 							if (index % 2 !== 0) return null;
@@ -539,7 +545,7 @@ export default function ExerciseSelectionScreen() {
 											key={item.id}
 											style={{ fontSize: 14, marginVertical: 2 }}
 										>
-										• {item.name}
+										• {getExerciseNameEs(item.code, item.name)}
 										</Text>
 									)}
 								/>
