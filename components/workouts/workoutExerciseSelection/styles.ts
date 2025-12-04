@@ -128,9 +128,6 @@ modalOverlay: {
  marginRight: 12,
  alignItems: 'center',
  },
- muscleFilterItemSelected: {
- transform: [{ scale: 1.03 }],
- },
  muscleFilterImage: {
  width: 72,
  height: 72,

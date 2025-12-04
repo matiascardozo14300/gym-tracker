@@ -163,7 +163,7 @@ export default function WorkoutExerciseSelectionScreen() {
 					const isSelected = selectedMuscleGroup === group;
 
 					return (
-						<TouchableOpacity key={group} style={[styles.muscleFilterItem, isSelected && styles.muscleFilterItemSelected,]} onPress={() => handleMuscleGroupPress(group)}>
+						<TouchableOpacity key={group} style={styles.muscleFilterItem} onPress={() => handleMuscleGroupPress(group)}>
 							<Image source={muscleGroupImages[group]} style={[styles.muscleFilterImage, isSelected && styles.muscleFilterImageSelected,]} />
 							<Text style={[styles.muscleFilterLabel, isSelected && styles.muscleFilterLabelSelected,]}>
 								{getMuscleGroupLabelEs(group)}
