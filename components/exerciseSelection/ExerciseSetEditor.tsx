@@ -9,7 +9,8 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	Keyboard,
-	Modal
+	Modal,
+	AppState
 } from 'react-native';
 import { setEditorStyles } from './styles';
 import { exerciseImageUrls } from '../common/allExercisesImages';
@@ -63,6 +64,8 @@ const ExerciseSetEditor: React.FC<Props> = ({
 
 	const [restRemaining, setRestRemaining] = useState<number | null>(null);
 	const restIntervalRef = useRef<NodeJS.Timeout | null>(null);
+	const restEndTimeRef = useRef<number | null>(null);
+	const appStateRef = useRef(AppState.currentState);
 
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
@@ -94,7 +97,46 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	// limpiar intervalo al desmontar
 	useEffect(() => {
 		return () => {
-			if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+			if (restIntervalRef.current) {
+				clearInterval(restIntervalRef.current);
+				restIntervalRef.current = null;
+			}
+			restEndTimeRef.current = null;
+		};
+	}, []);
+
+	// Recalcular el descanso cuando la app vuelve a estar activa
+	useEffect(() => {
+		const sub = AppState.addEventListener('change', nextState => {
+			const prevState = appStateRef.current;
+			appStateRef.current = nextState;
+
+			// Cuando pasamos de background/inactive a active
+			if (
+				(prevState === 'background' || prevState === 'inactive') &&
+				nextState === 'active'
+			) {
+				if (restEndTimeRef.current != null) {
+					const diffMs = restEndTimeRef.current - Date.now();
+					const remaining = Math.max(0, Math.round(diffMs / 1000));
+
+					if (remaining <= 0) {
+						// Descanso terminado mientras la app estaba en background
+						if (restIntervalRef.current) {
+							clearInterval(restIntervalRef.current);
+							restIntervalRef.current = null;
+						}
+						restEndTimeRef.current = null;
+						setRestRemaining(null);
+					} else {
+						setRestRemaining(remaining);
+					}
+				}
+			}
+		});
+
+		return () => {
+			sub.remove();
 		};
 	}, []);
 
@@ -125,18 +167,41 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	const startRest = () => {
 		if (restSeconds <= 0) return;
 
-		if (restIntervalRef.current) clearInterval(restIntervalRef.current);
-		setRestRemaining(restSeconds);
+		// Limpiar cualquier intervalo previo
+		if (restIntervalRef.current) {
+			clearInterval(restIntervalRef.current);
+			restIntervalRef.current = null;
+		}
 
+		// Calculamos el "deadline" absoluto del descanso
+		const endAt = Date.now() + restSeconds * 1000;
+		restEndTimeRef.current = endAt;
+
+		// Func helper para calcular segundos restantes
+		const computeRemaining = () => {
+			if (restEndTimeRef.current == null) return null;
+			const diffMs = restEndTimeRef.current - Date.now();
+			const remaining = Math.max(0, Math.round(diffMs / 1000));
+			return remaining;
+		};
+
+		// Seteo inicial
+		const firstRemaining = computeRemaining();
+		setRestRemaining(firstRemaining);
+
+		// Intervalo que solo recalcula en base al timestamp
 		const id = setInterval(() => {
-			setRestRemaining(prev => {
-				if (prev == null) return prev;
-				if (prev <= 1) {
-					clearInterval(id);
-					return 0;
-				}
-				return prev - 1;
-			});
+			const remaining = computeRemaining();
+			if (remaining == null) return;
+
+			if (remaining <= 0) {
+				clearInterval(id);
+				restIntervalRef.current = null;
+				restEndTimeRef.current = null;
+				setRestRemaining(null);
+			} else {
+				setRestRemaining(remaining);
+			}
 		}, 1000);
 
 		restIntervalRef.current = id;
@@ -241,7 +306,6 @@ const ExerciseSetEditor: React.FC<Props> = ({
 		<KeyboardAvoidingView
 			style={setEditorStyles.editorContainer}
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-			keyboardVerticalOffset={Platform.OS === 'ios' ? 16 : 0}
 		>
 			{/* Contenido scrolleable */}
 			<ScrollView
