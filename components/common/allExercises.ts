@@ -633,8 +633,8 @@ export const lista: Omit<ExerciseInsert, 'id'>[] = [
 		equipment: 'BARBELL',
 	},
 	{
-		code: 'barbell-setp-up',
-		name: 'Barbell Setp Up',
+		code: 'barbell-step-up',
+		name: 'Barbell Step Up',
 		muscleGroup: 'Cuadriceps',
 		equipment: 'BARBELL',
 	},
@@ -653,12 +653,6 @@ export const lista: Omit<ExerciseInsert, 'id'>[] = [
 	{
 		code: 'bodyweight-squat',
 		name: 'Bodyweight Squat',
-		muscleGroup: 'Cuadriceps',
-		equipment: 'BODYWEIGHT',
-	},
-	{
-		code: 'bulgarian-split-squat',
-		name: 'Bulgarian Split Squat',
 		muscleGroup: 'Cuadriceps',
 		equipment: 'BODYWEIGHT',
 	},
@@ -945,8 +939,8 @@ export const lista: Omit<ExerciseInsert, 'id'>[] = [
 		equipment: 'MACHINE',
 	},
 	{
-		code: 'lever-splide-hip-adduction',
-		name: 'Lever Splide Hip Adduction',
+		code: 'lever-side-hip-adduction',
+		name: 'Lever Side Hip Adduction',
 		muscleGroup: 'Adductors',
 		equipment: 'MACHINE',
 	},
