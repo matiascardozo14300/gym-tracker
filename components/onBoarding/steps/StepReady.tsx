@@ -119,7 +119,7 @@ const readyStyles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 360,
-	height: 500,
+	minHeight: 500,
     borderRadius: 24,
     paddingVertical: 32,
     paddingHorizontal: 24,
