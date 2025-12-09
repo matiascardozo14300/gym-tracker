@@ -306,6 +306,7 @@ const ExerciseSetEditor: React.FC<Props> = ({
 		<KeyboardAvoidingView
 			style={setEditorStyles.editorContainer}
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+			keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 100}
 		>
 			{/* Contenido scrolleable */}
 			<ScrollView

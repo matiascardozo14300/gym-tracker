@@ -39,54 +39,6 @@ export async function getExerciseByWorkoutType( workoutTypeId: number ): Promise
 	}));
 }
 
-/**
- * Inserta o reemplaza un lote de ejercicios.
- * Convierte el array workoutTypes a CSV antes de guardarlo.
- */
-export async function insertExerciseBatch( exercises: ExerciseInsert[] ): Promise<SQLiteRunResult[]> {
-	const db = getDB();
-	const results: SQLiteRunResult[] = [];
-
-	const typeRows = await db.getAllAsync<{ id: number; name: string }>(
-		`SELECT id, name FROM workout_types;`
-	);
-	const typeMap: Record<string, number> = {};
-		typeRows.forEach( r => {
-		typeMap[r.name] = r.id;
-	});
-
-	for( const ex of exercises ) {
-		const insertRes = await db.runAsync(
-			`
-			INSERT INTO exercises (name, code, muscleGroup, favorite)
-			VALUES (?, ?, ?, 0);
-			`,
-			ex.name,
-			ex.code,
-			ex.muscleGroup
-		);
-		results.push( insertRes );
-
-		const exerciseId = insertRes.lastInsertRowId;
-
-		for( const wtName of ex.workoutTypes ) {
-			const wtId = typeMap[wtName];
-			if( wtId != null ) {
-				await db.runAsync(
-					`
-					INSERT INTO workout_type_exercises (workoutTypeId, exerciseId)
-					VALUES (?, ?);
-					`,
-					wtId,
-					exerciseId
-				);
-			}
-		}
-	}
-
-	return results;
-}
-
 // Obtiene todos los ejercicios de la base de datos
 export async function getAllExercises(): Promise<Exercise[]> {
 	return await getDB().getAllAsync<Exercise>(`SELECT * FROM exercises;`);
@@ -148,7 +100,11 @@ export async function getExerciseNotes( exerciseId: number ): Promise<string> {
 		exerciseId
 	);
 
-	return row != null ? row.note : "";
+	if (!row || row.note == null) {
+		return "";
+	}
+
+	return row.note;
 }
 
 export async function saveExerciseNotes( exerciseId: number, note: string ): Promise<void> {
