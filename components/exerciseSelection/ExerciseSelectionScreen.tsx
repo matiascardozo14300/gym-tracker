@@ -33,7 +33,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { styles, fakePickerStyles } from './styles';
-import { exerciseImageUrls } from '../common/allExercisesImages';
+import { getExerciseImage } from '../common/allExercisesImages';
 import StarFilledIcon from '../../assets/icons/favoriteFill.svg';
 import StarOutlineIcon from '../../assets/icons/favorite.svg';
 import { getLocalISOString } from '../common/helper';
@@ -429,7 +429,7 @@ export default function ExerciseSelectionScreen() {
 				)}
 
 				<Image
-					source={{ uri: exerciseImageUrls[item.code] }}
+					source={getExerciseImage(item.code)}
 					style={styles.image}
 				/>
 				<Text style={styles.cardText}>{getExerciseNameEs(item.code, item.name)}</Text>

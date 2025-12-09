@@ -6,570 +6,1206 @@ export const lista: Omit<ExerciseInsert, 'id'>[] = [
 		code: 'close-grip-lat-pulldown',
 		name: 'Close-Grip Lat PullDown',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'bayesian-cable-curl',
 		name: 'Bayesian Cable Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'ez-bar-curl',
 		name: 'EZ Bar Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'chest-supported-row',
 		name: 'Chest-Supported Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'cable-row',
 		name: 'Cable Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'preacher-hammer-curl',
 		name: 'Preacher Hammer Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'cross-body-lat-pullaround',
 		name: 'Cross-Body Lat PullAround',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'wide-grip-lat-pulldown',
 		name: 'Wide-Grip Lat PullDown',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: '1-arm-dumbbell-row',
 		name: '1-Arm Dumbbell Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'standing-hammer-curl',
 		name: 'Standing Hammer Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'pull-ups',
 		name: 'Pull-Ups',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BODYWEIGHT',
 	},
 	{
 		code: 'bench-press',
 		name: 'Bench Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'cable-lateral-raise',
 		name: 'Cable Lateral Raise',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'standing-dumbbell-lateral-raise',
 		name: 'Standing Dumbbell Lateral Raise',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'incline-bench-press',
 		name: 'Incline Bench Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'triceps-pressdown-bar',
 		name: 'Triceps Pressdown (Bar)',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'overhead-cable-triceps-extension',
 		name: 'Overhead Cable Triceps Extension',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'pec-deck',
 		name: 'Pec Deck',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'cable-triceps-kickback',
 		name: 'Cable Triceps Kickback',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'machine-chest-press',
 		name: 'Machine Chest Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'smith-flat-bench-press',
 		name: 'Smith Flat Bench Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'smith-incline-bench-press',
 		name: 'Smith Incline Bench Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'flat-dumbbell-press',
 		name: 'Flat Dumbbell Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'incline-dumbbell-press',
 		name: 'Incline Dumbbell Press',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'smith-machine-jm-press',
 		name: 'Smith Machine JM Press',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'push-ups',
 		name: 'Push-Ups',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BODYWEIGHT',
 	},
 	{
 		code: 'seated-leg-curl',
 		name: 'Seated Leg Curl',
 		muscleGroup: 'Hamstrings',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'lying-leg-curl',
 		name: 'Lying Leg Curl',
 		muscleGroup: 'Hamstrings',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'leg-press',
 		name: 'Leg Press',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'leg-extension',
 		name: 'Leg Extension',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'machine-leg-press',
 		name: 'Machine Leg Press',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'hip-adduction',
 		name: 'Hip Adduction',
 		muscleGroup: 'Adductors',
-		workoutTypes: ['Legs', 'FullBody']
-	},
-	{
-		code: 'standing-calf-raise',
-		name: 'Standing Calf Raise',
-		muscleGroup: 'Calves',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'seated-calf-raise',
 		name: 'Seated Calf Raise',
 		muscleGroup: 'Calves',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'lever-standing-calf-raise',
 		name: 'Lever Standing Calf Raise',
 		muscleGroup: 'Calves',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'lever-seated-crunch',
 		name: 'Lever Seated Crunch',
 		muscleGroup: 'Abs',
-		workoutTypes: ['Pull', 'Push', 'Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'straight-leg-raise',
 		name: 'Straight Leg Raise',
 		muscleGroup: 'Abs',
-		workoutTypes: ['Pull', 'Push', 'Legs', 'FullBody']
+		equipment: 'BODYWEIGHT',
 	},
 	{
 		code: 'cable-crunch',
 		name: 'Cable Crunch',
 		muscleGroup: 'Abs',
-		workoutTypes: ['Pull', 'Push', 'Legs', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'bent-over-row',
 		name: 'Bent Over Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'cable-standing-lat-pushdown',
 		name: 'Cable Standing Lat PushDown',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'shrug',
 		name: 'Shrug',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'lever-lying-t-bar-row',
 		name: 'Lever Lying T-Bar Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'assisted-pull-ups',
 		name: 'Assisted Pull-Ups',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: '45-degree-hyperextension',
 		name: '45 Degree Hyperextension',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BODYWEIGHT',
 	},
 	{
 		code: 'seated-wide-grip-row',
 		name: 'Seated Wide-Grip Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'lever-front-pulldown',
 		name: 'Lever Front PullDown',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'cable-wide-neutral-grip-pulldown',
 		name: 'Cable Wide Neutral Grip PullDown',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'lever-bent-over-row',
 		name: 'Lever Bent-Over Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'incline-dumbbell-row',
 		name: 'Incline Dumbbell Row',
 		muscleGroup: 'Back',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'biceps-curl',
 		name: 'Biceps Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'dumbbell-incline-curl',
 		name: 'Dumbbell Incline Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'lever-preacher-curl',
 		name: 'Lever Preacher Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'cable-biceps-curl',
 		name: 'Cable Biceps Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'barbell-preacher-curl',
 		name: 'Barbell Preacher Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'dumbbell-preacher-curl',
 		name: 'Dumbbell Preacher Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'concentration-curl',
 		name: 'Concentration Curl',
 		muscleGroup: 'Biceps',
-		workoutTypes: ['Pull', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'lever-seated-fly',
 		name: 'Lever Seated Fly',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'dumbbell-shoulder-press',
 		name: 'Dumbbell Shoulder Press',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'machine-shoulder-press',
 		name: 'Machine Shoulder Press',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'lever-seated-reverse-fly',
 		name: 'Lever Seated Reverse Fly',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'front-raise',
 		name: 'Front Raise',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'barbell-shoulder-press',
 		name: 'Barbell Shoulder Press',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'lever-lateral-raise',
 		name: 'Lever Lateral Raise',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'cable-face-pull',
 		name: 'Cable Face Pull',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'smith-shoulder-press',
 		name: 'Smith Shoulder Press',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'cross-over-reverse-fly',
 		name: 'Cross-Over Reverse Fly',
 		muscleGroup: 'Shoulders',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'cable-standing-fly',
 		name: 'Cable Standing Fly',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'chest-dip',
 		name: 'Chest Dip',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BODYWEIGHT',
 	},
 	{
 		code: 'fly',
 		name: 'Fly',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'incline-fly',
 		name: 'Incline Fly',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'cable-middle-fly',
 		name: 'Cable Middle Fly',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'cable-seated-chest-fly',
 		name: 'Cable Seated Chest Fly',
 		muscleGroup: 'Chest',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'pulley-overhead-tricep-extension',
 		name: 'Pulley Overhead Tricep Extension',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'lever-seated-dip',
 		name: 'Lever Seated Dip',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'seated-bench-extension',
 		name: 'Seated Bench Extension',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'triceps-dip',
 		name: 'Triceps Dip',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BODYWEIGHT',
 	},
 	{
 		code: 'assisted-triceps-dip',
 		name: 'Assisted Triceps Dip',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'deadlift',
 		name: 'Deadlift',
 		muscleGroup: 'Hamstrings',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'romanian-deadlift',
 		name: 'Romanian Deadlift',
 		muscleGroup: 'Hamstrings',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'good-morning',
 		name: 'Good Morning',
 		muscleGroup: 'Hamstrings',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'barbell-squat',
 		name: 'Barbell Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'hack-squat',
 		name: 'Hack Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'smith-squat',
 		name: 'Smith Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'dumbbell-bulgarian-split-squat',
 		name: 'Dumbbell Bulgarian Split Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'dumbbell-squat',
 		name: 'Dumbbell Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'dumbbell-lunges',
 		name: 'Dumbbell Lunges',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'kettlebell-goblet-squat',
 		name: 'Kettlebell Goblet Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'DUMBBELL',
 	},
 	{
 		code: 'smith-bulgarian-split-squat',
 		name: 'Smith Bulgarian Split Squat',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'smith-lunges',
 		name: 'Smith Lunges',
 		muscleGroup: 'Cuadriceps',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'hip-abduction',
 		name: 'Hip Abduction',
 		muscleGroup: 'Abductors',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'MACHINE',
 	},
 	{
 		code: 'hip-thrust',
 		name: 'Hip Thrust',
 		muscleGroup: 'Gluts',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'smith-hip-thrust',
 		name: 'Smith Hip Thrust',
 		muscleGroup: 'Gluts',
-		workoutTypes: ['Legs', 'FullBody']
+		equipment: 'SMITH',
 	},
 	{
 		code: 'cable-pushdown-rope',
 		name: 'Cable Pushdown (Rope)',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'CABLE',
 	},
 	{
 		code: 'barbell-skullcrusher',
 		name: 'Barbell Skullcrusher',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'BARBELL',
 	},
 	{
 		code: 'dumbbell-skullcrusher',
 		name: 'Dumbbell Skullcrusher',
 		muscleGroup: 'Triceps',
-		workoutTypes: ['Push', 'FullBody']
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'alternate-triceps-extension',
+		name: 'Alternate Triceps Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'assisted-chest-dip',
+		name: 'Assisted Chest Dip',
+		muscleGroup: 'Chest',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'assisted-chin-up',
+		name: 'Assisted Chin Up',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'assisted-standing-pul-up',
+		name: 'Assisted Standing Pul Up',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'barbell-bulgarian-split-squat',
+		name: 'Barbell Bulgarian Split Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-decline-bench-press',
+		name: 'Barbell Decline Bench Press',
+		muscleGroup: 'Chest',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-front-squat',
+		name: 'Barbell Front Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-lunge',
+		name: 'Barbell Lunge',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-lying-row-rack',
+		name: 'Barbell Lying Row Rack',
+		muscleGroup: 'Back',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-one-arm-bent-over-row',
+		name: 'Barbell One Arm Bent Over Row',
+		muscleGroup: 'Back',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-seated-military-press',
+		name: 'Barbell Seated Military Press',
+		muscleGroup: 'Shoulders',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-setp-up',
+		name: 'Barbell Setp Up',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'barbell-shrug',
+		name: 'Barbell Shrug',
+		muscleGroup: 'Back',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'bench-dip',
+		name: 'Bench Dip',
+		muscleGroup: 'Triceps',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'bodyweight-squat',
+		name: 'Bodyweight Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'bulgarian-split-squat',
+		name: 'Bulgarian Split Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'cable-chest-press',
+		name: 'Cable Chest Press',
+		muscleGroup: 'Chest',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-donkey-kickback',
+		name: 'Cable Donkey Kickback',
+		muscleGroup: 'Gluts',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-hip-abduction',
+		name: 'Cable Hip Abduction',
+		muscleGroup: 'Abductors',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-hip-adduction',
+		name: 'Cable Hip Adduction',
+		muscleGroup: 'Adductors',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-kneeling-one-arm-lat-pulldown',
+		name: 'Cable Kneeling One Arm Lat Pulldown',
+		muscleGroup: 'Back',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-low-fly',
+		name: 'Cable Low Fly',
+		muscleGroup: 'Chest',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-seated-chest-press',
+		name: 'Cable Seated Chest Press',
+		muscleGroup: 'Chest',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-shrug',
+		name: 'Cable Shrug',
+		muscleGroup: 'Back',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-single-arm-high-row-chest-support',
+		name: 'Cable Single Arm High Row Chest Support',
+		muscleGroup: 'Back',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'cable-standing-high-cross-triceps-extension',
+		name: 'Cable Standing High Cross Triceps Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'chin-up',
+		name: 'Chin Up',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'decline-dumbell-bench-press',
+		name: 'Decline Dumbell Bench Press',
+		muscleGroup: 'Chest',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'decline-push-ups',
+		name: 'Decline Push Ups',
+		muscleGroup: 'Chest',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'decline-smith-bench-press',
+		name: 'Decline Smith Bench Press',
+		muscleGroup: 'Chest',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'diamond-push-up',
+		name: 'Diamond Push Up',
+		muscleGroup: 'Chest',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'donkey-calf-raise',
+		name: 'Donkey Calf Raise',
+		muscleGroup: 'Calves',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'dumbbell-incline-lateral-raise',
+		name: 'Dumbbell Incline Lateral Raise',
+		muscleGroup: 'Shoulders',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-incline-one-arm-lateral-raise',
+		name: 'Dumbbell Incline One Arm Lateral Raise',
+		muscleGroup: 'Shoulders',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-kickback',
+		name: 'Dumbbell Kickback',
+		muscleGroup: 'Triceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-one-arm-seated-extension',
+		name: 'Dumbbell One Arm Seated Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-rear-delt-fly',
+		name: 'Dumbbell Rear Delt Fly',
+		muscleGroup: 'Shoulders',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-reverse-spider-curl',
+		name: 'Dumbbell Reverse Spider Curl',
+		muscleGroup: 'Biceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-romanian-deadlift',
+		name: 'Dumbbell Romanian Deadlift',
+		muscleGroup: 'Hamstrings',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-seated-bent-over-reardelt-row',
+		name: 'Dumbbell Seated Bent Over Reardelt Row',
+		muscleGroup: 'Back',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-standing-one-arm-extension',
+		name: 'Dumbbell Standing One Arm Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-standing-triceps-extension',
+		name: 'Dumbbell Standing Triceps Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-step-up',
+		name: 'Dumbbell Step Up',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbbell-zottman-preacher-curl',
+		name: 'Dumbbell Zottman Preacher Curl',
+		muscleGroup: 'Biceps',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbell-bent-over-row',
+		name: 'Dumbell Bent Over Row',
+		muscleGroup: 'Back',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbell-bent-over-row-chest-support',
+		name: 'Dumbell Bent Over Row Chest Support',
+		muscleGroup: 'Back',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbell-lying-row-rack',
+		name: 'Dumbell Lying Row Rack',
+		muscleGroup: 'Back',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'dumbell-pull-over',
+		name: 'Dumbell Pull Over',
+		muscleGroup: 'Back',
+		equipment: 'DUMBBELL',
+	},
+	{
+		code: 'elbow-dips',
+		name: 'Elbow Dips',
+		muscleGroup: 'Triceps',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'ez-bar-seated-triceps-extension',
+		name: 'EZ Bar Seated Triceps Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'ez-barbell-spider-curl',
+		name: 'EZ Barbell Spider Curl',
+		muscleGroup: 'Biceps',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'flat-plate-loaded-chest-press',
+		name: 'Flat Plate Loaded Chest Press',
+		muscleGroup: 'Chest',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'hip-thrust-machine',
+		name: 'Hip Thrust Machine',
+		muscleGroup: 'Gluts',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'incline-plate-loaded-chest-press',
+		name: 'Incline Plate Loaded Chest Press',
+		muscleGroup: 'Chest',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'incline-push-up',
+		name: 'Incline Push Up',
+		muscleGroup: 'Chest',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'inverted-row',
+		name: 'Inverted Row',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'knees-push-up',
+		name: 'Knees Push Up',
+		muscleGroup: 'Chest',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'landmine-kneeling-squeeze-press',
+		name: 'Landmine Kneeling Squeeze Press',
+		muscleGroup: 'Chest',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'landmine-one-arm-bent-over-row',
+		name: 'Landmine One Arm Bent Over Row',
+		muscleGroup: 'Back',
+		equipment: 'BARBELL',
+	},
+	{
+		code: 'lever-hip-extension',
+		name: 'Lever Hip Extension',
+		muscleGroup: 'Gluts',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'lever-kneeling-leg-curl',
+		name: 'Lever Kneeling Leg Curl',
+		muscleGroup: 'Hamstrings',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'lever-one-leg-extension',
+		name: 'Lever One Leg Extension',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'lever-side-hip-abduction',
+		name: 'Lever Side Hip Abduction',
+		muscleGroup: 'Abductors',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'lever-splide-hip-adduction',
+		name: 'Lever Splide Hip Adduction',
+		muscleGroup: 'Adductors',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'lever-standing-rear-kick',
+		name: 'Lever Standing Rear Kick',
+		muscleGroup: 'Gluts',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'lever-triceps-extension-machine',
+		name: 'Lever Triceps Extension Machine',
+		muscleGroup: 'Triceps',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-back-extension',
+		name: 'Machine Back Extension',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-biceps-curl',
+		name: 'Machine Biceps Curl',
+		muscleGroup: 'Biceps',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-calf-raise',
+		name: 'Machine Calf Raise',
+		muscleGroup: 'Calves',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-close-grip-row',
+		name: 'Machine Close Grip Row',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-donkey-kickback',
+		name: 'Machine Donkey Kickback',
+		muscleGroup: 'Gluts',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-front-lat-pulldown',
+		name: 'Machine Front Lat Pulldown',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-incline-chest-press',
+		name: 'Machine Incline Chest Press',
+		muscleGroup: 'Chest',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-incline-fly',
+		name: 'Machine Incline Fly',
+		muscleGroup: 'Chest',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-lever-high-row',
+		name: 'Machine Lever High Row',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-lever-pullover',
+		name: 'Machine Lever Pullover',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-lever-reverse-grip-pulldown',
+		name: 'Machine Lever Reverse Grip Pulldown',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-lever-triceps-extension',
+		name: 'Machine Lever Triceps Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-seated-lever-lateral-raise',
+		name: 'Machine Seated Lever Lateral Raise',
+		muscleGroup: 'Shoulders',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'machine-shrug',
+		name: 'Machine Shrug',
+		muscleGroup: 'Back',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'muscle-up',
+		name: 'Muscle Up',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'neutral-grip-cable-row',
+		name: 'Neutral Grip Cable Row',
+		muscleGroup: 'Back',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'neutral-pull-up',
+		name: 'Neutral Pull Up',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'one-arm-side-triceps-pushdown',
+		name: 'One Arm Side Triceps Pushdown',
+		muscleGroup: 'Triceps',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'overhead-rope-triceps-extension',
+		name: 'Overhead Rope Triceps Extension',
+		muscleGroup: 'Triceps',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'plate-loaded-triceps-dip',
+		name: 'Plate Loaded Triceps Dip',
+		muscleGroup: 'Triceps',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'reverse-grip-lat-pulldown',
+		name: 'Reverse Grip Lat Pulldown',
+		muscleGroup: 'Back',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'reverse-vertical-hack-squat',
+		name: 'Reverse Vertical Hack Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'MACHINE',
+	},
+	{
+		code: 'seated-full-crunch',
+		name: 'Seated Full Crunch',
+		muscleGroup: 'Abs',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'single-leg-squat',
+		name: 'Single Leg Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'smith-back-shurg',
+		name: 'Smith Back Shurg',
+		muscleGroup: 'Back',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-bent-over-row',
+		name: 'Smith Bent Over Row',
+		muscleGroup: 'Back',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-calf-raise',
+		name: 'Smith Calf Raise',
+		muscleGroup: 'Calves',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-dead-lift',
+		name: 'Smith Dead Lift',
+		muscleGroup: 'Hamstrings',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-front-squat',
+		name: 'Smith Front Squat',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-hex-press',
+		name: 'Smith Hex Press',
+		muscleGroup: 'Chest',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-incline-row',
+		name: 'Smith Incline Row',
+		muscleGroup: 'Back',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-leg-press',
+		name: 'Smith Leg Press',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-romanian-deadlift',
+		name: 'Smith Romanian Deadlift',
+		muscleGroup: 'Hamstrings',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'smith-shrug',
+		name: 'Smith Shrug',
+		muscleGroup: 'Back',
+		equipment: 'SMITH',
+	},
+	{
+		code: 'suspended-row',
+		name: 'Suspended Row',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'triceps-triangle-pushdown',
+		name: 'Triceps Triangle Pushdown',
+		muscleGroup: 'Triceps',
+		equipment: 'CABLE',
+	},
+	{
+		code: 'walking-lunge',
+		name: 'Walking Lunge',
+		muscleGroup: 'Cuadriceps',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'weighted-chin-up',
+		name: 'Weighted Chin Up',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'weighted-neutral-pull-up',
+		name: 'Weighted Neutral Pull Up',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'weighted-pull-up',
+		name: 'Weighted Pull Up',
+		muscleGroup: 'Back',
+		equipment: 'BODYWEIGHT',
+	},
+	{
+		code: 'weighted-tricep-dip',
+		name: 'Weighted Tricep Dip',
+		muscleGroup: 'Triceps',
+		equipment: 'BODYWEIGHT',
 	}
 ];

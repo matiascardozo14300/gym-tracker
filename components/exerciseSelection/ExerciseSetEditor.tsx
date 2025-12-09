@@ -12,7 +12,7 @@ import {
 	Modal
 } from 'react-native';
 import { setEditorStyles } from './styles';
-import { exerciseImageUrls } from '../common/allExercisesImages';
+import { getExerciseImage } from '../common/allExercisesImages';
 import type { Exercise, ExerciseLastHistory } from '../../services/database';
 import RestCountdown from './RestCountdown';
 import { StickyNote, HelpCircle } from 'lucide-react-native';
@@ -265,7 +265,7 @@ const ExerciseSetEditor: React.FC<Props> = ({
 
 				{/* Imagen */}
 				<Image
-					source={{ uri: exerciseImageUrls[exercise.code] }}
+					source={getExerciseImage(exercise.code)}
 					style={setEditorStyles.editorImage}
 				/>
 
