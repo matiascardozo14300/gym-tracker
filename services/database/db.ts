@@ -30,8 +30,10 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 			console.log( "Aplicando migración id: ", migration.id );
 			await db.execAsync( migration.up );
 
-			// Luego de la migración 1 -> seed ejercicios antes de registrar la 2
+			// Luego de la migración 1 -> seed ejercicios
 			if( migration.id === 1 ) {
+				// Si en el futuro quiero agregar nuevos ejercicios, deben estar en otro seed, ya que este
+				// no se vuelve a ejecutar
 				await seedInitialExercisesIfNeeded( db );
 			}
 
@@ -41,12 +43,6 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 				migration.id,
 				appliedAt
 			);
-		}
-
-		// Por compatibilidad -> si ya existía la migración 1 aplicada, pero no tenía los ejercicios creados,
-		// aseguro que se creen justo antes de la migración 2
-		if( migration.id === 2 && !appliedIds.includes(2) ) {
-			await seedInitialExercisesIfNeeded( db ); // Si ya están los ejercicios, no hace nada
 		}
 	}
 

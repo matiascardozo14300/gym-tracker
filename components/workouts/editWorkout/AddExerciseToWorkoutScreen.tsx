@@ -7,7 +7,7 @@ import {addStyles} from './styles';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AddableExercise, addExerciseToWorkout, EditableSet, fetchAddableExercisesForWorkout } from '../../../services/database';
-import { exerciseImageUrls } from '../../common/allExercisesImages';
+import { getExerciseImage } from '../../common/allExercisesImages';
 import { getExerciseNameEs } from '../../common/diccionario';
 
 type AdExWkRouteProp = RouteProp<RootStackParamList, 'AddExerciseToWorkout'>;
@@ -105,7 +105,7 @@ export default function AddExerciseToWorkoutScreen() {
 				contentContainerStyle={addStyles.list}
 				renderItem={({ item }) => (
 					<TouchableOpacity style={addStyles.card} onPress={() => openModal(item)}>
-						<Image source={{ uri: exerciseImageUrls[item.code] }} style={addStyles.image} />
+						<Image source={getExerciseImage(item.code)} style={addStyles.image} />
 						<Text style={addStyles.cardText} numberOfLines={1}>{getExerciseNameEs(item.code, item.name)}</Text>
 					</TouchableOpacity>
 				)}

@@ -13,6 +13,14 @@ export type MuscleGroup =
   | "Adductors"
   | "Abs";
 
+export type Equipment =
+  | "BARBELL"
+  | "DUMBBELL"
+  | "BODYWEIGHT"
+  | "CABLE"
+  | "MACHINE"
+  | "SMITH";
+
 export interface Exercise {
 	id: number;
 	name: string;
@@ -26,7 +34,7 @@ export interface ExerciseInsert {
 	name: string;
 	code: string;
 	muscleGroup: MuscleGroup;
-	workoutTypes: string[];
+	equipment: Equipment;
 }
 
 export interface ExerciseNotes {

@@ -6,7 +6,7 @@ import type { RootStackParamList, RootTabParamList } from '../../../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import styles from './styles';
-import { exerciseImageUrls } from '../../common/allExercisesImages';
+import { getExerciseImage } from '../../common/allExercisesImages';
 import AddIcon from '../../../assets/icons/add.svg';
 import RemoveIcon from '../../../assets/icons/remove.svg';
 import { createWorkoutType, Exercise, getAllExercises, getExerciseByWorkoutType, getWorkoutTypeNameById, updateWorkoutTypeAndExercises } from '../../../services/database';
@@ -185,7 +185,7 @@ export default function WorkoutExerciseSelectionScreen() {
 				)}
 			</TouchableOpacity>
 			<Image
-				source={{ uri: exerciseImageUrls[item.code] }}
+				source={getExerciseImage(item.code)}
 				style={styles.image}
 			/>
 			<Text style={styles.cardText}>{getExerciseNameEs(item.code, item.name)}</Text>

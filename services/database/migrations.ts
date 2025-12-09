@@ -10,15 +10,22 @@ export const migrations: Migration[] = [
 			CREATE TABLE IF NOT EXISTS workout_types (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				name TEXT NOT NULL UNIQUE,
-				isCustom INTEGER NOT NULL DEFAULT 0
+				isCustom INTEGER NOT NULL DEFAULT 0,
+				color TEXT,
+				isArchived INTEGER NOT NULL DEFAULT 0,
+				archivedAt TEXT,
+				sortOrder INTEGER NOT NULL DEFAULT 0
 			);
+
+			CREATE INDEX IF NOT EXISTS idx_workout_types_isArchived_sortOrder ON workout_types(isArchived, sortOrder);
 
 			CREATE TABLE IF NOT EXISTS exercises (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				name TEXT NOT NULL,
 				code TEXT NOT NULL UNIQUE,
 				muscleGroup TEXT NOT NULL,
-				favorite INTEGER NOT NULL DEFAULT 0
+				favorite INTEGER NOT NULL DEFAULT 0,
+				equipment TEXT
 			);
 
 			CREATE TABLE IF NOT EXISTS workout_type_exercises (
@@ -53,17 +60,6 @@ export const migrations: Migration[] = [
 				FOREIGN KEY (exerciseRecordId) REFERENCES exercise_records(id)
 			);
 
-			INSERT OR IGNORE INTO workout_types (name, isCustom)
-			VALUES
-				('Pull', 0),
-				('Push', 0),
-				('Legs', 0),
-				('FullBody', 0);
-		`
-	},
-	{
-		id: 2,
-		up: `
 			CREATE TABLE IF NOT EXISTS exercise_notes (
 				id           INTEGER PRIMARY KEY AUTOINCREMENT,
 				exerciseId   INTEGER NOT NULL,
@@ -72,50 +68,6 @@ export const migrations: Migration[] = [
 				FOREIGN KEY (exerciseId) REFERENCES exercises(id)
 			);
 
-			INSERT INTO exercise_notes (exerciseId, note, lastUpdated)
-				SELECT id, NULL, NULL
-				FROM exercises;
-    	`
-	},
-	{
-		id: 3,
-		up: `
-			ALTER TABLE workout_types ADD COLUMN color TEXT;
-
-			ALTER TABLE workout_types ADD COLUMN isArchived INTEGER NOT NULL DEFAULT 0;
-
-			ALTER TABLE workout_types ADD COLUMN archivedAt TEXT;
-
-			UPDATE workout_types
-			SET color = '#F8BBD0'
-			WHERE name = 'Pull';
-
-			UPDATE workout_types
-			SET color = '#BBDEFB'
-			WHERE name = 'Push';
-
-			UPDATE workout_types
-			SET color = '#C8E6C9'
-			WHERE name = 'Legs';
-
-			UPDATE workout_types
-			SET color = '#E1BEE7'
-			WHERE name = 'FullBody';
-    	`
-	},
-	{
-		id: 4,
-		up: `
-			ALTER TABLE workout_types ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0;
-
-			UPDATE workout_types SET sortOrder = id;
-
-			CREATE INDEX IF NOT EXISTS idx_workout_types_isArchived_sortOrder ON workout_types(isArchived, sortOrder);
-    	`
-	},
-	{
-		id: 5,
-		up: `
 			CREATE TABLE IF NOT EXISTS user_profile (
 				id INTEGER PRIMARY KEY DEFAULT 1,
 				nombre TEXT,
@@ -131,6 +83,6 @@ export const migrations: Migration[] = [
 				key TEXT PRIMARY KEY NOT NULL,
 				value TEXT
 			);
-    	`
-	}
+		`
+	},
 ];

@@ -13,7 +13,7 @@ import { formateDateToLongText } from '../../common/helper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { deleteExerciseFromWorkout, EditableExercise, EditableSet, EditableWorkout, fetchWorkoutForEdit, updateExerciseSets, fetchAddableExercisesForWorkout } from '../../../services/database';
-import { exerciseImageUrls } from '../../common/allExercisesImages';
+import { getExerciseImage } from '../../common/allExercisesImages';
 import { modalStyles } from '../../common/modalStyles';
 import { getExerciseNameEs } from '../../common/diccionario';
 
@@ -353,9 +353,9 @@ export default function EditWorkoutScreen() {
 						</TouchableOpacity>
 
 						<View style={imgStyles.imgWrap}>
-							{imageExercise && exerciseImageUrls[imageExercise] ? (
+							{imageExercise && getExerciseImage(imageExercise) ? (
 								<Image
-									source={{ uri: exerciseImageUrls[imageExercise] }}
+									source={getExerciseImage(imageExercise)}
 									style={imgStyles.image}
 									resizeMode="contain"
 								/>
