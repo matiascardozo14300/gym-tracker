@@ -3,7 +3,6 @@ import {
 	View,
 	Text,
 	TouchableOpacity,
-	Image,
 	TextInput,
 	ScrollView,
 	KeyboardAvoidingView,
@@ -12,14 +11,16 @@ import {
 	Modal,
 	AppState
 } from 'react-native';
+import { Image } from 'expo-image';
 import { setEditorStyles } from './styles';
 import { getExerciseImage } from '../common/allExercisesImages';
 import type { Exercise, ExerciseLastHistory } from '../../services/database';
 import RestCountdown from './RestCountdown';
-import { StickyNote, HelpCircle } from 'lucide-react-native';
+import { StickyNote, HelpCircle, PlayCircle, PauseCircle } from 'lucide-react-native';
 import { formatSeconds } from '../common/helper';
 import { DEFAULT_REST_SECONDS, getSetting, REST_SETTING_KEY, saveSetting } from '../../services/database/settings/settings';
 import { getExerciseNameEs } from '../common/diccionario';
+import { EXERCISE_ANIMATIONS } from '../common/exercisesAnimations';
 
 export type SimpleSet = { weight: string; reps: string };
 
@@ -70,6 +71,10 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
 	const repsRefs = useRef<Array<TextInput | null>>([]);
+
+	const [isPlaying, setIsPlaying] = useState(false);
+	const animationUrl = EXERCISE_ANIMATIONS[exercise.code];
+    const hasAnimation = !!animationUrl;
 
 	// Carga el tiempo de descanso de la base de datos
 	useEffect(() => {
@@ -328,11 +333,34 @@ const ExerciseSetEditor: React.FC<Props> = ({
 					</TouchableOpacity>
 				</View>
 
-				{/* Imagen */}
-				<Image
-					source={getExerciseImage(exercise.code)}
-					style={setEditorStyles.editorImage}
-				/>
+				{/* Imagen y Animacion */}
+				<View style={setEditorStyles.imageContainer}>
+					<Image
+						source={
+							// Si está reproduciendo y existe animación, usa la URL remota.
+							// Si no, usa la imagen estática local.
+							isPlaying && animationUrl
+							? { uri: animationUrl }
+							: getExerciseImage(exercise.code)
+						}
+						contentFit="contain"
+						transition={200}
+						style={setEditorStyles.editorImage}
+					/>
+					{hasAnimation && (
+                        <TouchableOpacity
+                            style={setEditorStyles.playButtonOverlay}
+                            onPress={() => setIsPlaying(!isPlaying)}
+                            activeOpacity={0.7}
+                        >
+                            {isPlaying ? (
+                                <PauseCircle size={32} color="#007AFF" strokeWidth={1.5} />
+                            ) : (
+                                <PlayCircle size={32} color="#007AFF" strokeWidth={1.5} />
+                            )}
+                        </TouchableOpacity>
+                    )}
+				</View>
 
 				{/* Botones superiores */}
 				<View style={setEditorStyles.editorTopButtonsRow}>

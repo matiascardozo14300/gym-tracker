@@ -314,8 +314,9 @@ export const setEditorStyles = StyleSheet.create({
 		height: 180,
 		resizeMode: 'contain',
 		borderRadius: 12,
-		backgroundColor: '#F3F4F6',
-		marginBottom: 12,
+		backgroundColor: '#fcfcfc',
+		borderWidth: 1,
+		borderColor: '#E5E7EB',
 	},
 
 	editorTopButtonsRow: {
@@ -665,4 +666,15 @@ helpModalCloseButtonText: {
 	color: '#FFFFFF',
 	fontWeight: '600',
 },
+imageContainer: {
+	position: 'relative',
+	marginBottom: 12,
+},
+playButtonOverlay: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        backgroundColor: '#fcfcfc',
+        borderRadius: 20,
+    },
 });
