@@ -6,7 +6,7 @@ import { migrations } from './migrations';
 import { getLocalISOString } from '../../components/common/helper';
 import { seedInitialExercisesIfNeeded } from '../database/seed';
 
-const DB_NAME = 'gymtracker.db';
+const DB_NAME = 'rackit.db';
 let db: SQLite.SQLiteDatabase;
 
 export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
