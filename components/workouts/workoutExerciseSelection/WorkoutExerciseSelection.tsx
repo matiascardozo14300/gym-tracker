@@ -27,8 +27,10 @@ export default function WorkoutExerciseSelectionScreen() {
 	const isEditMode = !!workoutTypeId;
 
 	const [ workoutTypeName, setWorkoutTypeName ] = useState<string>('');
-	const [ addedExercises, setAddedExercises ] = useState<Exercise[]>([]);
-	const [ notAddedExercises, setNotAddedExercises ] = useState<Exercise[]>([]);
+
+	const [allExercises, setAllExercises] = useState<Exercise[]>([]); // Todos los ejercicios
+    const [addedExercises, setAddedExercises] = useState<Exercise[]>([]); // Solo los seleccionados
+
 	const [ finishModalVisible, setFinishModalVisible ] = useState(false);
 
 	const [ selectedMuscleGroup, setSelectedMuscleGroup ] = useState<MuscleGroup | null>(null);
@@ -50,19 +52,16 @@ export default function WorkoutExerciseSelectionScreen() {
 		(async () => {
 			try {
 				const all = await getAllExercises();
+				setAllExercises(all);
 
 				if( isEditMode && workoutTypeId ) {
 					const exercises = await getExerciseByWorkoutType( workoutTypeId );
 					const wkName = await getWorkoutTypeNameById( workoutTypeId );
 					setWorkoutTypeName( wkName );
-
-					const addedIds = new Set( exercises.map( e => e.id ) );
 					setAddedExercises( exercises );
-					setNotAddedExercises( all.filter( e => !addedIds.has( e.id ) ) );
 				} else {
 					setWorkoutTypeName('');
 					setAddedExercises([]);
-					setNotAddedExercises(all);
 				}
 			} catch( error ) {
 				console.error("Error loading data", error);
@@ -82,11 +81,13 @@ export default function WorkoutExerciseSelectionScreen() {
 		}
 
 		try {
+			const exerciseIds = addedExercises.map(ex => ex.id);
+
 			if( isEditMode && workoutTypeId ) {
 				const res = await updateWorkoutTypeAndExercises(
 					workoutTypeId,
 					workoutTypeName.trim(),
-					addedExercises.map( ex => ex.id )
+					exerciseIds
 				);
 
 				if( !res.ok ) {
@@ -100,7 +101,7 @@ export default function WorkoutExerciseSelectionScreen() {
 			} else {
 				const res = await createWorkoutType(
 					workoutTypeName.trim(),
-					addedExercises.map( ex => ex.id )
+					exerciseIds
 				);
 				if( !res.ok && res.code === 'DUPLICATE_NAME' ) {
 					Alert.alert('Nombre duplicado', 'Ya existe una rutina con ese nombre.');
@@ -110,7 +111,6 @@ export default function WorkoutExerciseSelectionScreen() {
 
 			setWorkoutTypeName('');
 			setAddedExercises([]);
-			setNotAddedExercises([]);
 			setFinishModalVisible(false);
 
 			tabNav?.navigate('Rutinas');
@@ -121,25 +121,21 @@ export default function WorkoutExerciseSelectionScreen() {
 		}
 	}
 
-	const onAddPress = ( item: Exercise ) => {
-		if( isExerciseAdded( item ) ) {
-			setAddedExercises( prev => prev.filter( e => e.id !== item.id ) );
-			setNotAddedExercises( prev => [item, ...prev] );
-		} else {
-			setNotAddedExercises( prev => prev.filter( e => e.id !== item.id ) );
-			setAddedExercises( prev => [...prev, item] );
-		}
-	}
-
 	const handleFinishPress = () => setFinishModalVisible( true );
 
-	const isExerciseAdded = ( item: Exercise ): boolean => {
-		if( item === null ) return false;
-
-		const exFound = addedExercises.find( e => e.id === item.id );
-
-		return exFound ? true : false;
+	const isExerciseAdded = (item: Exercise): boolean => {
+		return addedExercises.some(e => e.id === item.id);
 	}
+
+	const onToggleExercise = (item: Exercise) => {
+        if (isExerciseAdded(item)) {
+            // Si ya está, lo sacamos del array de añadidos
+            setAddedExercises(prev => prev.filter(e => e.id !== item.id));
+        } else {
+            // Si no está, lo agregamos
+            setAddedExercises(prev => [...prev, item]);
+        }
+    }
 
 	const handleMuscleGroupPress = (group: MuscleGroup) => {
 		setSelectedMuscleGroup(prev => (prev === group) ? null : group);
@@ -175,22 +171,39 @@ export default function WorkoutExerciseSelectionScreen() {
 		</View>
 	);
 
-	const renderItem = ({ item }: { item: Exercise }) => (
-		<TouchableOpacity style={ styles.card } onPress={ () => onAddPress( item ) }>
-			<TouchableOpacity style={ styles.addIconContainer } onPress={ () => onAddPress( item ) }>
-				{ isExerciseAdded( item ) ? (
-					<RemoveIcon width={20} height={20} fill={'red'} />
-				) : (
-					<AddIcon width={20} height={20} fill={'#007AFF'} />
+	const renderItem = ({ item }: { item: Exercise }) => {
+		const isSelected = isExerciseAdded(item);
+		return (
+			<TouchableOpacity
+                style={[styles.card, isSelected && styles.cardSelected]}
+                onPress={() => onToggleExercise(item)}
+                activeOpacity={0.7}
+            >
+                <View style={styles.addIconContainer}>
+                    {isSelected ? (
+                        <RemoveIcon width={20} height={20} fill={'#007AFF'} />
+                    ) : (
+                        <AddIcon width={20} height={20} fill={'#ccc'} />
+                    )}
+                </View>
+
+				{isSelected && (
+					<View style={styles.selectedBadge}>
+						<Text style={styles.selectedBadgeText}>Añadido</Text>
+					</View>
 				)}
-			</TouchableOpacity>
-			<Image
-				source={getExerciseImage(item.code)}
-				style={styles.image}
-			/>
-			<Text style={styles.cardText}>{getExerciseNameEs(item.code, item.name)}</Text>
-		</TouchableOpacity>
-	);
+
+                <Image
+                    source={getExerciseImage(item.code)}
+                    style={styles.image}
+                />
+
+                <Text style={styles.cardText}>
+                    {getExerciseNameEs(item.code, item.name)}
+                </Text>
+            </TouchableOpacity>
+		);
+	};
 
 	const isFinishDisabled = addedExercises.length === 0;
 	const isSaveDisabled = workoutTypeName.trim() === '';
@@ -217,18 +230,22 @@ export default function WorkoutExerciseSelectionScreen() {
 	];
 
 	const visibleCategoryOrder = selectedMuscleGroup
-		? categoryOrder.filter(group => group === selectedMuscleGroup)
-		: categoryOrder;
+        ? categoryOrder.filter(group => group === selectedMuscleGroup)
+        : categoryOrder;
 
-	const groupSections = visibleCategoryOrder.map(group => ({
-		title: group,
-		data: notAddedExercises.filter(e => e.muscleGroup === group),
-	}));
+	const sections = visibleCategoryOrder.map(group => {
+        const exercisesInGroup = allExercises.filter(e => e.muscleGroup === group);
 
-	const sections = [
-		{ key: 'Añadidos',    title: 'Añadidos',    data: addedExercises },
-		...groupSections.map(s => ({ key: s.title, ...s }))
-	];
+        // Si hay un filtro activo, mostramos el grupo aunque esté vacío (o puedes ocultarlo si prefieres)
+        // Si no hay filtro, generalmente solo mostramos grupos que tienen ejercicios,
+        // pero asumiremos que quieres ver la estructura.
+        return {
+            title: group,
+            data: exercisesInGroup,
+            key: group
+        };
+    // Filtramos secciones vacías para que no se vea el título sin cards
+    }).filter(section => section.data.length > 0);
 
 	return (
 		<View style={styles.container}>
@@ -237,8 +254,9 @@ export default function WorkoutExerciseSelectionScreen() {
 				sections={sections}
 				keyExtractor={(item, index) => `${item.id}-${index}`}
 				renderSectionHeader={({ section }) => (
-					<Text style={ styles.sectionHeader }>{
-					section.title === 'Añadidos' ? 'Añadidos' : getMuscleGroupLabelEs(section.title as MuscleGroup)}</Text>
+					<Text style={styles.sectionHeader}>
+                        {getMuscleGroupLabelEs(section.title as MuscleGroup)}
+                    </Text>
 				)}
 				renderItem={({ item, index, section }) => {
 					if( index % 2 !== 0 ) return null;
@@ -257,7 +275,9 @@ export default function WorkoutExerciseSelectionScreen() {
 
 			<View style={styles.footer}>
 				<TouchableOpacity onPress={handleFinishPress} disabled={isFinishDisabled} style={[ styles.finishButton, isFinishDisabled && styles.finishButtonDisabled ]}>
-					<Text style={[styles.finishButtonText, isFinishDisabled && styles.finishButtonTextDisabled]}>Guardar Rutina</Text>
+					<Text style={[styles.finishButtonText, isFinishDisabled && styles.finishButtonTextDisabled]}>
+						Añadir {addedExercises.length} {addedExercises.length === 1 ? 'ejercicio' : 'ejercicios'}
+					</Text>
 				</TouchableOpacity>
 			</View>
 

@@ -30,7 +30,26 @@ export default StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 2,
 	},
-		addIconContainer: {
+	cardSelected: {
+		borderColor: '#007AFF',
+		backgroundColor: '#e4f1ffff'
+	},
+	selectedBadge: {
+		position: 'absolute',
+		top: 8,
+		left: 8,
+		backgroundColor: '#007AFF',
+		paddingHorizontal: 8,
+		paddingVertical: 2,
+		borderRadius: 999,
+		zIndex: 2,
+	},
+	selectedBadgeText: {
+		color: '#fff',
+		fontSize: 11,
+		fontWeight: '700',
+	},
+	addIconContainer: {
 		position: 'absolute',
 		top: 6,
 		right: 6,
