@@ -32,7 +32,7 @@ export type RootStackParamList = {
 	Tabs: { screen: keyof RootTabParamList };
 	Onboarding: undefined;
 	ExerciseSelection: { workoutTypeId: number };
-	WorkoutExerciseSelection: { workoutTypeId?: number };
+	WorkoutExerciseSelection: { workoutTypeId?: number, appendMode?: boolean; };
 	EditWorkout: { workoutId?: number; date?: string };
 	AddExerciseToWorkout: { workoutId: number; workoutTypeId: number; usedExerciseIds: number[] };
 	AppLoading: undefined;

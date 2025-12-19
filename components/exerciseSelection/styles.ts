@@ -47,6 +47,28 @@ export const styles = StyleSheet.create({
 		marginVertical: 12,
 		marginLeft: 8
 	},
+	listFooter: {
+        paddingVertical: 20,
+        paddingHorizontal: 16,
+        alignItems: 'center',
+    },
+    addExerciseButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 100,
+        backgroundColor: '#F3F4F6', // Fondo gris claro sutil
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    addExerciseButtonText: {
+        marginLeft: 8,
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#007AFF', // Color primario
+    },
 	row: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
 	View,
 	Text,
@@ -10,7 +10,7 @@ import {
 	Alert,
 	FlatList,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, RootTabParamList } from '../../App';
 import {
@@ -41,6 +41,7 @@ import { getExerciseNameEs, getMuscleGroupLabelEs } from '../common/diccionario'
 import ExerciseSetEditor, { SimpleSet } from './ExerciseSetEditor';
 import { modalStyles } from '../common/modalStyles';
 import { modalUX } from '../home/styles';
+import { Plus } from 'lucide-react-native';
 
 type ExSelRouteProp = RouteProp<RootStackParamList, 'ExerciseSelection'>;
 type ExSelNavProp = CompositeNavigationProp<
@@ -146,7 +147,6 @@ export default function ExerciseSelectionScreen() {
 		return unsubscribe;
 	}, [navigation, tabNav, exerciseModalVisible, workoutId]);
 
-
 	// timer sólo en modo "ahora"
 	useEffect(() => {
 		if (isPastMode) return;
@@ -163,11 +163,33 @@ export default function ExerciseSelectionScreen() {
 	}, [isPastMode]);
 
 	// cargar ejercicios
-	useEffect(() => {
-		getExerciseByWorkoutType(workoutTypeId)
-			.then(setExercises)
-			.catch(console.error);
-	}, [workoutTypeId, refreshFlag]);
+	useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+
+            const loadData = async () => {
+                try {
+                    // Cargamos historial del ejercicio (si lo necesitas en esta pantalla)
+                    // ... lógica existente ...
+
+                    // Cargamos los ejercicios de la rutina
+                    if (workoutTypeId) {
+                        const exs = await getExerciseByWorkoutType(workoutTypeId);
+                        if (isActive) {
+                            setExercises(exs);
+                            // Si tenías lógica para verificar cuáles están completos, va aquí
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+
+            loadData();
+
+            return () => { isActive = false; };
+        }, [workoutTypeId, refreshFlag]) // Dependencias
+    );
 
 	// cuando se abre el editor de sets, obtenemos el último historial
 	useEffect(() => {
@@ -205,6 +227,27 @@ export default function ExerciseSelectionScreen() {
 			setOriginalNotes('');
 		}
 	}, [notesModalVisible, selectedExercise]);
+
+	const handleAddMoreExercises = () => {
+        if (!workoutTypeId) return;
+        navigation.navigate('WorkoutExerciseSelection', {
+            workoutTypeId: workoutTypeId,
+            appendMode: true // Activamos el flag mágico
+        });
+    };
+
+	const renderFooter = () => (
+        <View style={styles.listFooter}>
+            <TouchableOpacity
+                style={styles.addExerciseButton}
+                onPress={handleAddMoreExercises}
+                activeOpacity={0.7}
+            >
+                <Plus size={20} color="#007AFF" />
+                <Text style={styles.addExerciseButtonText}>Agregar ejercicio</Text>
+            </TouchableOpacity>
+        </View>
+    );
 
 	const handleCardPress = (item: Exercise) => {
 		setSelectedExercise(item);
@@ -475,6 +518,7 @@ export default function ExerciseSelectionScreen() {
 								</View>
 							);
 						}}
+						ListFooterComponent={renderFooter}
 						contentContainerStyle={styles.list}
 						stickySectionHeadersEnabled={false}
 					/>

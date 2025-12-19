@@ -24,6 +24,7 @@ export default function WorkoutExerciseSelectionScreen() {
 	const route = useRoute<WkExSelRouteProp>();
 
 	const workoutTypeId = route.params?.workoutTypeId;
+	const appendMode = route.params?.appendMode;
 	const isEditMode = !!workoutTypeId;
 
 	const [ workoutTypeName, setWorkoutTypeName ] = useState<string>('');
@@ -69,6 +70,32 @@ export default function WorkoutExerciseSelectionScreen() {
 			}
 		})();
 	}, [isEditMode, workoutTypeId]);
+
+	const handleAppendSave = async () => {
+        if (addedExercises.length === 0) {
+            Alert.alert('Error', 'Debes tener al menos un ejercicio en la rutina.');
+            return;
+        }
+
+        try {
+            const exerciseIds = addedExercises.map(ex => ex.id);
+
+            // Usamos el nombre que ya se cargó en el state (workoutTypeName) al iniciar el componente
+            // Actualizamos la definición de la rutina con los nuevos ejercicios
+            await updateWorkoutTypeAndExercises(
+                workoutTypeId!,
+                workoutTypeName,
+                exerciseIds
+            );
+
+            // Volvemos a la pantalla anterior (ExerciseSelectionScreen)
+            navigation.goBack();
+
+        } catch (error) {
+            console.error('Error actualizando rutina:', error);
+            Alert.alert('Error', 'No se pudieron añadir los ejercicios.');
+        }
+    };
 
 	const handleSubmit = async () => {
 		if( !workoutTypeName.trim() ) {
@@ -274,11 +301,18 @@ export default function WorkoutExerciseSelectionScreen() {
 			/>
 
 			<View style={styles.footer}>
-				<TouchableOpacity onPress={handleFinishPress} disabled={isFinishDisabled} style={[ styles.finishButton, isFinishDisabled && styles.finishButtonDisabled ]}>
-					<Text style={[styles.finishButtonText, isFinishDisabled && styles.finishButtonTextDisabled]}>
-						Añadir {addedExercises.length} {addedExercises.length === 1 ? 'ejercicio' : 'ejercicios'}
-					</Text>
-				</TouchableOpacity>
+				<TouchableOpacity
+                    onPress={appendMode ? handleAppendSave : handleFinishPress}
+                    disabled={isFinishDisabled}
+                    style={[styles.finishButton, isFinishDisabled && styles.finishButtonDisabled]}
+                >
+                    <Text style={[styles.finishButtonText, isFinishDisabled && styles.finishButtonTextDisabled]}>
+                        {appendMode
+                            ? `Añadir a esta sesión (${addedExercises.length})`
+                            : `Añadir ${addedExercises.length} ${addedExercises.length === 1 ? 'ejercicio' : 'ejercicios'}`
+                        }
+                    </Text>
+                </TouchableOpacity>
 			</View>
 
 			<Modal visible={finishModalVisible} transparent animationType='slide'>
