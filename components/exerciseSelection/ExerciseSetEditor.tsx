@@ -12,6 +12,7 @@ import {
 	AppState
 } from 'react-native';
 import { Image } from 'expo-image';
+import { useNetInfo } from '@react-native-community/netinfo';
 import { setEditorStyles } from './styles';
 import { getExerciseImage } from '../common/allExercisesImages';
 import type { Exercise, ExerciseLastHistory } from '../../services/database';
@@ -73,8 +74,11 @@ const ExerciseSetEditor: React.FC<Props> = ({
 	const repsRefs = useRef<Array<TextInput | null>>([]);
 
 	const [isPlaying, setIsPlaying] = useState(false);
+
+	const { isConnected } = useNetInfo();
+
 	const animationUrl = EXERCISE_ANIMATIONS[exercise.code];
-    const hasAnimation = !!animationUrl;
+    const hasAnimation = !!animationUrl && isConnected === true;
 
 	// Carga el tiempo de descanso de la base de datos
 	useEffect(() => {
