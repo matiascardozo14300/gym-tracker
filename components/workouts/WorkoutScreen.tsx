@@ -12,7 +12,7 @@ import PaletteIcon from '../../assets/icons/palette.svg';
 import EditIcon from '../../assets/icons/edit.svg';
 import DeleteIcon from '../../assets/icons/delete.svg';
 import PlayArrow from '../../assets/icons/play_arrow_green.svg';
-/* import { LinearGradient } from 'expo-linear-gradient'; */
+import { ClipboardList, Plus } from 'lucide-react-native';
 
 type TabNav = BottomTabNavigationProp<RootTabParamList, 'Rutinas'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
@@ -154,82 +154,91 @@ export default function WorkoutScreen() {
 	};
 
 	const ListHeader = () => (
-		<>
-			<Header title="Rutinas" />
-			<View style={styles.headerActions}>
-				<TouchableOpacity style={styles.createButton} onPress={handleCreateWorkout} activeOpacity={0.8}>
-					<Text style={styles.createButtonText}>Crear rutina</Text>
-				</TouchableOpacity>
-				{/* <TouchableOpacity
-					activeOpacity={0.85}
-					onPress={handleCreateWorkout}
-					style={styles.createButtonWrapper}
-				>
-					<LinearGradient
-					colors={['#00C851', '#00bcd4']} // verde -> celeste
-					start={{ x: 0, y: 0 }}
-					end={{ x: 1, y: 0 }}
-					style={styles.createButtonGradient}
-					>
-					<Text style={styles.createButtonText}>+ Crear rutina</Text>
-					</LinearGradient>
-				</TouchableOpacity> */}
-			</View>
-		</>
-	);
+        <View style={styles.headerRow}>
+            {/* Título a la izquierda */}
+            <Text style={styles.headerTitle}>Rutinas</Text>
+
+            {/* Botón a la derecha */}
+            <TouchableOpacity
+                style={styles.createButton}
+                onPress={handleCreateWorkout}
+                activeOpacity={0.7}
+            >
+                <Plus color="#fff" size={20} strokeWidth={2.5} />
+                <Text style={styles.createButtonText}>Nueva rutina</Text>
+            </TouchableOpacity>
+        </View>
+    );
 
 	const renderItem = ({ item, index }: { item: WorkoutType; index: number }) => {
-		const color = item.color ?? "#ccc";
-		const isFirst = index === 0;
-		const isLast = index === types.length - 1;
+        const color = item.color ?? "#ccc";
+        const isFirst = index === 0;
+        const isLast = index === types.length - 1;
 
-		return (
-			<View style={styles.card}>
-				<View style={arrowStyles.col}>
-					<TouchableOpacity
-						disabled={isFirst || savingOrder}
-						onPress={() => moveUp(index)}
-						style={[arrowStyles.btn, (isFirst || savingOrder) && arrowStyles.btnDisabled]}
-						hitSlop={8}
-					>
-						<View style={[arrowStyles.triUp, { borderBottomColor: color }]} />
-					</TouchableOpacity>
+        return (
+            <View style={styles.card}>
+                <View style={arrowStyles.col}>
+                    <TouchableOpacity
+                        disabled={isFirst || savingOrder}
+                        onPress={() => moveUp(index)}
+                        style={[arrowStyles.btn, (isFirst || savingOrder) && arrowStyles.btnDisabled]}
+                        hitSlop={8}
+                    >
+                        <View style={[arrowStyles.triUp, { borderBottomColor: color }]} />
+                    </TouchableOpacity>
 
-					<TouchableOpacity
-						disabled={isLast || savingOrder}
-						onPress={() => moveDown(index)}
-						style={[arrowStyles.btn, (isLast || savingOrder) && arrowStyles.btnDisabled]}
-						hitSlop={8}
-					>
-						<View style={[arrowStyles.triDown, { borderTopColor: color }]} />
-					</TouchableOpacity>
-				</View>
+                    <TouchableOpacity
+                        disabled={isLast || savingOrder}
+                        onPress={() => moveDown(index)}
+                        style={[arrowStyles.btn, (isLast || savingOrder) && arrowStyles.btnDisabled]}
+                        hitSlop={8}
+                    >
+                        <View style={[arrowStyles.triDown, { borderTopColor: color }]} />
+                    </TouchableOpacity>
+                </View>
 
-				<View style={styles.cardContent}>
-					<Text numberOfLines={1} ellipsizeMode="tail" style={styles.cardTitle}>
-						{item.name}
-					</Text>
+                <View style={{ flex: 1, paddingHorizontal: 8, justifyContent: 'center' }}>
 
-					<View style={styles.iconRow}>
-						<TouchableOpacity onPress={() => handleChangeColor(item)} hitSlop={10} style={styles.iconBtn}>
-							<PaletteIcon width={20} height={20} fill={'#696767ff'} />
-						</TouchableOpacity>
-						<TouchableOpacity onPress={() => handleEditWorkout(item)} hitSlop={10} style={styles.iconBtn}>
-							<EditIcon width={20} height={20} fill={'#696767ff'} />
-						</TouchableOpacity>
-						<TouchableOpacity onPress={() => handleDeleteWorkout(item)} hitSlop={10} style={styles.iconBtn}>
-							<DeleteIcon width={20} height={20} fill={'#696767ff'} />
-						</TouchableOpacity>
-					</View>
-				</View>
+                    <Text
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                        style={[styles.cardTitle, { marginBottom: 8 }]}
+                    >
+                        {item.name}
+                    </Text>
 
-				<TouchableOpacity style={styles.startBtn} onPress={() => handleStartWorkout(item)} activeOpacity={0.9}>
-					<Text style={styles.startBtnText}>Iniciar</Text>
-					<PlayArrow width={20} height={20} fill={'#fff'} style={styles.startIcon} />
-				</TouchableOpacity>
-			</View>
-		);
-	};
+                    <View style={{ flexDirection: 'row', gap: 16 }}>
+                        <TouchableOpacity onPress={() => handleChangeColor(item)} hitSlop={10}>
+                            <PaletteIcon width={20} height={20} fill={'#696767ff'} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleEditWorkout(item)} hitSlop={10}>
+                            <EditIcon width={20} height={20} fill={'#696767ff'} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDeleteWorkout(item)} hitSlop={10}>
+                            <DeleteIcon width={20} height={20} fill={'#696767ff'} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <TouchableOpacity style={styles.startBtn} onPress={() => handleStartWorkout(item)} activeOpacity={0.9}>
+                    <Text style={styles.startBtnText}>Iniciar</Text>
+                    <PlayArrow width={20} height={20} fill={'#fff'} style={styles.startIcon} />
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+	const RenderEmptyState = () => (
+        <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+                <ClipboardList size={40} color="#9CA3AF" />
+            </View>
+            <Text style={styles.emptyTitle}>No hay rutinas creadas</Text>
+            <Text style={styles.emptySubtitle}>
+                Toca el botón "Crear rutina" arriba para armar tu primer plan de entrenamiento.
+            </Text>
+        </View>
+    );
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -238,7 +247,12 @@ export default function WorkoutScreen() {
 				data={types}
 				keyExtractor={item => String(item.id)}
 				renderItem={renderItem}
-				contentContainerStyle={styles.list}
+				contentContainerStyle={
+                    types.length === 0
+                        ? [styles.list, styles.listContentEmpty]
+                        : styles.list
+                }
+                ListEmptyComponent={RenderEmptyState}
 				ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
 				extraData={savingOrder}
 			/>

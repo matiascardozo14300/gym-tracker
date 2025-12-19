@@ -9,42 +9,44 @@ export default StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 24,
   },
-   headerActions: {
+   headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 0,
-    marginBottom: 18,
-    marginTop: 8,
+    paddingTop: 50,
+    paddingBottom: 20,
+    backgroundColor: '#fff',
+  },
+
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
+    letterSpacing: -0.5,
   },
   createButton: {
-    height: 48,
-    borderWidth: 2,
-    borderColor: '#4CAF50',
-    borderRadius: 12,
+   flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+
+    elevation: 6,
   },
   createButtonText: {
-    color: '#4CAF50',
-    fontWeight: '700',
-    fontSize: 18,
-  },
-/* createButtonWrapper: {
-    borderRadius: 12,
-    overflow: 'hidden', // para que el gradiente respete el borde redondeado
-  },
-  createButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52,
-    borderRadius: 12,
-  },
-    createButtonText: {
     color: '#fff',
-    fontWeight: '700',
-    fontSize: 17,
-  }, */
-
+    fontSize: 15,
+    fontWeight: '600',
+    marginLeft: 8,
+    letterSpacing: 0.3,
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -90,9 +92,14 @@ export default StyleSheet.create({
     paddingHorizontal: 14,
     height: 36,
     borderRadius: 18,
-    flexDirection: 'row',     // ← icono y texto en fila
-    alignItems: 'center',     // ← centrado vertical
-    justifyContent: 'center', // ← centrado horizontal
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+	shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+	elevation: 6,
   },
   startBtnText: {
     color: '#FFF',
@@ -153,4 +160,36 @@ export default StyleSheet.create({
 		color: '#fff',
 		fontWeight: '600'
 	},
+	  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    marginTop: 60, // Un poco de aire desde el header
+  },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F3F4F6', // Un gris muy suave de fondo
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  listContentEmpty: {
+    flexGrow: 1,
+  },
 });
