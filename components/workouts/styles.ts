@@ -51,45 +51,66 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    // sombra
+    borderRadius: 16,
+    marginBottom: 0,
+
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: 'hidden',
+    height: 95,
   },
-  colorBar: {
-    width: 4,
-    borderRadius: 3,
-    alignSelf: 'stretch',
-    marginRight: 12,
+
+  colorStrip: {
+    width: 6,
+    height: '100%',
+  },
+  reorderColumn: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    borderRightWidth: 1,
+    borderRightColor: '#F3F4F6',
+    height: '60%',
+  },
+  arrowBtn: {
+    padding: 2,
+  },
+  arrowBtnDisabled: {
+    opacity: 0.2,
   },
   cardContent: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingHorizontal: 14,
+    justifyContent: 'center',
   },
   cardTitle: {
-    flex: 1,
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#1F2937',
+    color: '#111827',
+    marginBottom: 6, // Espacio entre título y acciones
+    letterSpacing: -0.3,
   },
-  iconRow: {
+  actionRow: {
     flexDirection: 'row',
-    marginLeft: 8,
-    marginRight: 8,
     alignItems: 'center',
   },
-  iconBtn: {
-    paddingHorizontal: 6,
+  actionIconBtn: {
+    padding: 4, // Área de toque
   },
-  startBtn: {
+  divider: {
+    width: 1,
+    height: 12,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 8,
+  },
+startBtn: {
     backgroundColor: '#007AFF',
-    paddingHorizontal: 14,
+   	paddingHorizontal: 14,
+	marginRight: 16,
     height: 36,
     borderRadius: 18,
     flexDirection: 'row',

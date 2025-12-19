@@ -3,7 +3,6 @@ import { deleteWorkoutType, getWorkoutTypes, updateWorkoutTypeColor, WorkoutType
   reorderWorkoutTypes } from '../../services/database';
 import { View, Text, SafeAreaView, TouchableOpacity, FlatList, StyleSheet, Modal, Alert } from "react-native";
 import styles from './styles';
-import Header from '../header/Header';
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { RootStackParamList, RootTabParamList } from "../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -12,7 +11,7 @@ import PaletteIcon from '../../assets/icons/palette.svg';
 import EditIcon from '../../assets/icons/edit.svg';
 import DeleteIcon from '../../assets/icons/delete.svg';
 import PlayArrow from '../../assets/icons/play_arrow_green.svg';
-import { ClipboardList, Plus } from 'lucide-react-native';
+import { ClipboardList, Plus, ChevronUp, ChevronDown } from 'lucide-react-native';
 
 type TabNav = BottomTabNavigationProp<RootTabParamList, 'Rutinas'>;
 type StackNav = NativeStackNavigationProp<RootStackParamList>;
@@ -177,45 +176,48 @@ export default function WorkoutScreen() {
 
         return (
             <View style={styles.card}>
-                <View style={arrowStyles.col}>
+                <View style={[styles.colorStrip, { backgroundColor: color }]} />
+
+                <View style={styles.reorderColumn}>
                     <TouchableOpacity
                         disabled={isFirst || savingOrder}
                         onPress={() => moveUp(index)}
-                        style={[arrowStyles.btn, (isFirst || savingOrder) && arrowStyles.btnDisabled]}
-                        hitSlop={8}
+                        style={[styles.arrowBtn, (isFirst || savingOrder) && styles.arrowBtnDisabled]}
+                        hitSlop={5}
                     >
-                        <View style={[arrowStyles.triUp, { borderBottomColor: color }]} />
+                        <ChevronUp size={20} color="#9CA3AF" />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         disabled={isLast || savingOrder}
                         onPress={() => moveDown(index)}
-                        style={[arrowStyles.btn, (isLast || savingOrder) && arrowStyles.btnDisabled]}
-                        hitSlop={8}
+                        style={[styles.arrowBtn, (isLast || savingOrder) && styles.arrowBtnDisabled]}
+                        hitSlop={5}
                     >
-                        <View style={[arrowStyles.triDown, { borderTopColor: color }]} />
+                        <ChevronDown size={20} color="#9CA3AF" />
                     </TouchableOpacity>
                 </View>
 
-                <View style={{ flex: 1, paddingHorizontal: 8, justifyContent: 'center' }}>
-
+                <View style={styles.cardContent}>
                     <Text
                         numberOfLines={2}
                         ellipsizeMode="tail"
-                        style={[styles.cardTitle, { marginBottom: 8 }]}
+                        style={styles.cardTitle}
                     >
                         {item.name}
                     </Text>
 
-                    <View style={{ flexDirection: 'row', gap: 16 }}>
-                        <TouchableOpacity onPress={() => handleChangeColor(item)} hitSlop={10}>
-                            <PaletteIcon width={20} height={20} fill={'#696767ff'} />
+                    <View style={styles.actionRow}>
+                        <TouchableOpacity onPress={() => handleChangeColor(item)} style={styles.actionIconBtn}>
+                            <PaletteIcon width={16} height={16} fill={'#6B7280'} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleEditWorkout(item)} hitSlop={10}>
-                            <EditIcon width={20} height={20} fill={'#696767ff'} />
+                        <View style={styles.divider} />
+                        <TouchableOpacity onPress={() => handleEditWorkout(item)} style={styles.actionIconBtn}>
+                            <EditIcon width={16} height={16} fill={'#6B7280'} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDeleteWorkout(item)} hitSlop={10}>
-                            <DeleteIcon width={20} height={20} fill={'#696767ff'} />
+                        <View style={styles.divider} />
+                        <TouchableOpacity onPress={() => handleDeleteWorkout(item)} style={styles.actionIconBtn}>
+                            <DeleteIcon width={16} height={16} fill={'#6B7280'} />
                         </TouchableOpacity>
                     </View>
                 </View>
